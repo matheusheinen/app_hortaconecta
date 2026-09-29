@@ -8,11 +8,12 @@ import {
   Text,
   View,
 } from 'react-native';
+import { executarAuth, erroAuth } from '../lib/operacaoAuth';
 import { supabase } from '../lib/supabase';
 import { cores, espaco, tipo } from '../lib/tema';
 import { Aviso, Botao, Campo } from '../componentes/Ui';
 
-export function TelaLogin() {
+export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
   const [modo, setModo] = useState<'entrar' | 'cadastrar'>('entrar');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -23,6 +24,7 @@ export function TelaLogin() {
   const cadastrando = modo === 'cadastrar';
 
   async function enviar() {
+    if(ocupado)return;
     setErro(null);
 
     if (!email.trim() || !senha) {
@@ -34,29 +36,12 @@ export function TelaLogin() {
       return;
     }
 
-    setOcupado(true);
-
-    // O nome viaja em raw_user_meta_data; o trigger handle_new_user()
-    // no banco usa esse valor para criar a linha em `usuarios`.
-    const resposta = cadastrando
-      ? await supabase.auth.signUp({
-          email: email.trim(),
-          password: senha,
-          options: { data: { nome: nome.trim() } },
-        })
-      : await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
-
-    setOcupado(false);
-
-    if (resposta.error) {
-      setErro(traduzErro(resposta.error.message));
-      return;
-    }
-
-    if (cadastrando && !resposta.data.session) {
-      setErro('Conta criada. Confirme o e-mail antes de entrar.');
-      setModo('entrar');
-    }
+    try{
+      const resposta=await executarAuth(()=>cadastrando
+        ?supabase.auth.signUp({email:email.trim(),password:senha,options:{data:{nome:nome.trim()}}})
+        :supabase.auth.signInWithPassword({email:email.trim(),password:senha}),setOcupado);
+      if(cadastrando&&!resposta.data.session){setErro('Conta criada. Confirme o e-mail antes de entrar.');setModo('entrar');}
+    }catch(f){setErro(erroAuth(f));}
   }
 
   return (
@@ -76,7 +61,7 @@ export function TelaLogin() {
           {cadastrando ? 'Criar conta' : 'Entrar'}
         </Text>
 
-        {erro ? <Aviso mensagem={erro} /> : null}
+        {erro||erroSessao ? <Aviso mensagem={erro??erroSessao!} /> : null}
 
         {cadastrando ? (
           <Campo
@@ -124,13 +109,6 @@ export function TelaLogin() {
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
-
-function traduzErro(mensagem: string) {
-  if (mensagem.includes('Invalid login credentials')) return 'E-mail ou senha incorretos.';
-  if (mensagem.includes('already registered')) return 'Este e-mail já tem conta.';
-  if (mensagem.includes('Password should be')) return 'A senha precisa ter ao menos 6 caracteres.';
-  return mensagem;
 }
 
 const estilos = StyleSheet.create({

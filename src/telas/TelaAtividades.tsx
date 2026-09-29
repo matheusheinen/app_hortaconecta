@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   Alert,
   FlatList,
@@ -9,59 +9,48 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useDadosVoluntariado } from '../lib/useDadosVoluntariado';
 import { supabase } from '../lib/supabase';
 import { cores, espaco, tipo } from '../lib/tema';
 import { rotuloStatus, type Atividade } from '../lib/tipos';
 import { Aviso, Botao } from '../componentes/Ui';
+import { mensagemErro } from '../lib/voluntariado';
 
 type Props = {
   ehGestao: boolean;
   nome: string;
   onNova: () => void;
   onEditar: (atividade: Atividade) => void;
+  onDetalhe: (id: number) => void;
+  onMinhas: () => void;
+  onHistorico: () => void;
   onSair: () => void;
 };
 
-export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair }: Props) {
-  const [atividades, setAtividades] = useState<Atividade[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
-
-  const carregar = useCallback(async () => {
-    setErro(null);
-    setCarregando(true);
-
-    // Não filtramos por status aqui de propósito: o RLS já decide o que
-    // cada perfil enxerga. O voluntário recebe só as publicadas.
-    const { data, error } = await supabase
-      .from('atividades')
-      .select('*')
-      .order('data_hora_prevista', { ascending: true });
-
-    if (error) setErro(error.message);
-    setAtividades(data ?? []);
-    setCarregando(false);
-  }, []);
-
-  // Recarrega ao voltar para esta tela (ex.: depois de salvar no formulário),
-  // já que a navegação por abas mantém a tela montada em vez de recriá-la.
-  useFocusEffect(
-    useCallback(() => {
-      carregar();
-    }, [carregar]),
+export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair, onDetalhe, onMinhas, onHistorico }: Props) {
+  const { dados, carregando, erro, carregar } = useDadosVoluntariado(
+    useCallback(async () => {
+      // A visibilidade da listagem continua dependendo do RLS de atividades.
+      const { data, error } = await supabase.from('atividades').select('*')
+        .order('data_hora_prevista', { ascending: true });
+      if (error) throw error;
+      return data;
+    }, []),
   );
+  const atividades = dados ?? [];
 
   function confirmarExclusao(atividade: Atividade) {
-    const mensagem = `"${atividade.titulo}" será removida, junto das candidaturas recebidas. Não dá para desfazer.`;
+    const mensagem = `"${atividade.titulo}" será removida. Atividades com candidaturas devem ser canceladas nos detalhes para preservar o histórico.`;
 
     const excluir = async () => {
-      const { error } = await supabase.from('atividades').delete().eq('id', atividade.id);
-      if (error) {
-        avisar('Não foi possível excluir', error.message);
-        return;
+      try {
+        const { error, data } = await supabase.from('atividades').delete().eq('id', atividade.id).select('id').single();
+        if (error) throw error;
+        if (!data) throw new Error('Nenhuma atividade foi removida. Recarregue a lista.');
+        await carregar();
+      } catch (falha) {
+        avisar('Não foi possível excluir', mensagemErro(falha));
       }
-      carregar();
     };
 
     confirmar('Excluir atividade', mensagem, excluir);
@@ -85,11 +74,15 @@ export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair }: Pro
         <View style={estilos.barraAcao}>
           <Botao titulo="Publicar tarefa" onPress={onNova} />
         </View>
-      ) : null}
+      ) : <View style={[estilos.barraAcao, { gap: espaco.sm }]}>
+        <Botao titulo="Minhas candidaturas" onPress={onMinhas} />
+        <Botao titulo="Histórico de participação" variante="contorno" onPress={onHistorico} />
+      </View>}
 
       {erro ? (
         <View style={{ paddingHorizontal: espaco.lg }}>
           <Aviso mensagem={erro} />
+          <Botao titulo="Tentar novamente" onPress={carregar} />
         </View>
       ) : null}
 
@@ -99,7 +92,7 @@ export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair }: Pro
         contentContainerStyle={estilos.lista}
         refreshControl={<RefreshControl refreshing={carregando} onRefresh={carregar} />}
         ListEmptyComponent={
-          carregando ? null : (
+          carregando || erro ? null : (
             <View style={estilos.vazio}>
               <Text style={[tipo.secao, { marginBottom: espaco.sm }]}>
                 {ehGestao ? 'Nenhuma tarefa publicada' : 'Nada por aqui ainda'}
@@ -113,7 +106,7 @@ export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair }: Pro
           )
         }
         renderItem={({ item }) => (
-          <View style={estilos.cartao}>
+          <Pressable style={estilos.cartao} onPress={() => onDetalhe(item.id)} accessibilityRole="button" accessibilityLabel={`Ver detalhes de ${item.titulo}`}>
             <View style={estilos.cartaoTopo}>
               <Text style={estilos.cartaoTitulo}>{item.titulo}</Text>
               <Text style={estilos.selo}>{rotuloStatus[item.status]}</Text>
@@ -142,7 +135,7 @@ export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair }: Pro
                 </View>
               </View>
             ) : null}
-          </View>
+          </Pressable>
         )}
       />
     </View>

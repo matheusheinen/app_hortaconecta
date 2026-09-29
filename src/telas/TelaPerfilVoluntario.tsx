@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -24,11 +24,13 @@ import { apenasDigitos, validarCpf, validarTelefone } from '../lib/validadores';
 import { mascararCpf, mascararTelefone } from '../lib/mascaras';
 import { Aviso, Botao, Campo } from '../componentes/Ui';
 import { CampoData } from '../componentes/CampoData';
+import { disponibilidadeValida } from '../lib/regrasVoluntariado';
+import { mensagemErro } from '../lib/voluntariado';
 
 type Props = {
   perfil: Usuario;
   sair: () => void;
-  recarregarPerfil: () => Promise<void>;
+  recarregarPerfil: (propagarErro?: boolean) => Promise<void>;
 };
 
 export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) {
@@ -36,6 +38,9 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
   const [ocupado, setOcupado] = useState(false);
+  const [cargaValida, setCargaValida] = useState(false);
+  const [elegivel, setElegivel] = useState<boolean | null>(null);
+  const sequenciaCarga = useRef(0);
 
   const [nome, setNome] = useState(perfil.nome);
   const [telefone, setTelefone] = useState(mascararTelefone(perfil.telefone ?? ''));
@@ -52,37 +57,65 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
   const [selecionadas, setSelecionadas] = useState<number[]>([]);
 
   const carregar = useCallback(async () => {
+    const atual = ++sequenciaCarga.current;
     setCarregando(true);
     setErro(null);
+    setCargaValida(false);
 
-    const [respVoluntario, respCatalogo, respSelecionadas] = await Promise.all([
-      supabase
-        .from('voluntarios')
-        .select('cpf, data_nascimento, profissao, disponibilidade_horarios')
-        .eq('usuario_id', perfil.id)
-        .single(),
-      supabase.from('habilidades').select('*').order('categoria').order('nome_habilidade'),
-      supabase.from('usuario_habilidades').select('habilidade_id').eq('usuario_id', perfil.id),
-    ]);
+    try {
+      const [respVoluntario, respCatalogo, respSelecionadas, respUsuario] = await Promise.all([
+        supabase
+          .from('voluntarios')
+          .select('cpf, data_nascimento, profissao, disponibilidade_horarios')
+          .eq('usuario_id', perfil.id)
+          .single(),
+        supabase.from('habilidades').select('*').order('categoria').order('nome_habilidade'),
+        supabase.from('usuario_habilidades').select('habilidade_id').eq('usuario_id', perfil.id),
+        supabase.from('usuarios').select('nome, telefone, endereco, perfil_instagram, descricao').eq('id', perfil.id).single(),
+      ]);
+      if (atual !== sequenciaCarga.current) return;
 
-    if (respVoluntario.error) {
-      setErro(respVoluntario.error.message);
-    } else if (respVoluntario.data) {
-      setCpf(mascararCpf(respVoluntario.data.cpf ?? ''));
-      setDataNascimento(paraCampoData(respVoluntario.data.data_nascimento));
-      setProfissao(respVoluntario.data.profissao ?? '');
-      setDisponibilidade((respVoluntario.data.disponibilidade_horarios as SlotDisponibilidade[]) ?? []);
+      if (respVoluntario.error) throw respVoluntario.error;
+      if (respCatalogo.error) throw respCatalogo.error;
+      if (respSelecionadas.error) throw respSelecionadas.error;
+      if (respUsuario.error) throw respUsuario.error;
+      setNome(respUsuario.data.nome);
+      setTelefone(mascararTelefone(respUsuario.data.telefone ?? ''));
+      setEndereco(respUsuario.data.endereco ?? '');
+      setInstagram(respUsuario.data.perfil_instagram ?? '');
+      setDescricao(respUsuario.data.descricao ?? '');
+      if (respVoluntario.data) {
+        if (!disponibilidadeValida(respVoluntario.data.disponibilidade_horarios)) {
+          throw new Error(
+            'A disponibilidade salva está em formato inválido. Solicite suporte à gestão.',
+          );
+        }
+        setCpf(mascararCpf(respVoluntario.data.cpf ?? ''));
+        setDataNascimento(paraCampoData(respVoluntario.data.data_nascimento));
+        setProfissao(respVoluntario.data.profissao ?? '');
+        setDisponibilidade(respVoluntario.data.disponibilidade_horarios);
+      }
+
+      setCatalogo(respCatalogo.data ?? []);
+      setSelecionadas((respSelecionadas.data ?? []).map((linha) => linha.habilidade_id));
+      const resposta = await supabase.rpc('voluntariado_elegibilidade');
+      if (atual !== sequenciaCarga.current) return;
+      if (resposta.error) throw resposta.error;
+      setElegivel(resposta.data);
+      setCargaValida(true);
+    } catch (falha) {
+      if (atual === sequenciaCarga.current) setErro(mensagemErro(falha));
+    } finally {
+      if (atual === sequenciaCarga.current) setCarregando(false);
     }
-
-    setCatalogo(respCatalogo.data ?? []);
-    setSelecionadas((respSelecionadas.data ?? []).map((linha) => linha.habilidade_id));
-
-    setCarregando(false);
   }, [perfil.id]);
 
   useFocusEffect(
     useCallback(() => {
       carregar();
+      return () => {
+        sequenciaCarga.current++;
+      };
     }, [carregar]),
   );
 
@@ -101,6 +134,7 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
   }
 
   async function salvar() {
+    if (ocupado || !cargaValida) return;
     setErro(null);
     setSucesso(false);
 
@@ -126,56 +160,38 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
     if (dataNascimentoIso && dataNascimentoIso >= hoje()) {
       return setErro('A data de nascimento precisa ser no passado.');
     }
+    if (!disponibilidadeValida(disponibilidade)) return setErro('Disponibilidade inválida.');
 
     setOcupado(true);
-
-    const { error: erroUsuario } = await supabase
-      .from('usuarios')
-      .update({
-        nome: nome.trim(),
-        telefone: telefone.trim() ? apenasDigitos(telefone) : null,
-        endereco: endereco.trim() || null,
-        perfil_instagram: instagram.trim() ? instagram.trim().replace(/^@/, '') : null,
-        descricao: descricao.trim() || null,
-      })
-      .eq('id', perfil.id);
-
-    if (erroUsuario) {
-      setOcupado(false);
-      return setErro(erroUsuario.message);
-    }
-
-    const { error: erroVoluntario } = await supabase
-      .from('voluntarios')
-      .update({
-        cpf: cpf.trim() ? apenasDigitos(cpf) : null,
-        data_nascimento: dataNascimentoIso,
-        profissao: profissao.trim() || null,
-        disponibilidade_horarios: disponibilidade,
-      })
-      .eq('usuario_id', perfil.id);
-
-    if (erroVoluntario) {
-      setOcupado(false);
-      return setErro(erroVoluntario.message);
-    }
-
-    await supabase.from('usuario_habilidades').delete().eq('usuario_id', perfil.id);
-    if (selecionadas.length > 0) {
-      const { error: erroHabilidades } = await supabase
-        .from('usuario_habilidades')
-        .insert(selecionadas.map((habilidade_id) => ({ usuario_id: perfil.id, habilidade_id })));
-
-      if (erroHabilidades) {
-        setOcupado(false);
-        return setErro(erroHabilidades.message);
+    try {
+      const { data, error } = await supabase.rpc('voluntariado_salvar_perfil', {
+        p_dados: {
+          nome: nome.trim(),
+          telefone: telefone.trim() ? apenasDigitos(telefone) : null,
+          endereco: endereco.trim() || null,
+          perfil_instagram: instagram.trim() ? instagram.trim().replace(/^@/, '') : null,
+          descricao: descricao.trim() || null,
+          cpf: cpf.trim() ? apenasDigitos(cpf) : null,
+          data_nascimento: dataNascimentoIso,
+          profissao: profissao.trim() || null,
+          disponibilidade_horarios: disponibilidade,
+        },
+        p_habilidades: selecionadas,
+      });
+      if (error) throw error;
+      if (data === null) throw new Error('O servidor não confirmou o salvamento.');
+      setElegivel(data);
+      setSucesso(true);
+      try {
+        await recarregarPerfil(true);
+      } catch (falha) {
+        setErro(`Perfil salvo, mas não foi possível atualizar os dados de exibição: ${mensagemErro(falha)}`);
       }
+    } catch (falha) {
+      setErro(mensagemErro(falha));
+    } finally {
+      setOcupado(false);
     }
-
-    await recarregarPerfil();
-    setOcupado(false);
-    setSucesso(true);
-    setTimeout(() => setSucesso(false), 3000);
   }
 
   return (
@@ -199,11 +215,17 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
         ) : (
           <>
             {erro ? <Aviso mensagem={erro} /> : null}
+            {!cargaValida ? <Botao titulo="Tentar carregar novamente" onPress={carregar} /> : null}
+            {elegivel !== null ? (
+              <Text style={tipo.apoio}>
+                {elegivel
+                  ? 'Cadastro completo para candidaturas.'
+                  : 'Complete os dados, habilidades e disponibilidade para se candidatar.'}
+              </Text>
+            ) : null}
             {sucesso ? (
               <View style={estilos.sucesso}>
-                <Text style={[tipo.apoio, { color: cores.folha }]}>
-                  Perfil salvo com sucesso.
-                </Text>
+                <Text style={[tipo.apoio, { color: cores.folha }]}>Perfil salvo com sucesso.</Text>
               </View>
             ) : null}
 
@@ -239,8 +261,8 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
 
             <Text style={estilos.secao}>Cadastro de voluntário</Text>
             <Text style={[tipo.apoio, { marginBottom: espaco.md }]}>
-              CPF, data de nascimento, profissão e disponibilidade liberam candidatura a tarefas
-              e propostas de oficina.
+              CPF, data de nascimento, profissão e disponibilidade liberam candidatura a tarefas e
+              propostas de oficina.
             </Text>
             <Campo
               rotulo="CPF"
@@ -305,7 +327,12 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
             )}
 
             <View style={{ height: espaco.md }} />
-            <Botao titulo="Salvar" onPress={salvar} carregando={ocupado} />
+            <Botao
+              titulo="Salvar"
+              onPress={salvar}
+              carregando={ocupado}
+              desabilitado={!cargaValida}
+            />
           </>
         )}
       </ScrollView>

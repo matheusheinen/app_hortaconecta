@@ -1,17 +1,17 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import type { NavigatorScreenParams } from '@react-navigation/native';
 import { PilhaAtividades } from './PilhaAtividades';
-import { PilhaMetas } from './PilhaMetas';
-import { TelaInicioOng } from '../telas/TelaInicioOng';
-import { TelaInicioVoluntario } from '../telas/TelaInicioVoluntario';
+import { PilhaMateriais } from './PilhaMateriais';
+import { PilhaInicio, type ParametrosInicio } from './PilhaInicio';
 import { TelaPerfilOng } from '../telas/TelaPerfilOng';
 import { TelaPerfilVoluntario } from '../telas/TelaPerfilVoluntario';
-import { TelaEmBreve } from '../telas/TelaEmBreve';
+import { PilhaDiario } from './PilhaDiario';
 import { cores } from '../lib/tema';
 import type { Usuario } from '../lib/tipos';
 
 export type ParametrosAbasPrincipais = {
-  inicio: undefined;
+  inicio: NavigatorScreenParams<ParametrosInicio> | undefined;
   atividades: undefined;
   diario: undefined;
   metas: undefined;
@@ -24,7 +24,7 @@ type Props = {
   perfil: Usuario;
   ehGestao: boolean;
   sair: () => void;
-  recarregarPerfil: () => Promise<void>;
+  recarregarPerfil: (propagarErro?: boolean) => Promise<void>;
 };
 
 /**
@@ -43,44 +43,23 @@ export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Pro
       }}
     >
       <Abas.Screen name="inicio" options={{ tabBarLabel: 'Início' }}>
-        {({ navigation }) =>
-          ehGestao ? (
-            <TelaInicioOng
-              nome={perfil.nome}
-              sair={sair}
-              aoIrParaAtividades={() => navigation.navigate('atividades')}
-              aoIrParaMetas={() => navigation.navigate('metas')}
-            />
-          ) : (
-            <TelaInicioVoluntario
-              nome={perfil.nome}
-              sair={sair}
-              aoIrParaAtividades={() => navigation.navigate('atividades')}
-              aoIrParaMetas={() => navigation.navigate('metas')}
-            />
-          )
-        }
+        {({ navigation }) => <PilhaInicio gestao={ehGestao} usuarioId={perfil.id} nome={perfil.nome} sair={sair}
+          atividades={() => navigation.navigate('atividades')} materiais={() => navigation.navigate('metas')}
+          diario={() => navigation.navigate('diario')} perfil={() => navigation.navigate('perfil')} />}
       </Abas.Screen>
 
       <Abas.Screen name="atividades" options={{ tabBarLabel: 'Atividades' }}>
-        {() => (
-          <PilhaAtividades ehGestao={ehGestao} nome={perfil.nome} autorId={perfil.id} sair={sair} />
+        {({ navigation }) => (
+          <PilhaAtividades ehGestao={ehGestao} nome={perfil.nome} autorId={perfil.id} sair={sair} aoPerfil={() => navigation.navigate('perfil')} />
         )}
       </Abas.Screen>
 
       <Abas.Screen name="diario" options={{ tabBarLabel: 'Diário' }}>
-        {() => (
-          <TelaEmBreve
-            titulo="Diário"
-            nome={perfil.nome}
-            sair={sair}
-            descricao="O diário de transparência com fotos e relatos das atividades chega em breve."
-          />
-        )}
+        {({ navigation }) => <PilhaDiario gestao={ehGestao} inicio={() => navigation.navigate('inicio', { screen: 'resumo' })} />}
       </Abas.Screen>
 
-      <Abas.Screen name="metas" options={{ tabBarLabel: 'Metas' }}>
-        {() => <PilhaMetas ehGestao={ehGestao} nome={perfil.nome} sair={sair} />}
+      <Abas.Screen name="metas" options={{ tabBarLabel: ehGestao ? 'Materiais' : 'Contribuir' }}>
+        {({ navigation }) => <PilhaMateriais ehGestao={ehGestao} inicio={() => navigation.navigate('inicio', { screen: 'resumo' })} />}
       </Abas.Screen>
 
       <Abas.Screen name="perfil" options={{ tabBarLabel: 'Perfil' }}>

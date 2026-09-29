@@ -64,12 +64,12 @@ type CampoProps = TextInputProps & {
   dica?: string;
 };
 
-export function Campo({ rotulo, dica, ...resto }: CampoProps) {
+export function Campo({ rotulo, dica, style, ...resto }: CampoProps) {
   return (
     <View style={{ marginBottom: espaco.md }}>
       <Text style={estilos.rotulo}>{rotulo}</Text>
       <TextInput
-        style={estilos.entrada}
+        style={[estilos.entrada, style]}
         placeholderTextColor={cores.tintaSuave}
         {...resto}
       />

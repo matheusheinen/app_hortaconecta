@@ -1,5 +1,32 @@
 # Horta Conecta
 
+> Correções integradas — 24/09/2026: revisão obrigatória do Diário, proteção do
+> histórico de atividades, perfil da gestão atômico e tratamento de autenticação.
+> Ver [CORRECOES_MVP.md](docs/mvp/CORRECOES_MVP.md). A segurança do schema inicial
+> continua dependendo de [validação remota](docs/auditoria/SEGURANCA_BASE.md).
+
+> Prioridade 5 — 24/09/2026: [certificados de participação](docs/mvp/CERTIFICADOS.md)
+> emitidos pelo banco após aprovação e check-in confirmado. A carga horária é
+> **prevista**, não medida. Visualização nativa e compartilhamento em texto, sem PDF.
+
+> Prioridade 4 — 24/09/2026: propostas privadas de oficinas implementadas em
+> [docs/mvp/OFICINAS.md](docs/mvp/OFICINAS.md). Aprovação não cria uma atividade,
+> inscrição, presença ou certificado. O tipo legado OFICINA_AUTORAL permanece
+> preservado; o fluxo atual usa propostas_oficinas, sem calendário.
+
+> Atualização — 24/09/2026: a Prioridade 2 está descrita em
+> [docs/mvp/MATERIAIS.md](docs/mvp/MATERIAIS.md), com modelo, regras, migration e limites
+> de validação. Contribuição significa entrega de materiais ou itens físicos,
+> não contribuição financeira. Referências abaixo a PIX, pagamentos e comprovantes
+> financeiros são legado obsoleto, preservado para revisão posterior.
+
+> Atualização de implementação — 23/09/2026: o fluxo da Prioridade 1
+> (voluntariado) e sua migration incremental estão descritos em
+> [docs/mvp/VOLUNTARIADO.md](docs/mvp/VOLUNTARIADO.md), incluindo dependências remotas,
+> regras de check-in e roteiro de testes. A migration ainda precisa ser aplicada
+> e homologada no Supabase. As demais seções abaixo preservam o planejamento
+> anterior e não significam implementação das outras prioridades nesta etapa.
+
 Aplicativo mobile de voluntariado, apadrinhamento e transparência para a Horta Comunitária Guaporé (Centro Ocupacional Bruno José Campos, Guaporé/RS).
 
 Projeto de extensão — UNIVATES, Engenharia de Software, Laboratório de Programação para Dispositivos Móveis, 2026/2. Professor orientador: Juliano Dertzbacher.

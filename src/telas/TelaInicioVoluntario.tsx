@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { cores, espaco, tipo } from '../lib/tema';
-import { Botao } from '../componentes/Ui';
+import { Aviso, Botao } from '../componentes/Ui';
+import { useDadosVoluntariado } from '../lib/useDadosVoluntariado';
 import { useConfiguracaoInstituicao } from '../lib/useConfiguracaoInstituicao';
 
 type Props = {
@@ -10,25 +11,20 @@ type Props = {
   sair: () => void;
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
+  aoIrParaDiario: () => void;
+  aoIrParaCertificados: () => void;
+  aoIrParaOficinas: () => void;
 };
 
-export function TelaInicioVoluntario({ nome, sair, aoIrParaAtividades, aoIrParaMetas }: Props) {
+export function TelaInicioVoluntario({ nome, sair, aoIrParaAtividades, aoIrParaMetas, aoIrParaDiario, aoIrParaOficinas, aoIrParaCertificados }: Props) {
   const { configuracao } = useConfiguracaoInstituicao();
-  const [perfilCompleto, setPerfilCompleto] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let ativo = true;
-
-    supabase.rpc('perfil_completo').then(({ data, error }) => {
-      if (!ativo) return;
-      if (error) console.warn('Falha ao verificar perfil:', error.message);
-      setPerfilCompleto(data ?? null);
-    });
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
+  const { dados: perfilCompleto, erro, carregando, carregar } = useDadosVoluntariado(
+    useCallback(async () => {
+      const { data, error } = await supabase.rpc('voluntariado_elegibilidade');
+      if (error) throw error;
+      return data;
+    }, []),
+  );
 
   return (
     <ScrollView style={estilos.tela} contentContainerStyle={estilos.conteudo}>
@@ -46,7 +42,14 @@ export function TelaInicioVoluntario({ nome, sair, aoIrParaAtividades, aoIrParaM
         <Text style={[tipo.corpo, { marginTop: espaco.md }]}>{configuracao.chamada}</Text>
       ) : null}
 
-      {perfilCompleto === false ? (
+      {carregando ? <Text style={tipo.apoio}>Verificando seu perfil...</Text> : null}
+      {erro ? (
+        <View style={estilos.aviso}>
+          <Aviso mensagem={erro} />
+          <Botao titulo="Tentar novamente" onPress={carregar} />
+        </View>
+      ) : null}
+      {!carregando && !erro && perfilCompleto === false ? (
         <View style={estilos.aviso}>
           <Text style={[tipo.apoio, { color: cores.beterraba }]}>
             Complete seu cadastro (CPF, data de nascimento, profissão, disponibilidade e
@@ -64,19 +67,29 @@ export function TelaInicioVoluntario({ nome, sair, aoIrParaAtividades, aoIrParaM
       </View>
 
       <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Metas</Text>
+        <Text style={tipo.secao}>Materiais</Text>
         <Text style={[tipo.apoio, { marginTop: espaco.xs, marginBottom: espaco.md }]}>
-          Veja as metas abertas da horta e copie a chave PIX para apadrinhar.
+          Veja os materiais necessários e informe os itens que pretende entregar.
         </Text>
-        <Botao titulo="Ver metas" onPress={aoIrParaMetas} />
+        <Botao titulo="Contribuir com materiais" onPress={aoIrParaMetas} />
       </View>
 
       <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Em desenvolvimento</Text>
-        <Text style={[tipo.apoio, { marginTop: espaco.xs }]}>
-          Diário de transparência e envio de comprovante de doação chegam nas próximas sprints.
-        </Text>
+        <Text style={tipo.secao}>Certificados</Text>
+        <Botao titulo="Meus certificados" onPress={aoIrParaCertificados} />
       </View>
+
+      <View style={estilos.cartao}>
+        <Text style={tipo.secao}>Oficinas</Text>
+        <Botao titulo="Ver propostas de oficinas" onPress={aoIrParaOficinas} />
+      </View>
+
+      <View style={estilos.cartao}>
+        <Text style={tipo.secao}>Diário de Transparência</Text>
+        <Botao titulo="Ver Diário" onPress={aoIrParaDiario} />
+      </View>
+
+
     </ScrollView>
   );
 }

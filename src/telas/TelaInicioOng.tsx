@@ -9,9 +9,12 @@ type Props = {
   sair: () => void;
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
+  aoIrParaDiario: () => void;
+  aoIrParaCertificados: () => void;
+  aoIrParaOficinas: () => void;
 };
 
-export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas }: Props) {
+export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas, aoIrParaDiario, aoIrParaOficinas, aoIrParaCertificados }: Props) {
   const { configuracao } = useConfiguracaoInstituicao();
 
   return (
@@ -40,20 +43,29 @@ export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas }:
       </View>
 
       <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Metas</Text>
+        <Text style={tipo.secao}>Materiais</Text>
         <Text style={[tipo.apoio, { marginTop: espaco.xs, marginBottom: espaco.md }]}>
-          Crie metas financeiras ou materiais e acompanhe a arrecadação.
+          Publique materiais necessários e confirme as entregas recebidas.
         </Text>
-        <Botao titulo="Ir para metas" onPress={aoIrParaMetas} />
+        <Botao titulo="Gerenciar materiais" onPress={aoIrParaMetas} />
       </View>
 
       <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Em desenvolvimento</Text>
-        <Text style={[tipo.apoio, { marginTop: espaco.xs }]}>
-          Diário de transparência, envio e validação de comprovantes de doação e triagem de
-          candidatos chegam nas próximas sprints.
-        </Text>
+        <Text style={tipo.secao}>Certificados</Text>
+        <Botao titulo="Certificados emitidos" onPress={aoIrParaCertificados} />
       </View>
+
+      <View style={estilos.cartao}>
+        <Text style={tipo.secao}>Oficinas</Text>
+        <Botao titulo="Ver propostas de oficinas" onPress={aoIrParaOficinas} />
+      </View>
+
+      <View style={estilos.cartao}>
+        <Text style={tipo.secao}>Diário de Transparência</Text>
+        <Botao titulo="Ver Diário" onPress={aoIrParaDiario} />
+      </View>
+
+
     </ScrollView>
   );
 }
