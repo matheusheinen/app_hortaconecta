@@ -35,7 +35,6 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
 
   const [nome, setNome] = useState(perfil.nome);
   const [telefone, setTelefone] = useState(mascararTelefone(perfil.telefone ?? ''));
-  const [endereco, setEndereco] = useState(perfil.endereco ?? '');
   const [instagram, setInstagram] = useState(perfil.perfil_instagram ?? '');
   const [descricao, setDescricao] = useState(perfil.descricao ?? '');
 
@@ -57,7 +56,7 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
       ]);
       if(atual!==sequencia.current)return;
       if(u.error)throw u.error;if(o.error)throw o.error;
-      setNome(u.data.nome);setTelefone(mascararTelefone(u.data.telefone??''));setEndereco(u.data.endereco??'');
+      setNome(u.data.nome);setTelefone(mascararTelefone(u.data.telefone??''));
       setInstagram(u.data.perfil_instagram??'');setDescricao(u.data.descricao??'');
       const data=o.data;
       setCnpj(mascararCnpj(data?.cnpj??''));setRazaoSocial(data?.razao_social??'');
@@ -104,7 +103,7 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
 
     try {
       await salvarPerfilGestao(cargaValida,{
-        nome:nome.trim(),telefone:telefone.trim()?apenasDigitos(telefone):null,endereco:endereco.trim()||null,
+        nome:nome.trim(),telefone:telefone.trim()?apenasDigitos(telefone):null,
         perfil_instagram:instagram.trim().replace(/^@/,'')||null,descricao:descricao.trim()||null,
         cnpj:cnpj.trim()?apenasDigitos(cnpj):null,razao_social:razaoSocial.trim()||null,data_criacao:dataCriacaoIso,
         responsavel_legal:responsavelLegal.trim()||null,chave_pix:chavePix.trim()||null,
@@ -159,12 +158,6 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
               keyboardType="phone-pad"
             />
             <Campo
-              rotulo="Endereço"
-              value={endereco}
-              onChangeText={setEndereco}
-              placeholder="Rua, número, bairro"
-            />
-            <Campo
               rotulo="Instagram"
               value={instagram}
               onChangeText={setInstagram}
@@ -180,7 +173,7 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
             />
 
             <Text style={estilos.secao}>Dados institucionais</Text>
-            <Text style={tipo.apoio}>O nome de exibição identifica esta conta. A razão social pertence ao perfil da gestão. O nome oficial nos certificados vem da configuração institucional, administrada separadamente.</Text>
+            <Text style={tipo.apoio}>O nome de exibição identifica esta conta. A razão social pertence ao perfil da gestão. O nome oficial nos certificados e o endereço da horta vêm da configuração institucional, administrada separadamente.</Text>
             <Campo
               rotulo="CNPJ"
               value={cnpj}

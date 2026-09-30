@@ -1,18 +1,16 @@
-/**
- * Paleta tirada do próprio assunto: folha, terra e beterraba.
- * A beterraba aparece só em ações destrutivas e avisos — é o único
- * ponto de cor forte da interface, por isso chama atenção sozinho.
- */
+/** Cores compartilhadas entre o acesso, a comunidade e os formulários. */
 export const cores = {
-  folha: '#1F4A34',
-  folhaClara: '#E4EEE5',
+  folha: '#2D6B51',
+  folhaClara: '#E8F3EC',
   terra: '#6B4F3A',
   beterraba: '#A33B52',
-  tinta: '#17211C',
-  tintaSuave: '#5A6660',
-  linha: '#D8E0D9',
+  tinta: '#143E37',
+  tintaSuave: '#60796E',
+  linha: '#DCE6DF',
   fundo: '#FFFFFF',
-  superficie: '#F5F8F4',
+  superficie: '#F7F5EF',
+  creme: '#F7F5EF',
+  mint: '#EFF7F2',
 };
 
 export const espaco = {
@@ -25,7 +23,7 @@ export const espaco = {
 
 export const tipo = {
   titulo: { fontSize: 26, fontWeight: '700' as const, color: cores.tinta, letterSpacing: -0.4 },
-  secao: { fontSize: 18, fontWeight: '600' as const, color: cores.tinta },
+  secao: { fontSize: 18, fontWeight: '700' as const, color: cores.tinta },
   corpo: { fontSize: 15, color: cores.tinta, lineHeight: 22 },
   apoio: { fontSize: 13, color: cores.tintaSuave, lineHeight: 18 },
 };

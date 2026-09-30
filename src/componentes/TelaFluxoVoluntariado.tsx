@@ -24,11 +24,11 @@ export function TelaFluxoVoluntariado({
       contentContainerStyle={estilosFluxo.conteudo}
       keyboardShouldPersistTaps="handled"
       refreshControl={
-        atualizar ? <RefreshControl refreshing={carregando} onRefresh={atualizar} /> : undefined
+        atualizar ? <RefreshControl refreshing={carregando} onRefresh={atualizar} tintColor={cores.folha} colors={[cores.folha]} /> : undefined
       }
     >
       <Botao titulo="Voltar" variante="contorno" onPress={voltar} />
-      <Text style={tipo.titulo}>{titulo}</Text>
+      <Text style={tipo.titulo} accessibilityRole="header">{titulo}</Text>
       {erro ? <Aviso mensagem={erro} /> : null}
       {erro && atualizar ? <Botao titulo="Tentar novamente" onPress={atualizar} /> : null}
       {carregando ? <Text style={tipo.apoio}>Carregando...</Text> : children}
@@ -39,13 +39,13 @@ export function CartaoFluxo({ children }: { children: ReactNode }) {
   return <View style={estilosFluxo.cartao}>{children}</View>;
 }
 export const estilosFluxo = StyleSheet.create({
-  conteudo: { padding: espaco.lg, paddingBottom: espaco.xl, gap: espaco.md },
+  conteudo: { padding: 20, paddingTop: espaco.lg, paddingBottom: espaco.xl, gap: espaco.md },
   cartao: {
     backgroundColor: cores.fundo,
-    borderRadius: 10,
+    borderRadius: 18,
     padding: espaco.md,
     gap: espaco.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: cores.folha,
+    borderWidth: 1,
+    borderColor: cores.linha,
   },
 });

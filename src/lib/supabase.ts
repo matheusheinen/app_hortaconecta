@@ -1,7 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
-import type { DatabaseCertificados } from './certificados.types';
+import type { DatabaseAplicativo } from './database.api.types';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const chave = process.env.EXPO_PUBLIC_SUPABASE_KEY;
@@ -13,7 +13,7 @@ if (!url || !chave) {
   );
 }
 
-export const supabase = createClient<DatabaseCertificados>(url, chave, {
+export const supabase = createClient<DatabaseAplicativo>(url, chave, {
   auth: {
     storage: AsyncStorage,
     persistSession: true,

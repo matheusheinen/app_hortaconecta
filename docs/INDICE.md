@@ -2,6 +2,10 @@
 
 Os relatórios são registros datados: suas conclusões descrevem a etapa em que foram escritos. A organização abaixo preserva esse histórico.
 
+## Executar o app
+
+- [Windows, Expo Go, LAN e túnel Cloudflare](EXECUTAR_APP.md)
+
 ## MVP implementado
 
 - [Voluntariado](mvp/VOLUNTARIADO.md)
@@ -19,6 +23,7 @@ Os relatórios são registros datados: suas conclusões descrevem a etapa em que
 
 ## Reconciliação do Supabase
 
+- [Compatibilidade aplicada e validada em 30/09/2026](reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md)
 - [Plano técnico](reconciliacao/PLANO_RECONCILIACAO_SUPABASE.md)
 - [1A — estrutura](reconciliacao/RECONCILIACAO_1A_ESTRUTURA.md)
 - [1B — diagnóstico](reconciliacao/RECONCILIACAO_1B_DIAGNOSTICO.md)
@@ -26,11 +31,11 @@ Os relatórios são registros datados: suas conclusões descrevem a etapa em que
 - [Registro histórico dos bloqueios](reconciliacao/RECONCILIACAO_01_BLOQUEIOS.md)
 - [Implementação local após aprovação das decisões](reconciliacao/RECONCILIACAO_01_IMPLEMENTACAO.md)
 
-## Status atual da PR
+## Estado atual
 
-O trabalho local reúne as cinco prioridades, correções, testes, auditorias e a [primeira migration de reconciliação](../supabase/migrations/reconciliacao_01_base_perfis_endereco.sql). Ela não foi aplicada ao Supabase de homologação. O ensaio em cópia fiel permanece bloqueado por falta de ambiente isolado adequado; os testes em fixture não o substituem.
+As duas reconciliações foram aplicadas ao Supabase em 30/09/2026. O app usa endereço estruturado e tipos regenerados; os cinco fluxos foram verificados por SQL no remoto com dados fictícios revertidos. Login, início e navegação foram atualizados, com indicadores ligados aos dados reais. A suíte local tem 99 testes aprovados e a exportação Android passou. Ver [resultado e limites da verificação](reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 
-A [documentação da implementação](reconciliacao/RECONCILIACAO_01_IMPLEMENTACAO.md) descreve o contrato e as pendências de compatibilidade do aplicativo. Esta organização não representa aprovação para produção, implantação ou abertura da PR; não inclui staging, commit ou push.
+Os relatórios anteriores descrevem o estado de cada etapa e permanecem como histórico. A homologação em aparelho Android, Auth/Storage pelos serviços reais e concorrência entre conexões independentes continuam pendentes. Os comandos LAN, localhost e Cloudflare estão descritos no [guia de execução](EXECUTAR_APP.md). `npm test` executa a suíte sequencialmente para limitar o consumo de memória dos bancos PGLite.
 
 ## Caminhos históricos preservados
 

@@ -6,14 +6,19 @@ import { TelaOficinas,TelaDetalheOficina,TelaFormOficina } from '../telas/TelasO
 import { TelaCertificados,TelaCertificado } from '../telas/TelasCertificados';
 export type ParametrosInicio={resumo:undefined;certificados:undefined;certificado:{id:string};oficinas:undefined;oficina:{id:number};propor:{id:number|null}};
 const Pilha=createNativeStackNavigator<ParametrosInicio>();
-export function PilhaInicio({gestao,usuarioId,nome,sair,atividades,materiais,diario,perfil}:{
+export function PilhaInicio({gestao,usuarioId,nome,sair,atividades,materiais,diario,perfil,
+ abrirAtividade,abrirMaterial,abrirPublicacao,minhasAtividades,minhasContribuicoes}:{
  gestao:boolean;usuarioId:string;nome:string;sair:()=>void;atividades:()=>void;materiais:()=>void;diario:()=>void;perfil:()=>void;
+ abrirAtividade:(id:number)=>void;abrirMaterial:(id:number)=>void;abrirPublicacao:(id:number)=>void;
+ minhasAtividades:()=>void;minhasContribuicoes:()=>void;
 }){
  return <Pilha.Navigator screenOptions={{headerShown:false}}>
   <Pilha.Screen name="resumo">{({navigation})=>{
    const Inicio=gestao?TelaInicioOng:TelaInicioVoluntario;
    return <Inicio nome={nome} sair={sair} aoIrParaAtividades={atividades} aoIrParaMetas={materiais} aoIrParaDiario={diario}
-    aoIrParaCertificados={()=>navigation.navigate('certificados')} aoIrParaOficinas={()=>navigation.navigate('oficinas')}/>;
+    aoIrParaCertificados={()=>navigation.navigate('certificados')} aoIrParaOficinas={()=>navigation.navigate('oficinas')}
+    aoPerfil={perfil} abrirAtividade={abrirAtividade} abrirMaterial={abrirMaterial} abrirPublicacao={abrirPublicacao}
+    minhasAtividades={minhasAtividades} minhasContribuicoes={minhasContribuicoes}/>;
   }}</Pilha.Screen>
   <Pilha.Screen name="oficinas">{({navigation})=><TelaOficinas gestao={gestao} voltar={()=>navigation.goBack()}
    criar={()=>navigation.navigate('propor',{id:null})} abrir={id=>navigation.navigate('oficina',{id})}/>}</Pilha.Screen>

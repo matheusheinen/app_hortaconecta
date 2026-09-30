@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityIndicator, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useSessao } from './src/lib/useSessao';
-import { TelaLogin } from './src/telas/TelaLogin';
+import { fundoLogin, TelaLogin } from './src/telas/TelaLogin';
 import { AbasPrincipais } from './src/navegacao/AbasPrincipais';
 import { cores } from './src/lib/tema';
 import { Aviso, Botao } from './src/componentes/Ui';
@@ -37,7 +37,7 @@ export default function App() {
 
   if (!sessao || !perfil) {
     return (
-      <SafeAreaView style={estilos.raiz}>
+      <SafeAreaView style={[estilos.raiz, { backgroundColor: fundoLogin }]}>
         <StatusBar barStyle="dark-content" />
         <TelaLogin erroSessao={erroPerfil} />
       </SafeAreaView>
@@ -60,7 +60,7 @@ export default function App() {
 }
 
 const estilos = StyleSheet.create({
-  raiz: { flex: 1, backgroundColor: cores.fundo },
+  raiz: { flex: 1, backgroundColor: cores.superficie },
   centro: {
     flex: 1,
     alignItems: 'center',

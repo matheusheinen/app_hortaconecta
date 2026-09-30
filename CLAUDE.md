@@ -1,5 +1,11 @@
 # Horta Conecta
 
+> Compatibilidade — 30/09/2026: app adaptado ao endereço estruturado, tipos
+> regenerados e duas reconciliações aplicadas no Supabase. Cinco fluxos verificados
+> por SQL remoto com dados fictícios revertidos; 91 testes locais e export Android
+> aprovados. Ver [resultado e limites](docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
+> Os registros anteriores abaixo preservam o estado histórico de cada etapa.
+
 > Correções integradas — 24/09/2026: revisão obrigatória do Diário, proteção do
 > histórico de atividades, perfil da gestão atômico e tratamento de autenticação.
 > Ver [CORRECOES_MVP.md](docs/mvp/CORRECOES_MVP.md). A segurança do schema inicial

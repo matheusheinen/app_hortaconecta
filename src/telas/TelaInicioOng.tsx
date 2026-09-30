@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { cores, espaco, tipo } from '../lib/tema';
-import { Botao } from '../componentes/Ui';
+import { Icone, type NomeIcone } from '../componentes/Icone';
 import { useConfiguracaoInstituicao } from '../lib/useConfiguracaoInstituicao';
 
 type Props = {
@@ -19,76 +19,149 @@ export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas, a
 
   return (
     <ScrollView style={estilos.tela} contentContainerStyle={estilos.conteudo}>
-      <View style={estilos.cabecalho}>
-        <View style={{ flex: 1 }}>
-          <Text style={tipo.titulo}>{configuracao?.nome_curto ?? 'Painel da gestão'}</Text>
-          <Text style={tipo.apoio}>{nome} · gestão da ONG</Text>
+      <View style={estilos.painel}>
+        <View style={estilos.cabecalho}>
+          <View style={estilos.saudacao}>
+            <Text style={estilos.sobretitulo}>BEM-VINDO À GESTÃO</Text>
+            <Text style={estilos.nome}>{nome.trim() ? `Olá, ${nome.trim()}` : 'Olá!'}</Text>
+            <Text style={tipo.apoio}>{configuracao?.nome_curto ?? 'Painel da gestão'}</Text>
+          </View>
+          <Pressable
+            onPress={sair}
+            accessibilityRole="button"
+            accessibilityLabel="Sair da conta"
+            style={({ pressed }) => [estilos.sair, pressed && estilos.pressionado]}
+          >
+            <Icone nome="sair" tamanho={20} />
+          </Pressable>
         </View>
-        <Pressable onPress={sair} hitSlop={12}>
-          <Text style={[tipo.apoio, { color: cores.folha, fontWeight: '600' }]}>Sair</Text>
-        </Pressable>
+
+        {configuracao?.chamada ? (
+          <View style={estilos.chamada}>
+            <Icone nome="folha" tamanho={22} />
+            <Text style={[tipo.apoio, estilos.chamadaTexto]}>{configuracao.chamada}</Text>
+          </View>
+        ) : null}
+
+        <Text style={estilos.secao}>SUA COMUNIDADE</Text>
+        <View style={estilos.acoes}>
+          <CartaoGestao
+            titulo="Atividades"
+            resumo="Publique tarefas e acompanhe candidaturas."
+            icone="pessoas"
+            onPress={aoIrParaAtividades}
+          />
+          <CartaoGestao
+            titulo="Materiais"
+            resumo="Solicite materiais e confirme as entregas."
+            icone="caixa"
+            onPress={aoIrParaMetas}
+          />
+          <CartaoGestao
+            titulo="Certificados"
+            resumo="Acompanhe os certificados emitidos."
+            icone="certificado"
+            onPress={aoIrParaCertificados}
+          />
+          <CartaoGestao
+            titulo="Oficinas"
+            resumo="Conheça as propostas da comunidade."
+            icone="oficina"
+            onPress={aoIrParaOficinas}
+          />
+          <CartaoGestao
+            titulo="Diário de Transparência"
+            resumo="Compartilhe os avanços e as histórias da ONG."
+            icone="livro"
+            onPress={aoIrParaDiario}
+          />
+        </View>
       </View>
-
-      {configuracao?.chamada ? (
-        <Text style={[tipo.corpo, { marginTop: espaco.md }]}>{configuracao.chamada}</Text>
-      ) : null}
-
-      <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Tarefas</Text>
-        <Text style={[tipo.apoio, { marginTop: espaco.xs, marginBottom: espaco.md }]}>
-          Publique uma tarefa para a comunidade se candidatar ou acompanhe as candidaturas
-          recebidas.
-        </Text>
-        <Botao titulo="Ir para atividades" onPress={aoIrParaAtividades} />
-      </View>
-
-      <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Materiais</Text>
-        <Text style={[tipo.apoio, { marginTop: espaco.xs, marginBottom: espaco.md }]}>
-          Publique materiais necessários e confirme as entregas recebidas.
-        </Text>
-        <Botao titulo="Gerenciar materiais" onPress={aoIrParaMetas} />
-      </View>
-
-      <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Certificados</Text>
-        <Botao titulo="Certificados emitidos" onPress={aoIrParaCertificados} />
-      </View>
-
-      <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Oficinas</Text>
-        <Botao titulo="Ver propostas de oficinas" onPress={aoIrParaOficinas} />
-      </View>
-
-      <View style={estilos.cartao}>
-        <Text style={tipo.secao}>Diário de Transparência</Text>
-        <Botao titulo="Ver Diário" onPress={aoIrParaDiario} />
-      </View>
-
-
     </ScrollView>
+  );
+}
+
+function CartaoGestao({ titulo, resumo, icone, onPress }: {
+  titulo: string;
+  resumo: string;
+  icone: NomeIcone;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={titulo}
+      accessibilityHint={resumo}
+      style={({ pressed }) => [estilos.cartao, pressed && estilos.pressionado]}
+    >
+      <View style={estilos.icone}>
+        <Icone nome={icone} tamanho={22} />
+      </View>
+      <View style={estilos.textoCartao}>
+        <Text style={estilos.tituloCartao}>{titulo}</Text>
+        <Text style={estilos.resumoCartao}>{resumo}</Text>
+      </View>
+      <Icone nome="seta" tamanho={15} cor={cores.tintaSuave} />
+    </Pressable>
   );
 }
 
 const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.superficie },
-  conteudo: { paddingBottom: espaco.xl },
+  conteudo: { padding: 20, paddingTop: 24, paddingBottom: espaco.xl },
+  painel: { width: '100%', maxWidth: 680, alignSelf: 'center' },
   cabecalho: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: espaco.md,
-    paddingHorizontal: espaco.lg,
-    paddingTop: espaco.xl,
-    paddingBottom: espaco.md,
+    marginBottom: espaco.lg,
+  },
+  saudacao: { flex: 1, gap: 4 },
+  sobretitulo: { fontSize: 11, fontWeight: '600', letterSpacing: 0.7, color: cores.folha },
+  nome: { fontSize: 24, fontWeight: '700', color: cores.tinta, letterSpacing: -0.4 },
+  sair: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: cores.linha,
     backgroundColor: cores.fundo,
   },
-  cartao: {
-    backgroundColor: cores.fundo,
-    borderRadius: 10,
+  chamada: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     padding: espaco.md,
-    marginHorizontal: espaco.lg,
-    marginTop: espaco.md,
-    borderLeftWidth: 3,
-    borderLeftColor: cores.folha,
+    borderRadius: 18,
+    backgroundColor: cores.folhaClara,
+    marginBottom: espaco.lg,
   },
+  chamadaTexto: { flex: 1, color: cores.folha },
+  secao: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5, color: cores.tinta, marginBottom: 12 },
+  acoes: { gap: 12 },
+  cartao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: cores.fundo,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: cores.linha,
+    padding: espaco.md,
+  },
+  icone: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: cores.folhaClara,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textoCartao: { flex: 1, gap: 4 },
+  tituloCartao: { fontSize: 16, fontWeight: '700', color: cores.tinta },
+  resumoCartao: { fontSize: 12, lineHeight: 18, color: cores.tintaSuave },
+  pressionado: { opacity: 0.75 },
 });

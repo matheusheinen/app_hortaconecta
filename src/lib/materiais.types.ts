@@ -1,5 +1,3 @@
-import type { DatabaseVoluntariado } from './voluntariado.types';
-import type { Json } from './database.types';
 
 export type SolicitacaoMaterial = {
   id: number; nome: string; descricao: string;
@@ -15,16 +13,3 @@ export type ContribuicaoMaterial = {
 };
 export type DetalheMaterial = { solicitacao: SolicitacaoMaterial; contribuicoes: ContribuicaoMaterial[] };
 export type MinhaContribuicao = { solicitacao: SolicitacaoMaterial; contribuicao: ContribuicaoMaterial };
-export type DatabaseMateriais = Omit<DatabaseVoluntariado, 'public'> & {
-  public: Omit<DatabaseVoluntariado['public'], 'Functions'> & {
-    Functions: DatabaseVoluntariado['public']['Functions'] & {
-      materiais_salvar: { Args: { p_id: number | null; p_nome: string; p_descricao: string; p_quantidade: number }; Returns: number };
-      materiais_contribuir: { Args: { p_solicitacao: number; p_quantidade: number }; Returns: number };
-      materiais_decidir: { Args: { p_contribuicao: number; p_status: string }; Returns: undefined };
-      materiais_status: { Args: { p_solicitacao: number; p_status: string }; Returns: undefined };
-      materiais_listar: { Args: Record<string, never>; Returns: Json };
-      materiais_detalhe: { Args: { p_solicitacao: number }; Returns: Json };
-      materiais_minhas: { Args: Record<string, never>; Returns: Json };
-    };
-  };
-};

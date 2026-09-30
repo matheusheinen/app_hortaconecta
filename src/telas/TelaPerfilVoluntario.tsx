@@ -44,7 +44,6 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
 
   const [nome, setNome] = useState(perfil.nome);
   const [telefone, setTelefone] = useState(mascararTelefone(perfil.telefone ?? ''));
-  const [endereco, setEndereco] = useState(perfil.endereco ?? '');
   const [instagram, setInstagram] = useState(perfil.perfil_instagram ?? '');
   const [descricao, setDescricao] = useState(perfil.descricao ?? '');
 
@@ -52,6 +51,13 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
   const [dataNascimento, setDataNascimento] = useState('');
   const [profissao, setProfissao] = useState('');
   const [disponibilidade, setDisponibilidade] = useState<SlotDisponibilidade[]>([]);
+  const [cep, setCep] = useState('');
+  const [logradouro, setLogradouro] = useState('');
+  const [numero, setNumero] = useState('');
+  const [complemento, setComplemento] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
 
   const [catalogo, setCatalogo] = useState<Habilidade[]>([]);
   const [selecionadas, setSelecionadas] = useState<number[]>([]);
@@ -61,17 +67,19 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
     setCarregando(true);
     setErro(null);
     setCargaValida(false);
+    setSucesso(false);
+    setElegivel(null);
 
     try {
       const [respVoluntario, respCatalogo, respSelecionadas, respUsuario] = await Promise.all([
         supabase
           .from('voluntarios')
-          .select('cpf, data_nascimento, profissao, disponibilidade_horarios')
+          .select('cpf, data_nascimento, profissao, disponibilidade_horarios, cep, logradouro, numero, complemento, bairro, cidade, uf')
           .eq('usuario_id', perfil.id)
           .single(),
         supabase.from('habilidades').select('*').order('categoria').order('nome_habilidade'),
         supabase.from('usuario_habilidades').select('habilidade_id').eq('usuario_id', perfil.id),
-        supabase.from('usuarios').select('nome, telefone, endereco, perfil_instagram, descricao').eq('id', perfil.id).single(),
+        supabase.from('usuarios').select('nome, telefone, perfil_instagram, descricao').eq('id', perfil.id).single(),
       ]);
       if (atual !== sequenciaCarga.current) return;
 
@@ -81,7 +89,6 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
       if (respUsuario.error) throw respUsuario.error;
       setNome(respUsuario.data.nome);
       setTelefone(mascararTelefone(respUsuario.data.telefone ?? ''));
-      setEndereco(respUsuario.data.endereco ?? '');
       setInstagram(respUsuario.data.perfil_instagram ?? '');
       setDescricao(respUsuario.data.descricao ?? '');
       if (respVoluntario.data) {
@@ -94,6 +101,13 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
         setDataNascimento(paraCampoData(respVoluntario.data.data_nascimento));
         setProfissao(respVoluntario.data.profissao ?? '');
         setDisponibilidade(respVoluntario.data.disponibilidade_horarios);
+        setCep(mascararCep(respVoluntario.data.cep ?? ''));
+        setLogradouro(respVoluntario.data.logradouro ?? '');
+        setNumero(respVoluntario.data.numero ?? '');
+        setComplemento(respVoluntario.data.complemento ?? '');
+        setBairro(respVoluntario.data.bairro ?? '');
+        setCidade(respVoluntario.data.cidade ?? '');
+        setUf(respVoluntario.data.uf ?? '');
       }
 
       setCatalogo(respCatalogo.data ?? []);
@@ -134,7 +148,7 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
   }
 
   async function salvar() {
-    if (ocupado || !cargaValida) return;
+    if (ocupado || carregando || !cargaValida) return;
     setErro(null);
     setSucesso(false);
 
@@ -150,12 +164,22 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
     if (descricao.trim().length > 500) {
       return setErro('A descrição pode ter no máximo 500 caracteres.');
     }
+    if (cep.trim() && apenasDigitos(cep).length !== 8) {
+      return setErro('CEP inválido. Informe os 8 dígitos.');
+    }
+    const ufNormalizada = uf.trim().toUpperCase();
+    if (ufNormalizada && !/^[A-Z]{2}$/.test(ufNormalizada)) {
+      return setErro('UF inválida. Informe a sigla com duas letras, como RS.');
+    }
     if (cpf.trim() && !validarCpf(cpf)) {
       return setErro('CPF inválido.');
     }
     const dataNascimentoIso = dataNascimento.trim() ? interpretarData(dataNascimento) : null;
     if (dataNascimento.trim() && !dataNascimentoIso) {
       return setErro('Use o formato DD/MM/AAAA na data de nascimento.');
+    }
+    if (dataNascimentoIso && dataNascimentoIso <= '1900-01-01') {
+      return setErro('A data de nascimento precisa ser posterior a 01/01/1900.');
     }
     if (dataNascimentoIso && dataNascimentoIso >= hoje()) {
       return setErro('A data de nascimento precisa ser no passado.');
@@ -168,13 +192,19 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
         p_dados: {
           nome: nome.trim(),
           telefone: telefone.trim() ? apenasDigitos(telefone) : null,
-          endereco: endereco.trim() || null,
           perfil_instagram: instagram.trim() ? instagram.trim().replace(/^@/, '') : null,
           descricao: descricao.trim() || null,
           cpf: cpf.trim() ? apenasDigitos(cpf) : null,
           data_nascimento: dataNascimentoIso,
           profissao: profissao.trim() || null,
           disponibilidade_horarios: disponibilidade,
+          cep: cep.trim() ? apenasDigitos(cep) : null,
+          logradouro: logradouro.trim() || null,
+          numero: numero.trim() || null,
+          complemento: complemento.trim() || null,
+          bairro: bairro.trim() || null,
+          cidade: cidade.trim() || null,
+          uf: ufNormalizada || null,
         },
         p_habilidades: selecionadas,
       });
@@ -239,12 +269,6 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
               keyboardType="phone-pad"
             />
             <Campo
-              rotulo="Endereço"
-              value={endereco}
-              onChangeText={setEndereco}
-              placeholder="Rua, número, bairro"
-            />
-            <Campo
               rotulo="Instagram"
               value={instagram}
               onChangeText={setInstagram}
@@ -259,10 +283,48 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
               style={estilos.multilinha}
             />
 
+            <Text style={estilos.secao}>Endereço pessoal</Text>
+            <Text style={[tipo.apoio, { marginBottom: espaco.md }]}>
+              Logradouro, número e cidade são necessários para se candidatar. Você pode salvar
+              o perfil e completar os dados depois.
+            </Text>
+            <Campo
+              rotulo="CEP"
+              value={cep}
+              onChangeText={(texto) => setCep(mascararCep(texto))}
+              placeholder="00000-000"
+              keyboardType="number-pad"
+              maxLength={9}
+            />
+            <Campo
+              rotulo="Logradouro"
+              value={logradouro}
+              onChangeText={setLogradouro}
+              placeholder="Rua, avenida ou estrada"
+            />
+            <Campo
+              rotulo="Número"
+              value={numero}
+              onChangeText={setNumero}
+              placeholder="Número ou s/n"
+            />
+            <Campo rotulo="Complemento" value={complemento} onChangeText={setComplemento} />
+            <Campo rotulo="Bairro" value={bairro} onChangeText={setBairro} />
+            <Campo rotulo="Cidade" value={cidade} onChangeText={setCidade} />
+            <Campo
+              rotulo="UF"
+              value={uf}
+              onChangeText={(texto) => setUf(texto.toUpperCase())}
+              placeholder="RS"
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={2}
+            />
+
             <Text style={estilos.secao}>Cadastro de voluntário</Text>
             <Text style={[tipo.apoio, { marginBottom: espaco.md }]}>
-              CPF, data de nascimento, profissão e disponibilidade liberam candidatura a tarefas e
-              propostas de oficina.
+              CPF, data de nascimento, profissão, endereço, habilidades e disponibilidade liberam
+              candidatura a tarefas e propostas de oficina.
             </Text>
             <Campo
               rotulo="CPF"
@@ -340,6 +402,11 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
   );
 }
 
+function mascararCep(texto: string): string {
+  const digitos = apenasDigitos(texto).slice(0, 8);
+  return digitos.length > 5 ? `${digitos.slice(0, 5)}-${digitos.slice(5)}` : digitos;
+}
+
 function hoje(): string {
   const d = new Date();
   const p = (n: number) => String(n).padStart(2, '0');
@@ -359,7 +426,6 @@ function interpretarData(texto: string): string | null {
   const [, dia, mes, ano] = m;
   const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
   if (d.getDate() !== Number(dia) || d.getMonth() !== Number(mes) - 1) return null;
-  if (Number(ano) <= 1900) return null;
   return `${ano}-${mes}-${dia}`;
 }
 
