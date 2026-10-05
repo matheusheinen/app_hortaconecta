@@ -38,6 +38,12 @@ type TabelasAplicativo = Omit<Database['public']['Tables'], 'configuracao_instit
   };
 };
 
+// RPC da reconciliação 20261005170000_diario_excluir ainda não aplicada no
+// remoto. Remover este bloco ao regenerar database.types.ts.
+type FuncoesPendentes = {
+  diario_excluir_revisao: { Args: { p_id: number; p_revisao: number }; Returns: string | null };
+};
+
 export type DatabaseAplicativo = Omit<Database, 'public'> & {
   public: Omit<Database['public'], 'Functions' | 'Tables'> & {
     Tables: TabelasAplicativo;
@@ -46,6 +52,6 @@ export type DatabaseAplicativo = Omit<Database, 'public'> & {
         Nome,
         Database['public']['Functions'][Nome]
       >;
-    };
+    } & FuncoesPendentes;
   };
 };

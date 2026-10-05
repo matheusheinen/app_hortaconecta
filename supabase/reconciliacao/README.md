@@ -20,6 +20,11 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
    `contribuicoes_materiais` e funções `materiais_*`, com os dados. Ver
    [CONTRIBUICOES.md](../../docs/mvp/CONTRIBUICOES.md). Verificação local:
    `node --test tests/contribuicoes-metas.test.cjs`.
+4. `20261005170000_diario_excluir.sql`: RPC `diario_excluir_revisao`, para a gestão
+   excluir publicações do Diário (com checagem de revisão). DELETE direto segue
+   bloqueado. Depende só da reconciliação 02. Verificação local:
+   `node --test tests/diario-excluir.test.cjs`. Até ser aplicada, o botão
+   "Excluir publicação" do app falha com erro de função inexistente.
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 

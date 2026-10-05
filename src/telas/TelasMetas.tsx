@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { Aviso, Botao, Campo } from '../componentes/Ui';
+import { AbasFiltro, Aviso, Botao, Campo } from '../componentes/Ui';
 import { CampoData } from '../componentes/CampoData';
 import { CartaoFluxo, TelaFluxoVoluntariado as TelaFluxo } from '../componentes/TelaFluxoVoluntariado';
 import { useDadosVoluntariado } from '../lib/useDadosVoluntariado';
@@ -18,7 +18,7 @@ import {
   type ContribuicaoComDoador,
 } from '../lib/metas';
 import {
-  descreverProgresso, descreverQuantidade, interpretarQuantidade, percentualMeta, prazoVencido, recebendoContribuicoes,
+  descreverProgresso, descreverQuantidade, interpretarQuantidade, metaFinalizada, percentualMeta, prazoVencido, recebendoContribuicoes,
 } from '../lib/regrasMetas';
 
 const dataCurta = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR');
@@ -61,7 +61,10 @@ export function TelaMetas({ ehGestao, voltar, abrir, criar, minhas }: {
 }) {
   const { dados, erro, carregando, carregar } = useDadosVoluntariado(listarMetas);
   const hoje = hojeIso();
-  const visiveis = (dados ?? []).filter((m) => ehGestao || m.status === 'ABERTA');
+  const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');
+  const abertas = (dados ?? []).filter((m) => !metaFinalizada(m));
+  const finalizadas = (dados ?? []).filter(metaFinalizada);
+  const visiveis = aba === 'abertas' ? abertas : finalizadas;
   return <TelaFluxo titulo={ehGestao ? 'Metas e doações' : 'Contribuir'} voltar={voltar} erro={erro} carregando={carregando} atualizar={carregar}>
     <Text style={tipo.corpo}>
       {ehGestao
@@ -69,7 +72,13 @@ export function TelaMetas({ ehGestao, voltar, abrir, criar, minhas }: {
         : 'Apoie a horta com uma doação em dinheiro (PIX) ou com materiais. Só contam no total as doações confirmadas pela gestão.'}
     </Text>
     {ehGestao ? <Botao titulo="Nova meta" onPress={criar} /> : <Botao titulo="Minhas contribuições" variante="contorno" onPress={minhas} />}
-    {dados && !visiveis.length ? <Text style={tipo.apoio}>Nenhuma meta {ehGestao ? 'cadastrada' : 'aberta'} no momento.</Text> : null}
+    <AbasFiltro valor={aba} aoMudar={setAba} opcoes={[
+      { valor: 'abertas', rotulo: 'Abertas', quantidade: dados ? abertas.length : undefined },
+      { valor: 'finalizadas', rotulo: 'Finalizadas', quantidade: dados ? finalizadas.length : undefined },
+    ]} />
+    {dados && !visiveis.length ? <Text style={tipo.apoio}>
+      {aba === 'abertas' ? 'Nenhuma meta aberta no momento.' : 'Nenhuma meta encerrada ou cancelada.'}
+    </Text> : null}
     {visiveis.map((m) => <Pressable key={m.id} onPress={() => abrir(m.id)} accessibilityRole="button" accessibilityLabel={`${m.titulo}. ${descreverProgresso(m)}.`}>
       <CartaoFluxo>
         <Etiqueta meta={m} />

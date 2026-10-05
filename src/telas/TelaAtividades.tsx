@@ -1,33 +1,26 @@
-import React, { useCallback } from 'react';
-import {
-  Alert,
-  FlatList,
-  Platform,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useDadosVoluntariado } from '../lib/useDadosVoluntariado';
 import { supabase } from '../lib/supabase';
 import { cores, espaco, tipo } from '../lib/tema';
 import { rotuloStatus, type Atividade } from '../lib/tipos';
-import { Aviso, Botao } from '../componentes/Ui';
+import { AbasFiltro, Botao } from '../componentes/Ui';
+import { CartaoFluxo, TelaFluxoVoluntariado as TelaFluxo } from '../componentes/TelaFluxoVoluntariado';
+import { atividadeFinalizada } from '../lib/regrasVoluntariado';
 import { mensagemErro } from '../lib/voluntariado';
+import { confirmarExclusao } from '../lib/confirmar';
 
 type Props = {
   ehGestao: boolean;
-  nome: string;
+  voltar: () => void;
   onNova: () => void;
   onEditar: (atividade: Atividade) => void;
   onDetalhe: (id: number) => void;
   onMinhas: () => void;
   onHistorico: () => void;
-  onSair: () => void;
 };
 
-export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair, onDetalhe, onMinhas, onHistorico }: Props) {
+export function TelaAtividades({ ehGestao, voltar, onNova, onEditar, onDetalhe, onMinhas, onHistorico }: Props) {
   const { dados, carregando, erro, carregar } = useDadosVoluntariado(
     useCallback(async () => {
       // A visibilidade da listagem continua dependendo do RLS de atividades.
@@ -37,9 +30,13 @@ export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair, onDet
       return data;
     }, []),
   );
-  const atividades = dados ?? [];
+  const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');
+  const abertas = (dados ?? []).filter((a) => !atividadeFinalizada(a.status));
+  // Finalizadas: a mais recente primeiro.
+  const finalizadas = (dados ?? []).filter((a) => atividadeFinalizada(a.status)).reverse();
+  const visiveis = aba === 'abertas' ? abertas : finalizadas;
 
-  function confirmarExclusao(atividade: Atividade) {
+  function excluirAtividade(atividade: Atividade) {
     const mensagem = `"${atividade.titulo}" será removida. Atividades com candidaturas devem ser canceladas nos detalhes para preservar o histórico.`;
 
     const excluir = async () => {
@@ -53,111 +50,49 @@ export function TelaAtividades({ ehGestao, nome, onNova, onEditar, onSair, onDet
       }
     };
 
-    confirmar('Excluir atividade', mensagem, excluir);
+    confirmarExclusao('Excluir atividade', mensagem, excluir);
   }
 
-  return (
-    <View style={estilos.tela}>
-      <View style={estilos.cabecalho}>
-        <View style={{ flex: 1 }}>
-          <Text style={tipo.titulo}>Atividades</Text>
-          <Text style={tipo.apoio}>
-            {nome} · {ehGestao ? 'gestão da ONG' : 'voluntário'}
-          </Text>
-        </View>
-        <Pressable onPress={onSair} hitSlop={12}>
-          <Text style={[tipo.apoio, { color: cores.folha, fontWeight: '600' }]}>Sair</Text>
-        </Pressable>
-      </View>
-
-      {ehGestao ? (
-        <View style={estilos.barraAcao}>
-          <Botao titulo="Publicar tarefa" onPress={onNova} />
-        </View>
-      ) : <View style={[estilos.barraAcao, { gap: espaco.sm }]}>
-        <Botao titulo="Minhas candidaturas" onPress={onMinhas} />
-        <Botao titulo="Histórico de participação" variante="contorno" onPress={onHistorico} />
-      </View>}
-
-      {erro ? (
-        <View style={{ paddingHorizontal: espaco.lg }}>
-          <Aviso mensagem={erro} />
-          <Botao titulo="Tentar novamente" onPress={carregar} />
-        </View>
-      ) : null}
-
-      <FlatList
-        data={atividades}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={estilos.lista}
-        refreshControl={<RefreshControl refreshing={carregando} onRefresh={carregar} />}
-        ListEmptyComponent={
-          carregando || erro ? null : (
-            <View style={estilos.vazio}>
-              <Text style={[tipo.secao, { marginBottom: espaco.sm }]}>
-                {ehGestao ? 'Nenhuma tarefa publicada' : 'Nada por aqui ainda'}
-              </Text>
-              <Text style={tipo.apoio}>
-                {ehGestao
-                  ? 'Publique a primeira tarefa para a comunidade se candidatar.'
-                  : 'Quando a horta publicar uma tarefa, ela aparece nesta tela.'}
-              </Text>
-            </View>
-          )
-        }
-        renderItem={({ item }) => (
-          <Pressable style={estilos.cartao} onPress={() => onDetalhe(item.id)} accessibilityRole="button" accessibilityLabel={`Ver detalhes de ${item.titulo}`}>
-            <View style={estilos.cartaoTopo}>
-              <Text style={estilos.cartaoTitulo}>{item.titulo}</Text>
-              <Text style={estilos.selo}>{rotuloStatus[item.status]}</Text>
-            </View>
-
-            <Text style={[tipo.corpo, { marginTop: espaco.sm }]} numberOfLines={3}>
-              {item.descricao}
-            </Text>
-
-            <Text style={[tipo.apoio, { marginTop: espaco.md }]}>
-              {formatarData(item.data_hora_prevista)} · {item.vagas_totais}{' '}
-              {item.vagas_totais === 1 ? 'vaga' : 'vagas'} · {item.carga_horaria}h
-            </Text>
-
-            {ehGestao ? (
-              <View style={estilos.acoes}>
-                <View style={{ flex: 1 }}>
-                  <Botao titulo="Editar" variante="contorno" onPress={() => onEditar(item)} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Botao
-                    titulo="Excluir"
-                    variante="destrutivo"
-                    onPress={() => confirmarExclusao(item)}
-                  />
-                </View>
-              </View>
-            ) : null}
-          </Pressable>
-        )}
-      />
-    </View>
-  );
+  return <TelaFluxo titulo={ehGestao ? 'Atividades' : 'Voluntariado'} voltar={voltar} erro={erro} carregando={carregando} atualizar={carregar}>
+    <Text style={tipo.corpo}>
+      {ehGestao
+        ? 'Publique tarefas para a comunidade, acompanhe as candidaturas e registre a presença no dia.'
+        : 'Candidate-se às tarefas da horta e acompanhe suas participações. As horas confirmadas viram certificado.'}
+    </Text>
+    {ehGestao ? <Botao titulo="Publicar tarefa" onPress={onNova} /> : <>
+      <Botao titulo="Minhas candidaturas" onPress={onMinhas} />
+      <Botao titulo="Histórico de participação" variante="contorno" onPress={onHistorico} />
+    </>}
+    <AbasFiltro valor={aba} aoMudar={setAba} opcoes={[
+      { valor: 'abertas', rotulo: 'Abertas', quantidade: dados ? abertas.length : undefined },
+      { valor: 'finalizadas', rotulo: 'Finalizadas', quantidade: dados ? finalizadas.length : undefined },
+    ]} />
+    {dados && !visiveis.length ? <Text style={tipo.apoio}>
+      {aba === 'finalizadas'
+        ? 'Nenhuma atividade realizada, cancelada ou recusada.'
+        : ehGestao ? 'Nenhuma tarefa aberta. Publique uma para a comunidade se candidatar.'
+          : 'Nenhuma tarefa aberta no momento. Quando a horta publicar, ela aparece aqui.'}
+    </Text> : null}
+    {visiveis.map((a) => <Pressable key={a.id} onPress={() => onDetalhe(a.id)} accessibilityRole="button" accessibilityLabel={`Ver detalhes de ${a.titulo}`}>
+      <CartaoFluxo>
+        <Text style={estilos.etiqueta}>
+          {a.tipo === 'OFICINA_AUTORAL' ? 'OFICINA' : 'TAREFA'} · {rotuloStatus[a.status].toUpperCase()}
+        </Text>
+        <Text style={tipo.secao}>{a.titulo}</Text>
+        <Text style={tipo.corpo} numberOfLines={3}>{a.descricao}</Text>
+        <Text style={tipo.apoio}>
+          {formatarData(a.data_hora_prevista)} · {a.vagas_totais} {a.vagas_totais === 1 ? 'vaga' : 'vagas'} · {a.carga_horaria}h
+        </Text>
+        {ehGestao ? <View style={estilos.acoes}>
+          <View style={{ flex: 1 }}><Botao titulo="Editar" variante="contorno" onPress={() => onEditar(a)} /></View>
+          <View style={{ flex: 1 }}><Botao titulo="Excluir" variante="destrutivo" onPress={() => excluirAtividade(a)} /></View>
+        </View> : null}
+      </CartaoFluxo>
+    </Pressable>)}
+  </TelaFluxo>;
 }
 
-/**
- * O react-native-web não implementa Alert. No navegador caímos nos
- * diálogos nativos do browser; no celular, no Alert do React Native.
- */
-function confirmar(titulo: string, mensagem: string, aoConfirmar: () => void) {
-  if (Platform.OS === 'web') {
-    if (window.confirm(`${titulo}\n\n${mensagem}`)) aoConfirmar();
-    return;
-  }
-
-  Alert.alert(titulo, mensagem, [
-    { text: 'Manter', style: 'cancel' },
-    { text: 'Excluir', style: 'destructive', onPress: aoConfirmar },
-  ]);
-}
-
+/** O react-native-web não implementa Alert; no navegador usa o do browser. */
 function avisar(titulo: string, mensagem: string) {
   if (Platform.OS === 'web') {
     window.alert(`${titulo}\n\n${mensagem}`);
@@ -178,51 +113,6 @@ function formatarData(iso: string) {
 }
 
 const estilos = StyleSheet.create({
-  tela: { flex: 1, backgroundColor: cores.superficie },
-  cabecalho: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: espaco.md,
-    paddingHorizontal: espaco.lg,
-    paddingTop: espaco.xl,
-    paddingBottom: espaco.md,
-    backgroundColor: cores.fundo,
-  },
-  barraAcao: {
-    paddingHorizontal: espaco.lg,
-    paddingBottom: espaco.md,
-    backgroundColor: cores.fundo,
-    borderBottomWidth: 1,
-    borderBottomColor: cores.linha,
-  },
-  lista: { padding: espaco.lg, gap: espaco.md },
-  cartao: {
-    backgroundColor: cores.fundo,
-    borderRadius: 10,
-    padding: espaco.md,
-    borderLeftWidth: 3,
-    borderLeftColor: cores.folha,
-  },
-  cartaoTopo: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: espaco.sm,
-  },
-  cartaoTitulo: {
-    flex: 1,
-    fontSize: 17,
-    fontWeight: '700',
-    color: cores.tinta,
-  },
-  selo: {
-    fontSize: 12,
-    color: cores.folha,
-    backgroundColor: cores.folhaClara,
-    paddingHorizontal: espaco.sm,
-    paddingVertical: 3,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  acoes: { flexDirection: 'row', gap: espaco.sm, marginTop: espaco.md },
-  vazio: { padding: espaco.xl, alignItems: 'center' },
+  etiqueta: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, color: cores.tintaSuave },
+  acoes: { flexDirection: 'row', gap: espaco.sm, marginTop: espaco.xs },
 });

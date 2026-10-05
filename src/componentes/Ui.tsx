@@ -92,7 +92,55 @@ export function Aviso({ mensagem }: { mensagem: string }) {
   );
 }
 
+type OpcaoAba<T extends string> = { valor: T; rotulo: string; quantidade?: number };
+
+/** Abas de filtro de uma listagem (ex.: abertas / finalizadas). */
+export function AbasFiltro<T extends string>({ opcoes, valor, aoMudar }: {
+  opcoes: OpcaoAba<T>[];
+  valor: T;
+  aoMudar: (valor: T) => void;
+}) {
+  return (
+    <View style={estilos.abas} accessibilityRole="tablist">
+      {opcoes.map((opcao) => {
+        const ativa = opcao.valor === valor;
+        const rotulo = opcao.quantidade === undefined ? opcao.rotulo : `${opcao.rotulo} (${opcao.quantidade})`;
+        return (
+          <Pressable
+            key={opcao.valor}
+            onPress={() => aoMudar(opcao.valor)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: ativa }}
+            accessibilityLabel={rotulo}
+            style={[estilos.aba, ativa && estilos.abaAtiva]}
+          >
+            <Text style={[estilos.abaTexto, ativa && estilos.abaTextoAtiva]}>{rotulo}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 const estilos = StyleSheet.create({
+  abas: {
+    flexDirection: 'row',
+    backgroundColor: cores.mint,
+    borderRadius: 14,
+    padding: espaco.xs,
+    gap: espaco.xs,
+  },
+  aba: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: espaco.sm,
+  },
+  abaAtiva: { backgroundColor: cores.fundo, boxShadow: '0px 1px 3px rgba(28, 67, 48, 0.12)' },
+  abaTexto: { fontSize: 14, fontWeight: '600', color: cores.tintaSuave },
+  abaTextoAtiva: { color: cores.folha, fontWeight: '700' },
   botao: {
     minHeight: 54,
     borderRadius: 16,

@@ -75,3 +75,9 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
   await assert.rejects(metas.validarContribuicao(9, 'g', true, null), /já foi conferida/);
   await assert.rejects(metas.alterarStatusMeta(7, 'ENCERRADA'), /não foi atualizada/);
 });
+
+test('Metas: só ABERTA fica na aba de abertas', () => {
+  assert.equal(regras.metaFinalizada({ status: 'ABERTA' }), false);
+  assert.equal(regras.metaFinalizada({ status: 'ENCERRADA' }), true);
+  assert.equal(regras.metaFinalizada({ status: 'CANCELADA' }), true);
+});
