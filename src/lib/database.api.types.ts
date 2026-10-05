@@ -26,8 +26,21 @@ type FuncaoAplicativo<Nome extends PropertyKey, Funcao> = Funcao extends {
     }
   : Funcao;
 
+// Colunas da reconciliação 20261005150000_contribuicoes_metas_pix ainda não
+// aplicada no remoto. Remover este bloco ao regenerar database.types.ts.
+type ColunasPix = { chave_pix: string | null; nome_beneficiario_pix: string | null };
+type Configuracao = Database['public']['Tables']['configuracao_instituicao'];
+type TabelasAplicativo = Omit<Database['public']['Tables'], 'configuracao_instituicao'> & {
+  configuracao_instituicao: Omit<Configuracao, 'Row' | 'Insert' | 'Update'> & {
+    Row: Configuracao['Row'] & ColunasPix;
+    Insert: Configuracao['Insert'] & Partial<ColunasPix>;
+    Update: Configuracao['Update'] & Partial<ColunasPix>;
+  };
+};
+
 export type DatabaseAplicativo = Omit<Database, 'public'> & {
-  public: Omit<Database['public'], 'Functions'> & {
+  public: Omit<Database['public'], 'Functions' | 'Tables'> & {
+    Tables: TabelasAplicativo;
     Functions: {
       [Nome in keyof Database['public']['Functions']]: FuncaoAplicativo<
         Nome,

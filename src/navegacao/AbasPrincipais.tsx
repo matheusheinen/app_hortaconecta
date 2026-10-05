@@ -2,10 +2,10 @@ import React from 'react';
 import { createBottomTabNavigator, type BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import { PilhaAtividades, type ParametrosPilhaAtividades } from './PilhaAtividades';
-import { PilhaMateriais, type ParametrosMateriais } from './PilhaMateriais';
+import { PilhaMetas, type ParametrosMetas } from './PilhaMetas';
 import { PilhaInicio, type ParametrosInicio } from './PilhaInicio';
-import { TelaPerfilOng } from '../telas/TelaPerfilOng';
-import { TelaPerfilVoluntario } from '../telas/TelaPerfilVoluntario';
+import { PilhaPerfilOng } from './PilhaPerfilOng';
+import { PilhaPerfilVoluntario } from './PilhaPerfilVoluntario';
 import { PilhaDiario } from './PilhaDiario';
 import { cores } from '../lib/tema';
 import type { Usuario } from '../lib/tipos';
@@ -20,7 +20,7 @@ type ParametrosDiario = {
 export type ParametrosAbasPrincipais = {
   inicio: NavigatorScreenParams<ParametrosInicio> | undefined;
   atividades: NavigatorScreenParams<ParametrosPilhaAtividades> | undefined;
-  metas: NavigatorScreenParams<ParametrosMateriais> | undefined;
+  metas: NavigatorScreenParams<ParametrosMetas> | undefined;
   diario: NavigatorScreenParams<ParametrosDiario> | undefined;
   perfil: undefined;
 };
@@ -83,7 +83,7 @@ export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Pro
             abrirAtividade={(id: number) => navigation.navigate('atividades', {
               screen: 'detalhe', params: { atividadeId: id }, initial: false,
             })}
-            abrirMaterial={(id: number) => navigation.navigate('metas', {
+            abrirMeta={(id: number) => navigation.navigate('metas', {
               screen: 'detalhe', params: { id }, initial: false,
             })}
             abrirPublicacao={(id: number) => navigation.navigate('diario', {
@@ -101,8 +101,8 @@ export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Pro
         )}
       </Abas.Screen>
 
-      <Abas.Screen name="metas" options={{ tabBarLabel: ehGestao ? 'Materiais' : 'Contribuir' }}>
-        {({ navigation }) => <PilhaMateriais ehGestao={ehGestao} inicio={() => navigation.navigate('inicio', { screen: 'resumo' })} />}
+      <Abas.Screen name="metas" options={{ tabBarLabel: ehGestao ? 'Doações' : 'Contribuir' }}>
+        {({ navigation }) => <PilhaMetas ehGestao={ehGestao} usuarioId={perfil.id} inicio={() => navigation.navigate('inicio', { screen: 'resumo' })} />}
       </Abas.Screen>
 
       <Abas.Screen name="diario" options={{ tabBarLabel: 'Diário' }}>
@@ -112,9 +112,9 @@ export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Pro
       <Abas.Screen name="perfil" options={{ tabBarLabel: 'Perfil' }}>
         {() =>
           ehGestao ? (
-            <TelaPerfilOng perfil={perfil} sair={sair} recarregarPerfil={recarregarPerfil} />
+            <PilhaPerfilOng usuarioId={perfil.id} nome={perfil.nome} sair={sair} recarregarPerfil={recarregarPerfil} />
           ) : (
-            <TelaPerfilVoluntario perfil={perfil} sair={sair} recarregarPerfil={recarregarPerfil} />
+            <PilhaPerfilVoluntario usuarioId={perfil.id} nome={perfil.nome} sair={sair} recarregarPerfil={recarregarPerfil} />
           )
         }
       </Abas.Screen>

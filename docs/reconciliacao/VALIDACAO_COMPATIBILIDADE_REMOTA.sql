@@ -1,4 +1,9 @@
 -- Ensaio funcional com dados fictícios, sem persistir contas ou registros.
+-- Situação em 05/10/2026: roteiro executado em 30/09, registro histórico. Depois de aplicar a
+-- reconciliação 20261005150000, as etapas de materiais (materiais_salvar/contribuir/decidir e
+-- solicitacoes_materiais) deixam de existir e este roteiro falha nelas: não reexecutar como está.
+-- Contribuições passam a usar metas_demandas/contribuicoes; ver tests/contribuicoes-metas.test.cjs
+-- e docs/mvp/CONTRIBUICOES.md para os cenários equivalentes.
 -- Executar somente após a reconciliação completa. A sequência de IDs pode avançar.
 -- SET ROLE + claims exercita funções e RLS reais, mas não substitui JWT/API/Android.
 BEGIN;

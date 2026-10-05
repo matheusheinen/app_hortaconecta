@@ -4,7 +4,9 @@ import { Aviso, Botao } from './Ui';
 import { Icone, type NomeIcone } from './Icone';
 import { ImagemDiario } from './ImagemDiario';
 import { cores } from '../lib/tema';
-import { formatarHorasInicio, progressoMaterialInicio, type ResumoInicio } from '../lib/resumoInicio';
+import { formatarHorasInicio, progressoMetaInicio, type AtividadeInicio, type ResumoInicio } from '../lib/resumoInicio';
+import { descreverProgresso } from '../lib/regrasMetas';
+import type { Atividade } from '../lib/tipos';
 
 export type AcoesInicio = {
   nome: string;
@@ -12,11 +14,12 @@ export type AcoesInicio = {
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
-  aoIrParaCertificados: () => void;
-  aoIrParaOficinas: () => void;
+  /** Ausente quando o recurso está fora do MVP (ver lib/escopoMvp). */
+  aoIrParaCertificados?: () => void;
+  aoIrParaOficinas?: () => void;
   aoPerfil: () => void;
   abrirAtividade: (id: number) => void;
-  abrirMaterial: (id: number) => void;
+  abrirMeta: (id: number) => void;
   abrirPublicacao: (id: number) => void;
   minhasAtividades: () => void;
   minhasContribuicoes: () => void;
@@ -24,10 +27,31 @@ export type AcoesInicio = {
 
 type PropsPainel = AcoesInicio & {
   resumo: ResumoInicio | null;
+  /** Tarefas que combinam com disponibilidade e áreas; vazio esconde a seção. */
+  sugestoes?: AtividadeInicio[];
   erro: string | null;
   carregando: boolean;
   atualizar: () => void;
 };
+
+function CartaoAtividade({ atividade, vagasDisponiveis, azul, etiqueta, abrir }: {
+  atividade: Atividade; vagasDisponiveis: number; azul: boolean; etiqueta?: string; abrir: (id: number) => void;
+}) {
+  const oficina = atividade.tipo === 'OFICINA_AUTORAL';
+  const destaque = oficina || azul;
+  return <Pressable onPress={() => abrir(atividade.id)} accessibilityRole="button"
+    accessibilityLabel={`${atividade.titulo}. ${vagasDisponiveis} vagas disponíveis. Ver atividade.`}
+    style={({ pressed }) => [estilos.atividade, pressed && estilos.pressionado]}>
+    <View style={[estilos.atividadeIcone, destaque && estilos.iconeAzul]}><Icone nome={oficina ? 'oficina' : 'folha'} cor={destaque ? '#397CD1' : '#2D9165'} tamanho={26} /></View>
+    <View style={estilos.flex}>
+      <View style={estilos.etiquetas}><View style={[estilos.etiqueta, destaque && estilos.etiquetaAzul]}>
+        <Text style={[estilos.etiquetaTexto, destaque && estilos.textoAzul]}>{etiqueta ?? (oficina ? 'Oficina' : 'Na comunidade')}</Text></View>
+        <Text style={estilos.vagas}>{vagasDisponiveis} {vagasDisponiveis === 1 ? 'vaga' : 'vagas'}</Text></View>
+      <Text numberOfLines={2} style={estilos.cartaoTitulo}>{atividade.titulo}</Text>
+      <Text style={estilos.data}>{dataAtividade(atividade.data_hora_prevista, atividade.carga_horaria)}</Text>
+    </View><Icone nome="seta" tamanho={17} cor={cores.tintaSuave} />
+  </Pressable>;
+}
 
 function CabecalhoSecao({ titulo, acao, onPress }: { titulo: string; acao: string; onPress: () => void }) {
   return <View style={estilos.secaoTopo}>
@@ -61,13 +85,16 @@ function dataAtividade(iso: string, horas: number) {
   return `${data.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })} · ${data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${horas.toLocaleString('pt-BR')}h`;
 }
 
-export function PainelInicioVoluntario({ nome, resumo, erro, carregando, atualizar, aoPerfil,
+export function PainelInicioVoluntario({ nome, resumo, sugestoes = [], erro, carregando, atualizar, aoPerfil,
   aoIrParaAtividades, aoIrParaMetas, aoIrParaDiario, aoIrParaCertificados, aoIrParaOficinas,
-  abrirAtividade, abrirMaterial, abrirPublicacao, minhasAtividades, minhasContribuicoes }: PropsPainel) {
-  const material = resumo?.material;
+  abrirAtividade, abrirMeta, abrirPublicacao, minhasAtividades, minhasContribuicoes }: PropsPainel) {
+  const meta = resumo?.meta;
   const publicacao = resumo?.publicacao;
-  const progresso = material ? progressoMaterialInicio(material) : 0;
+  const progresso = meta ? progressoMetaInicio(meta) : 0;
   const aguardando = carregando && !resumo;
+  // Não repete no bloco de sugestões o que já aparece em destaque.
+  const emDestaque = new Set(resumo?.destaques.map(({ atividade }) => atividade.id));
+  const sugestoesExtras = sugestoes.filter((atividade) => !emDestaque.has(atividade.id));
   const numero = (valor: number | undefined) => valor === undefined ? '—' : valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
   return <ScrollView style={estilos.tela} contentContainerStyle={estilos.conteudo}
@@ -85,7 +112,8 @@ export function PainelInicioVoluntario({ nome, resumo, erro, carregando, atualiz
 
       <View style={estilos.indicadores}>
         <Indicador icone="relogio" valor={resumo ? formatarHorasInicio(resumo.horasRegistradas) : '—'} titulo="Horas previstas" cor="#628B9C"
-          onPress={aoIrParaCertificados} descricao="Carga prevista registrada no check-in das presenças confirmadas. Ver certificados." />
+          onPress={aoIrParaCertificados ?? minhasAtividades}
+          descricao={`Carga prevista registrada no check-in das presenças confirmadas. ${aoIrParaCertificados ? 'Ver certificados.' : 'Ver histórico de participação.'}`} />
         <Indicador icone="check" valor={numero(resumo?.atividadesParticipadas)} titulo="Atividades" cor="#45B78A"
           onPress={minhasAtividades} descricao="Presenças confirmadas. Ver histórico de participação." />
         <Indicador icone="presente" valor={numero(resumo?.contribuicoesConfirmadas)} titulo="Contribuições" cor="#D49A4A"
@@ -100,36 +128,30 @@ export function PainelInicioVoluntario({ nome, resumo, erro, carregando, atualiz
       </Pressable> : null}
 
       <CabecalhoSecao titulo="EM DESTAQUE" acao="Ver todas" onPress={aoIrParaAtividades} />
-      {resumo?.destaques.map(({ atividade, vagasDisponiveis }, indice) => {
-        const oficina = atividade.tipo === 'OFICINA_AUTORAL';
-        const azul = oficina || indice % 2 === 1;
-        return <Pressable key={atividade.id} onPress={() => abrirAtividade(atividade.id)} accessibilityRole="button"
-          accessibilityLabel={`${atividade.titulo}. ${vagasDisponiveis} vagas disponíveis. Ver atividade.`}
-          style={({ pressed }) => [estilos.atividade, pressed && estilos.pressionado]}>
-          <View style={[estilos.atividadeIcone, azul && estilos.iconeAzul]}><Icone nome={oficina ? 'oficina' : 'folha'} cor={azul ? '#397CD1' : '#2D9165'} tamanho={26} /></View>
-          <View style={estilos.flex}>
-            <View style={estilos.etiquetas}><View style={[estilos.etiqueta, azul && estilos.etiquetaAzul]}>
-              <Text style={[estilos.etiquetaTexto, azul && estilos.textoAzul]}>{oficina ? 'Oficina' : 'Na comunidade'}</Text></View>
-              <Text style={estilos.vagas}>{vagasDisponiveis} {vagasDisponiveis === 1 ? 'vaga' : 'vagas'}</Text></View>
-            <Text numberOfLines={2} style={estilos.cartaoTitulo}>{atividade.titulo}</Text>
-            <Text style={estilos.data}>{dataAtividade(atividade.data_hora_prevista, atividade.carga_horaria)}</Text>
-          </View><Icone nome="seta" tamanho={17} cor={cores.tintaSuave} />
-        </Pressable>;
-      })}
+      {resumo?.destaques.map(({ atividade, vagasDisponiveis }, indice) =>
+        <CartaoAtividade key={atividade.id} atividade={atividade} vagasDisponiveis={vagasDisponiveis} azul={indice % 2 === 1} abrir={abrirAtividade} />)}
       {resumo && resumo.destaques.length === 0 ? <EstadoVazio icone="folha" titulo="Novas oportunidades em breve" texto="As próximas atividades abertas aparecerão aqui." /> : null}
 
+      {resumo && sugestoesExtras.length ? <>
+        <CabecalhoSecao titulo="SUGERIDAS PARA VOCÊ" acao="Ver todas" onPress={aoIrParaAtividades} />
+        <Text style={[estilos.apoio, estilos.explicacaoSugestoes]}>Combinam com a sua disponibilidade e as áreas em que você quer ajudar.</Text>
+        {sugestoesExtras.map((atividade) =>
+          <CartaoAtividade key={atividade.id} atividade={atividade} azul={false} etiqueta="Combina com você"
+            vagasDisponiveis={Math.max(0, atividade.vagas_totais - atividade.vagas_ocupadas)} abrir={abrirAtividade} />)}
+      </> : null}
+
       <CabecalhoSecao titulo="PRECISAMOS DE" acao="Ver todas" onPress={aoIrParaMetas} />
-      {material ? <Pressable onPress={() => abrirMaterial(material.id)} accessibilityRole="button"
-        accessibilityLabel={`${material.nome}. ${progresso}% recebido. Quero contribuir.`}
+      {meta ? <Pressable onPress={() => abrirMeta(meta.id)} accessibilityRole="button"
+        accessibilityLabel={`${meta.titulo}. ${progresso}% arrecadado. Quero contribuir.`}
         style={({ pressed }) => [estilos.material, pressed && estilos.pressionado]}>
-        <View style={estilos.materialTopo}><View style={estilos.materialIcone}><Icone nome="caixa" tamanho={24} /></View>
-          <View style={estilos.flex}><Text style={estilos.cartaoTitulo}>{material.nome}</Text><Text style={estilos.apoio}>
-            {numero(material.quantidade_recebida)} de {numero(material.quantidade_necessaria)} recebidos</Text></View>
+        <View style={estilos.materialTopo}><View style={estilos.materialIcone}><Icone nome={meta.tipo === 'FINANCEIRA' ? 'presente' : 'caixa'} tamanho={24} /></View>
+          <View style={estilos.flex}><Text style={estilos.cartaoTitulo}>{meta.titulo}</Text>
+            <Text style={estilos.apoio}>{descreverProgresso(meta)}</Text></View>
           <Text style={estilos.percentual}>{progresso}%</Text></View>
-        <View style={estilos.progresso} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: progresso }} accessibilityLabel="Meta de materiais">
+        <View style={estilos.progresso} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: progresso }} accessibilityLabel="Progresso da meta">
           <View style={[estilos.progressoPreenchido, { width: `${progresso}%` }]} /></View>
         <View style={estilos.contribuir}><Text style={estilos.contribuirTexto}>Quero contribuir</Text><Icone nome="seta" tamanho={14} /></View>
-      </Pressable> : resumo ? <EstadoVazio icone="caixa" titulo="Tudo em dia por aqui" texto="Quando a instituição precisar de materiais, você verá aqui." /> : null}
+      </Pressable> : resumo ? <EstadoVazio icone="caixa" titulo="Tudo em dia por aqui" texto="Quando a instituição abrir uma meta de doação, você verá aqui." /> : null}
 
       <CabecalhoSecao titulo="DIÁRIO" acao="Ver mais" onPress={aoIrParaDiario} />
       {publicacao ? <View style={estilos.diario}>
@@ -144,14 +166,14 @@ export function PainelInicioVoluntario({ nome, resumo, erro, carregando, atualiz
         </Pressable>
       </View> : resumo ? <EstadoVazio icone="livro" titulo="Nossa história continua" texto="Os novos relatos da instituição aparecerão no diário." /> : null}
 
-      <View style={estilos.atalhos}>
-        <Pressable onPress={aoIrParaOficinas} accessibilityRole="button" style={({ pressed }) => [estilos.atalho, pressed && estilos.pressionado]}>
+      {aoIrParaOficinas || aoIrParaCertificados ? <View style={estilos.atalhos}>
+        {aoIrParaOficinas ? <Pressable onPress={aoIrParaOficinas} accessibilityRole="button" style={({ pressed }) => [estilos.atalho, pressed && estilos.pressionado]}>
           <Icone nome="oficina" tamanho={23} /><Text style={estilos.atalhoTitulo}>Oficinas</Text><Text style={estilos.apoio}>Compartilhe saberes</Text>
-        </Pressable>
-        <Pressable onPress={aoIrParaCertificados} accessibilityRole="button" style={({ pressed }) => [estilos.atalho, pressed && estilos.pressionado]}>
+        </Pressable> : null}
+        {aoIrParaCertificados ? <Pressable onPress={aoIrParaCertificados} accessibilityRole="button" style={({ pressed }) => [estilos.atalho, pressed && estilos.pressionado]}>
           <Icone nome="certificado" tamanho={23} /><Text style={estilos.atalhoTitulo}>Certificados</Text><Text style={estilos.apoio}>Veja sua participação</Text>
-        </Pressable>
-      </View>
+        </Pressable> : null}
+      </View> : null}
       <Text style={estilos.assinatura}>Pequenas ações. Um impacto que cresce.</Text>
     </View>
   </ScrollView>;
@@ -187,6 +209,7 @@ const estilos = StyleSheet.create({
   cartaoTitulo: { fontSize: 15, fontWeight: '600', color: cores.tinta, lineHeight: 20 },
   data: { fontSize: 11, lineHeight: 16, color: cores.tintaSuave, marginTop: 3 },
   apoio: { fontSize: 12, lineHeight: 18, color: cores.tintaSuave, marginTop: 3 },
+  explicacaoSugestoes: { marginTop: -6, marginBottom: 10 },
   material: { backgroundColor: cores.fundo, borderWidth: 1, borderColor: cores.linha, borderRadius: 18, padding: 16 },
   materialTopo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   materialIcone: { width: 38, height: 38, borderRadius: 14, backgroundColor: cores.folhaClara, alignItems: 'center', justifyContent: 'center' },

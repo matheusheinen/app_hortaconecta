@@ -75,6 +75,27 @@ export const rotuloStatusMeta: Record<StatusMeta, string> = {
   CANCELADA: 'Cancelada',
 };
 
+export type StatusValidacao = 'PENDENTE' | 'APROVADA' | 'RECUSADA';
+
+export type Contribuicao = {
+  id: number;
+  meta_id: number;
+  usuario_id: string;
+  quantidade_oferecida: number;
+  url_comprovante: string | null;
+  data_envio: string;
+  status_validacao: StatusValidacao;
+  validado_por: string | null;
+  validado_em: string | null;
+  observacao_validacao: string | null;
+};
+
+export const rotuloStatusValidacao: Record<StatusValidacao, string> = {
+  PENDENTE: 'Aguardando conferência',
+  APROVADA: 'Confirmada',
+  RECUSADA: 'Recusada',
+};
+
 export type DiaSemana = 'dom' | 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab';
 
 export type PeriodoDia = 'manha' | 'tarde' | 'noite';

@@ -1,10 +1,9 @@
 import { supabase } from './supabase';
 import { carregarMinhasInscricoes } from './voluntariado';
-import { listarMateriais, minhasContribuicoes } from './materiais';
+import { listarMetas } from './metas';
 import { listarDiario } from './diario';
-import type { Atividade } from './tipos';
+import type { Atividade, Meta, StatusValidacao } from './tipos';
 import type { MinhaInscricao } from './voluntariado.types';
-import type { MinhaContribuicao, SolicitacaoMaterial } from './materiais.types';
 import type { Publicacao } from './diario.types';
 
 export type AtividadeInicio = Atividade & { vagas_ocupadas: number };
@@ -15,16 +14,17 @@ export type ResumoInicio = {
   atividadesParticipadas: number;
   contribuicoesConfirmadas: number;
   destaques: { atividade: Atividade; vagasDisponiveis: number }[];
-  material: SolicitacaoMaterial | null;
+  /** Meta aberta mais recente ainda não atingida e dentro do prazo. */
+  meta: Meta | null;
   publicacao: Publicacao | null;
 };
 
 type DadosInicio = {
   perfilCompleto: boolean;
   inscricoes: MinhaInscricao[];
-  contribuicoes: MinhaContribuicao[];
+  contribuicoes: { status_validacao: StatusValidacao }[];
   atividades: AtividadeInicio[];
-  materiais: SolicitacaoMaterial[];
+  metas: Meta[];
   diario: Publicacao[];
 };
 
@@ -49,9 +49,12 @@ export function montarResumoInicio(dados: DadosInicio, agora = new Date()): Resu
       // O banco mantém vagas_ocupadas como o total de candidaturas aprovadas.
       vagasDisponiveis: Math.max(0, atividade.vagas_totais - atividade.vagas_ocupadas),
     }));
-  const material = dados.materiais
-    .filter(item => (item.status === 'ABERTA' || item.status === 'EM_ANDAMENTO')
-      && item.quantidade_necessaria > item.quantidade_recebida)
+  const p = (n: number) => String(n).padStart(2, '0');
+  const hoje = `${agora.getFullYear()}-${p(agora.getMonth() + 1)}-${p(agora.getDate())}`;
+  const meta = dados.metas
+    .filter(item => item.status === 'ABERTA'
+      && item.quantidade_meta > item.quantidade_arrecadada
+      && (item.data_limite === null || item.data_limite >= hoje))
     .sort((a, b) => Date.parse(b.criado_em) - Date.parse(a.criado_em) || b.id - a.id)[0] ?? null;
   const publicacao = dados.diario
     .filter(item => item.status === 'PUBLICADA')
@@ -60,9 +63,9 @@ export function montarResumoInicio(dados: DadosInicio, agora = new Date()): Resu
     perfilCompleto: dados.perfilCompleto,
     horasRegistradas,
     atividadesParticipadas: presencas.length,
-    contribuicoesConfirmadas: dados.contribuicoes.filter(({ contribuicao }) => contribuicao.status === 'CONFIRMADA').length,
+    contribuicoesConfirmadas: dados.contribuicoes.filter(c => c.status_validacao === 'APROVADA').length,
     destaques,
-    material,
+    meta,
     publicacao,
   };
 }
@@ -70,21 +73,29 @@ export function montarResumoInicio(dados: DadosInicio, agora = new Date()): Resu
 /** Mantém a autorização das consultas existentes. Uma falha nunca vira contagem zero. */
 export async function carregarResumoInicio(): Promise<ResumoInicio> {
   const agora = new Date();
-  const [perfilCompleto, inscricoes, contribuicoes, atividades, materiais, diario] = await Promise.all([
+  const [perfilCompleto, inscricoes, contribuicoes, atividades, metas, diario] = await Promise.all([
     carregarElegibilidade(),
     carregarMinhasInscricoes(),
-    minhasContribuicoes(),
+    carregarMinhasContribuicoes(),
     carregarProximasAtividades(agora),
-    listarMateriais(),
+    listarMetas(),
     listarDiario(),
   ]);
-  return montarResumoInicio({ perfilCompleto, inscricoes, contribuicoes, atividades, materiais, diario }, agora);
+  return montarResumoInicio({ perfilCompleto, inscricoes, contribuicoes, atividades, metas, diario }, agora);
 }
 
 async function carregarElegibilidade(): Promise<boolean> {
   const { data, error } = await supabase.rpc('voluntariado_elegibilidade');
   if (error) throw error;
   if (typeof data !== 'boolean') throw new Error('Não foi possível verificar seu cadastro.');
+  return data;
+}
+
+/** A RLS de contribuicoes devolve ao voluntário apenas as próprias. */
+async function carregarMinhasContribuicoes(): Promise<{ status_validacao: StatusValidacao }[]> {
+  const { data, error } = await supabase.from('contribuicoes').select('status_validacao');
+  if (error) throw error;
+  if (!Array.isArray(data)) throw new Error('Não foi possível carregar suas contribuições.');
   return data;
 }
 
@@ -102,9 +113,7 @@ export function formatarHorasInicio(horas: number): string {
   return `${horas.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}h`;
 }
 
-export function progressoMaterialInicio(material: SolicitacaoMaterial): number {
-  if (material.quantidade_necessaria <= 0) return 0;
-  return Math.min(100, Math.max(0,
-    Math.round(material.quantidade_recebida / material.quantidade_necessaria * 100),
-  ));
+export function progressoMetaInicio(meta: Pick<Meta, 'quantidade_meta' | 'quantidade_arrecadada'>): number {
+  if (!(meta.quantidade_meta > 0)) return 0;
+  return Math.min(100, Math.max(0, Math.round(meta.quantidade_arrecadada / meta.quantidade_meta * 100)));
 }

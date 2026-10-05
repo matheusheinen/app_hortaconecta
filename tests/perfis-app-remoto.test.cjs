@@ -12,24 +12,81 @@ function carregar(arquivo, dependencias = {}) {
   };
   modulo._compile(ts.transpileModule(fs.readFileSync(arquivo, 'utf8'), {
     fileName: arquivo,
-    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React },
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2022 },
   }).outputText, arquivo);
   return modulo.exports;
 }
 
 const validadores = carregar('src/lib/validadores.ts');
 const mascaras = carregar('src/lib/mascaras.ts', { './validadores': validadores });
-const regras = carregar('src/lib/regrasVoluntariado.ts');
+const regrasVoluntariado = carregar('src/lib/regrasVoluntariado.ts');
+const regrasPerfil = carregar('src/lib/regrasPerfil.ts');
 const tipos = carregar('src/lib/tipos.ts');
-const tick = () => new Promise(resolve => setImmediate(resolve));
 
-// Executa os componentes e seus handlers reais; somente React Native e o transporte são simulados.
-function montarPerfil(gestao, { falhaTabela = null, semComplemento = false } = {}) {
-  const estados = [], consultas = [], rpcs = [];
-  let cursor = 0, foco, recargas = 0;
+const dados = () => ({
+  usuarios: { nome: 'Pessoa de Teste', telefone: '51999999999', descricao: 'Descrição atual', perfil_instagram: 'horta.teste' },
+  voluntarios: {
+    cpf: '52998224725', data_nascimento: '1990-06-21', profissao: 'Profissão de teste',
+    disponibilidade_horarios: [{ dia: 'seg', periodo: 'manha' }],
+    cep: '95800000', logradouro: 'Rua de Teste', numero: '10', complemento: 'Fundos',
+    bairro: 'Bairro de Teste', cidade: 'Cidade de Teste', uf: 'RS',
+  },
+  habilidades: [{ id: 1, nome_habilidade: 'Plantio', categoria: 'Horta' }],
+  usuario_habilidades: [{ habilidade_id: 1 }],
+  ongs: { cnpj: null, razao_social: 'Instituição de Teste', data_criacao: null, responsavel_legal: null },
+  configuracao_instituicao: { whatsapp: '51999999999', chave_pix: 'chave-ficticia', nome_beneficiario_pix: 'Horta Teste' },
+});
+
+/** Supabase simulado: registra consultas e RPCs; `falhaTabela` faz a carga falhar. */
+function supabaseFalso({ falhaTabela = null, base = dados() } = {}) {
+  const consultas = [], rpcs = [], atualizacoes = [];
+  return {
+    consultas, rpcs, atualizacoes,
+    supabase: {
+      from: tabela => ({
+        select: colunas => {
+          consultas.push({ tabela, colunas });
+          const resposta = () => Promise.resolve(tabela === falhaTabela
+            ? { data: null, error: new Error('Falha na carga de ' + tabela) }
+            : { data: base[tabela], error: null });
+          const builder = { eq: () => builder, order: () => builder, single: resposta, maybeSingle: resposta,
+            then: (ok, falha) => resposta().then(ok, falha) };
+          return builder;
+        },
+        update: valores => {
+          const atualizacao = { tabela, valores, filtros: [] };
+          atualizacoes.push(atualizacao);
+          const builder = { eq: (campo, valor) => { atualizacao.filtros.push([campo, valor]); return builder; },
+            select: async () => ({ data: base[tabela] ? [{ id: 1 }] : [], error: null }) };
+          return builder;
+        },
+      }),
+      rpc: async (nome, parametros) => { rpcs.push({ nome, parametros }); return { data: true, error: null }; },
+    },
+  };
+}
+
+function libVoluntario(falso) {
+  return carregar('src/lib/perfilVoluntario.ts', {
+    './supabase': { supabase: falso.supabase }, './tipos': tipos,
+    './regrasVoluntariado': regrasVoluntariado, './regrasPerfil': regrasPerfil,
+  });
+}
+
+function libOng(falso) {
+  const perfilGestao = carregar('src/lib/perfilGestao.ts', { './supabase': { supabase: falso.supabase } });
+  return carregar('src/lib/perfilOng.ts', { './supabase': { supabase: falso.supabase }, './perfilGestao': perfilGestao });
+}
+
+/** React mínimo: componentes viram árvores; o contexto devolve o valor informado. */
+function reactFalso(contexto) {
+  const estados = [];
+  let cursor = 0;
   const react = {
     createElement: (tipo, props, ...filhos) => ({ tipo, props: props ?? {}, filhos }),
     Fragment: 'Fragment',
+    createContext: () => ({ Provider: 'Provider' }),
+    useContext: () => contexto.valor,
     useState: inicial => {
       const indice = cursor++;
       estados[indice] ??= { valor: inicial };
@@ -37,179 +94,223 @@ function montarPerfil(gestao, { falhaTabela = null, semComplemento = false } = {
         estados[indice].valor = typeof valor === 'function' ? valor(estados[indice].valor) : valor;
       }];
     },
-    useRef: inicial => {
-      const indice = cursor++;
-      return estados[indice] ??= { current: inicial };
-    },
-    useCallback: callback => callback,
   };
   react.default = react;
-  const dados = {
-    usuarios: { id: 'conta-teste', nome: 'Pessoa de Teste', telefone: '51999999999', descricao: 'Descrição atual', perfil_instagram: 'horta.teste' },
-    voluntarios: {
-      cpf: '52998224725', data_nascimento: '1990-06-21', profissao: 'Profissão de teste',
-      disponibilidade_horarios: [{ dia: 'seg', periodo: 'manha' }],
-      cep: '95800000', logradouro: 'Rua de Teste', numero: '10', complemento: 'Fundos',
-      bairro: 'Bairro de Teste', cidade: 'Cidade de Teste', uf: 'RS',
-    },
-    habilidades: [{ id: 1, nome_habilidade: 'Plantio', categoria: 'Horta' }],
-    usuario_habilidades: [{ habilidade_id: 1 }],
-    ongs: semComplemento ? null : { razao_social: 'Instituição de Teste', whatsapp: '51999999999' },
-  };
-  const supabase = {
-    from: tabela => ({
-      select: colunas => {
-        const consulta = { tabela, colunas, filtros: [] };
-        consultas.push(consulta);
-        const resposta = () => Promise.resolve(tabela === falhaTabela
-          ? { data: null, error: new Error('Falha na carga de ' + tabela) }
-          : { data: dados[tabela], error: null });
-        const builder = {
-          eq: (campo, valor) => { consulta.filtros.push({ campo, valor }); return builder; },
-          order: () => builder,
-          single: resposta,
-          maybeSingle: resposta,
-          then: (resolve, reject) => resposta().then(resolve, reject),
-        };
-        return builder;
-      },
-    }),
-    rpc: async (nome, parametros) => {
-      rpcs.push({ nome, parametros });
-      return { data: true, error: null };
-    },
-  };
-  const rn = {
-    Platform: { OS: 'android' }, StyleSheet: { create: valor => valor },
-    KeyboardAvoidingView: 'KeyboardAvoidingView', Pressable: 'Pressable',
-    ScrollView: 'ScrollView', Text: 'Text', View: 'View',
-  };
-  const perfilGestao = carregar('src/lib/perfilGestao.ts', { './supabase': { supabase } });
-  const exportado = gestao ? 'TelaPerfilOng' : 'TelaPerfilVoluntario';
-  const tela = carregar('src/telas/' + exportado + '.tsx', {
-    react, 'react-native': rn,
-    '@react-navigation/native': { useFocusEffect: callback => { foco = callback; } },
-    '../lib/supabase': { supabase }, '../lib/tema': { cores: {}, espaco: {}, tipo: {} },
-    '../lib/tipos': tipos, '../lib/validadores': validadores, '../lib/mascaras': mascaras,
-    '../lib/regrasVoluntariado': regras, '../lib/voluntariado': { mensagemErro: erro => erro.message },
-    '../lib/perfilGestao': perfilGestao,
-    '../componentes/Ui': { Aviso: 'Aviso', Botao: 'Botao', Campo: 'Campo' },
-    '../componentes/CampoData': { CampoData: 'CampoData' },
-  })[exportado];
-  const render = () => {
-    cursor = 0;
-    return tela({ perfil: { ...dados.usuarios, tipo_perfil: gestao ? 'ONG' : 'VOLUNTARIO' },
-      sair() {}, recarregarPerfil: async () => { recargas++; } });
-  };
-  return { render, carregar: () => foco(), consultas, rpcs, recargas: () => recargas };
+  return { react, reiniciar: () => { cursor = 0; } };
+}
+
+const rn = { StyleSheet: { create: valor => valor }, Pressable: 'Pressable', Text: 'Text', View: 'View' };
+const secoes = { SecaoPerfil: 'SecaoPerfil', CartaoSecao: 'CartaoSecao', HubPerfil: 'HubPerfil', StatusPerfil: 'StatusPerfil', estilosPerfil: {} };
+
+function telasVoluntario(contexto, buscarCep = async () => null) {
+  const { react, reiniciar } = reactFalso(contexto);
+  const telas = carregar('src/telas/TelasPerfilVoluntario.tsx', {
+    react, 'react-native': rn, '../lib/tema': { cores: {}, espaco: {} }, '../lib/tipos': tipos,
+    '../lib/validadores': validadores, '../lib/mascaras': mascaras,
+    '../componentes/Ui': { Campo: 'Campo' }, '../componentes/CampoData': { CampoData: 'CampoData' },
+    '../componentes/PerfilSecoes': secoes, '../lib/perfilVoluntario': { buscarCep }, '../lib/regrasPerfil': regrasPerfil,
+  });
+  return { telas, reiniciar };
+}
+
+function telasOng(contexto) {
+  const { react, reiniciar } = reactFalso(contexto);
+  const telas = carregar('src/telas/TelasPerfilOng.tsx', {
+    react, 'react-native': rn, '../lib/validadores': validadores, '../lib/mascaras': mascaras,
+    '../componentes/Ui': { Campo: 'Campo' }, '../componentes/CampoData': { CampoData: 'CampoData' },
+    '../componentes/PerfilSecoes': secoes, '../lib/regrasPerfil': regrasPerfil,
+    '../lib/perfilOng': carregar('src/lib/perfilOng.ts', { './supabase': {}, './perfilGestao': {} }),
+  });
+  return { telas, reiniciar };
 }
 
 function encontrar(arvore, tipo, atributo, valor) {
   if (!arvore) return undefined;
   if (Array.isArray(arvore)) {
     for (const filho of arvore) {
-      const encontrado = encontrar(filho, tipo, atributo, valor);
-      if (encontrado) return encontrado;
+      const achado = encontrar(filho, tipo, atributo, valor);
+      if (achado) return achado;
     }
     return undefined;
   }
   if (typeof arvore !== 'object') return undefined;
-  if (arvore.tipo === tipo && arvore.props[atributo] === valor) return arvore;
+  if (arvore.tipo === tipo && (atributo === undefined || arvore.props[atributo] === valor)) return arvore;
   return encontrar(arvore.filhos, tipo, atributo, valor);
 }
 
-test('Perfil voluntário: carrega endereço remoto, edita e salva os sete campos normalizados', async () => {
-  const app = montarPerfil(false);
-  app.render();
-  app.carregar();
-  await tick();
-  let arvore = app.render();
+test('Perfil voluntário: carga lê endereço estruturado sem usuarios.endereco', async () => {
+  const falso = supabaseFalso();
+  const perfil = await libVoluntario(falso).carregarPerfilVoluntario('conta-teste');
+  assert.doesNotMatch(falso.consultas.find(c => c.tabela === 'usuarios').colunas, /\bendereco\b/);
+  const colunas = falso.consultas.find(c => c.tabela === 'voluntarios').colunas.split(',').map(c => c.trim());
+  for (const campo of ['cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf']) assert.ok(colunas.includes(campo));
+  assert.equal(perfil.dados.logradouro, 'Rua de Teste');
+  assert.deepEqual(perfil.habilidades, [1]);
+  assert.equal(perfil.elegivel, true);
+});
+
+test('Perfil voluntário: falha em qualquer tabela rejeita a carga inteira', async () => {
+  for (const tabela of ['voluntarios', 'usuarios', 'habilidades', 'usuario_habilidades']) {
+    await assert.rejects(libVoluntario(supabaseFalso({ falhaTabela: tabela })).carregarPerfilVoluntario('x'), /Falha na carga/);
+  }
+});
+
+test('Perfil voluntário: seção de endereço salva só os sete campos normalizados com as habilidades atuais', async () => {
+  const falso = supabaseFalso();
+  const lib = libVoluntario(falso);
+  const perfil = await lib.carregarPerfilVoluntario('conta-teste');
+  const contexto = { valor: { perfil, salvar: (parcial, habilidades) => lib.salvarPerfilVoluntario(parcial, habilidades ?? perfil.habilidades) } };
+  const { telas, reiniciar } = telasVoluntario(contexto);
+  const render = () => { reiniciar(); return telas.TelaSecaoEndereco({ voltar() {} }); };
+  let arvore = render();
   assert.equal(encontrar(arvore, 'Campo', 'rotulo', 'CEP').props.value, '95800-000');
-  assert.equal(encontrar(arvore, 'Campo', 'rotulo', 'Logradouro').props.value, 'Rua de Teste');
-  assert.equal(encontrar(arvore, 'Campo', 'rotulo', 'Complemento').props.value, 'Fundos');
-  const consultaUsuario = app.consultas.find(consulta => consulta.tabela === 'usuarios');
-  assert.doesNotMatch(consultaUsuario.colunas, /\bendereco\b/);
-  const consultaVoluntario = app.consultas.find(consulta => consulta.tabela === 'voluntarios');
-  for (const campo of ['cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf']) {
-    assert.ok(consultaVoluntario.colunas.split(',').map(valor => valor.trim()).includes(campo));
-  }
   const alterados = {
-    CEP: '90001-234', Logradouro: '  Avenida Nova  ', Número: '  s/n  ',
-    Complemento: '  Casa 2  ', Bairro: '  Centro  ', Cidade: '  Porto Alegre  ', UF: 'rs',
+    Logradouro: '  Avenida Nova  ', Número: '  s/n  ', Complemento: '  Casa 2  ',
+    Bairro: '  Centro  ', Cidade: '  Porto Alegre  ', UF: 'rs',
   };
-  for (const [rotulo, valor] of Object.entries(alterados)) {
-    encontrar(arvore, 'Campo', 'rotulo', rotulo).props.onChangeText(valor);
-  }
-  arvore = app.render();
-  await encontrar(arvore, 'Botao', 'titulo', 'Salvar').props.onPress();
-  const salva = app.rpcs.find(rpc => rpc.nome === 'voluntariado_salvar_perfil');
-  assert.ok(salva, 'O handler Salvar precisa chamar a RPC de perfil.');
-  const { p_dados, p_habilidades } = salva.parametros;
-  assert.equal(Object.hasOwn(p_dados, 'endereco'), false);
-  assert.deepEqual(Object.fromEntries(['cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf'].map(campo => [campo, p_dados[campo]])), {
+  for (const [rotulo, valor] of Object.entries(alterados)) encontrar(render(), 'Campo', 'rotulo', rotulo).props.onChangeText(valor);
+  await encontrar(render(), 'Campo', 'rotulo', 'CEP').props.onChangeText('90001-234');
+  arvore = render();
+  assert.equal(await encontrar(arvore, 'SecaoPerfil').props.salvar(), null);
+  const { p_dados, p_habilidades } = falso.rpcs.find(r => r.nome === 'voluntariado_salvar_perfil').parametros;
+  assert.deepEqual(p_dados, {
     cep: '90001234', logradouro: 'Avenida Nova', numero: 's/n', complemento: 'Casa 2',
     bairro: 'Centro', cidade: 'Porto Alegre', uf: 'RS',
   });
-  assert.equal(p_dados.cpf, '52998224725');
-  assert.equal(p_dados.data_nascimento, '1990-06-21');
   assert.deepEqual(p_habilidades, [1]);
-  assert.equal(app.recargas(), 1);
 });
 
-test('Perfil voluntário: erro de carga desabilita Salvar e o handler não chama RPC', async () => {
-  const app = montarPerfil(false, { falhaTabela: 'voluntarios' });
-  app.render();
-  app.carregar();
-  await tick();
-  const arvore = app.render();
-  const salvar = encontrar(arvore, 'Botao', 'titulo', 'Salvar');
-  assert.equal(salvar.props.desabilitado, true);
-  assert.ok(encontrar(arvore, 'Botao', 'titulo', 'Tentar carregar novamente'));
-  await salvar.props.onPress();
-  assert.equal(app.rpcs.length, 0);
-});
-
-test('Perfil voluntário: CEP ou UF inválidos barram a gravação no handler real', async () => {
+test('Perfil voluntário: CEP preenchido pelo ViaCEP e CEP/UF inválidos barram a gravação', async () => {
   for (const [rotulo, valor] of [['CEP', '1234'], ['UF', 'R1']]) {
-    const app = montarPerfil(false);
-    app.render();
-    app.carregar();
-    await tick();
-    encontrar(app.render(), 'Campo', 'rotulo', rotulo).props.onChangeText(valor);
-    await encontrar(app.render(), 'Botao', 'titulo', 'Salvar').props.onPress();
-    assert.equal(app.rpcs.filter(rpc => rpc.nome === 'voluntariado_salvar_perfil').length, 0);
-    assert.match(JSON.stringify(app.render()), new RegExp(rotulo + ' inválid'));
+    let salvou = false;
+    const perfil = await libVoluntario(supabaseFalso()).carregarPerfilVoluntario('x');
+    const { telas, reiniciar } = telasVoluntario({ valor: { perfil, salvar: async () => { salvou = true; } } });
+    const render = () => { reiniciar(); return telas.TelaSecaoEndereco({ voltar() {} }); };
+    await encontrar(render(), 'Campo', 'rotulo', rotulo).props.onChangeText(valor);
+    assert.match(await encontrar(render(), 'SecaoPerfil').props.salvar(), new RegExp(rotulo + ' inválid'));
+    assert.equal(salvou, false);
+  }
+  const perfil = await libVoluntario(supabaseFalso()).carregarPerfilVoluntario('x');
+  const { telas, reiniciar } = telasVoluntario({ valor: { perfil, salvar: async () => {} } },
+    async () => ({ logradouro: 'Praça da Sé', bairro: 'Sé', cidade: 'São Paulo', uf: 'SP' }));
+  const render = () => { reiniciar(); return telas.TelaSecaoEndereco({ voltar() {} }); };
+  await encontrar(render(), 'Campo', 'rotulo', 'CEP').props.onChangeText('01001000');
+  const arvore = render();
+  assert.equal(encontrar(arvore, 'Campo', 'rotulo', 'Logradouro').props.value, 'Praça da Sé');
+  assert.equal(encontrar(arvore, 'Campo', 'rotulo', 'Cidade').props.value, 'São Paulo');
+  assert.equal(encontrar(arvore, 'Campo', 'rotulo', 'Número').props.value, '10');
+});
+
+test('Perfil voluntário: hub sem carga mostra só o erro, sem seções editáveis', () => {
+  const { telas, reiniciar } = telasVoluntario({ valor: { perfil: null, erro: 'Falha', carregando: false, carregar() {}, salvar() {} } });
+  reiniciar();
+  const arvore = telas.TelaHubPerfilVoluntario({ nome: 'Pessoa', sair() {}, abrir() {} });
+  assert.equal(arvore.props.erro, 'Falha');
+  assert.equal(encontrar(arvore, 'CartaoSecao'), undefined);
+});
+
+test('Perfil voluntário: status das seções segue os campos exigidos pela elegibilidade', () => {
+  const base = { ...dados().usuarios, ...dados().voluntarios };
+  assert.deepEqual(regrasPerfil.secoesPendentes(base, 1), []);
+  assert.deepEqual(regrasPerfil.secoesPendentes({ ...base, numero: '  ', disponibilidade_horarios: [] }, 0),
+    ['endereco', 'disponibilidade', 'habilidades']);
+  assert.deepEqual(regrasPerfil.secoesPendentes({ ...base, cpf: null }, 1), ['cadastro']);
+});
+
+test('CEP: resposta do ViaCEP, CEP inexistente e falha de rede', async () => {
+  assert.deepEqual(regrasPerfil.enderecoDoViaCep({ logradouro: 'Praça da Sé', bairro: 'Sé', localidade: 'São Paulo', uf: 'sp' }),
+    { logradouro: 'Praça da Sé', bairro: 'Sé', cidade: 'São Paulo', uf: 'SP' });
+  assert.equal(regrasPerfil.enderecoDoViaCep({ erro: 'true' }), null);
+  assert.equal(regrasPerfil.enderecoDoViaCep(null), null);
+  assert.equal(regrasPerfil.mascararCep('95800000'), '95800-000');
+  const lib = libVoluntario(supabaseFalso());
+  const original = global.fetch;
+  try {
+    global.fetch = async () => { throw new Error('offline'); };
+    assert.equal(await lib.buscarCep('01001000'), null);
+    global.fetch = async () => ({ ok: true, json: async () => ({ erro: true }) });
+    assert.equal(await lib.buscarCep('99999999'), null);
+    let chamadas = 0;
+    global.fetch = async () => { chamadas++; return { ok: true, json: async () => ({}) }; };
+    assert.equal(await lib.buscarCep('123'), null);
+    assert.equal(chamadas, 0, 'CEP incompleto não consulta a rede');
+  } finally {
+    global.fetch = original;
   }
 });
 
-test('Perfil gestão: conta sem complemento salva pela RPC sem endereço pessoal ou institucional', async () => {
-  const app = montarPerfil(true, { semComplemento: true });
-  app.render();
-  app.carregar();
-  await tick();
-  let arvore = app.render();
-  assert.equal(encontrar(arvore, 'Campo', 'rotulo', 'Endereço'), undefined);
-  encontrar(arvore, 'Campo', 'rotulo', 'Nome de exibição').props.onChangeText('  Nova Gestão  ');
-  encontrar(arvore, 'Campo', 'rotulo', 'Razão social').props.onChangeText('  Instituição Nova  ');
-  arvore = app.render();
-  await encontrar(arvore, 'Botao', 'titulo', 'Salvar').props.onPress();
-  const salva = app.rpcs.find(rpc => rpc.nome === 'gestao_salvar_perfil');
-  assert.ok(salva);
-  assert.equal(salva.parametros.p_dados.nome, 'Nova Gestão');
-  assert.equal(salva.parametros.p_dados.razao_social, 'Instituição Nova');
-  for (const campo of ['endereco', 'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf']) {
-    assert.equal(Object.hasOwn(salva.parametros.p_dados, campo), false);
-  }
-  assert.equal(app.recargas(), 1);
+test('Perfil gestão: conta sem complemento carrega e salva só a seção, sem endereço nem PIX', async () => {
+  const base = dados();
+  base.ongs = null;
+  const falso = supabaseFalso({ base });
+  const lib = libOng(falso);
+  const perfil = await lib.carregarPerfilOng('g');
+  assert.equal(perfil.razao_social, null);
+  assert.doesNotMatch(falso.consultas.find(c => c.tabela === 'ongs').colunas, /pix/);
+  await lib.salvarPerfilOng({ nome: 'Nova Gestão', razao_social: 'Instituição Nova' });
+  const { p_dados } = falso.rpcs.find(r => r.nome === 'gestao_salvar_perfil').parametros;
+  assert.deepEqual(p_dados, { nome: 'Nova Gestão', razao_social: 'Instituição Nova' });
 });
 
-test('Perfil gestão: falha na carga do complemento não permite gravar dados parciais', async () => {
-  const app = montarPerfil(true, { falhaTabela: 'ongs' });
-  app.render();
-  app.carregar();
-  await tick();
-  const arvore = app.render();
-  assert.equal(encontrar(arvore, 'Botao', 'titulo', 'Salvar'), undefined);
-  assert.ok(encontrar(arvore, 'Botao', 'titulo', 'Tentar novamente'));
-  assert.equal(app.rpcs.length, 0);
+test('Perfil gestão: seção de WhatsApp valida e envia só os dígitos', async () => {
+  const enviados = [];
+  const perfil = await libOng(supabaseFalso()).carregarPerfilOng('g');
+  const { telas, reiniciar } = telasOng({ valor: { dados: perfil, salvar: async parcial => { enviados.push(parcial); } } });
+  const render = () => { reiniciar(); return telas.TelaSecaoWhatsappOng({ voltar() {} }); };
+  encontrar(render(), 'Campo', 'rotulo', 'WhatsApp').props.onChangeText('5199');
+  assert.match(await encontrar(render(), 'SecaoPerfil').props.salvar(), /WhatsApp inválido/);
+  encontrar(render(), 'Campo', 'rotulo', 'WhatsApp').props.onChangeText('(51) 98888-7777');
+  assert.equal(await encontrar(render(), 'SecaoPerfil').props.salvar(), null);
+  assert.deepEqual(enviados, [{ whatsapp: '51988887777' }]);
+});
+
+test('Perfil gestão: falha de carga é propagada e o hub não oferece seções', async () => {
+  await assert.rejects(libOng(supabaseFalso({ falhaTabela: 'ongs' })).carregarPerfilOng('g'), /Falha na carga/);
+  const { telas, reiniciar } = telasOng({ valor: { dados: null, erro: 'Falha', carregando: false, carregar() {}, salvar() {} } });
+  reiniciar();
+  const arvore = telas.TelaHubPerfilOng({ nome: 'Gestão', sair() {}, abrir() {} });
+  assert.equal(arvore.props.erro, 'Falha');
+  assert.equal(encontrar(arvore, 'CartaoSecao'), undefined);
+});
+
+test('Perfil gestão: WhatsApp vai para a configuração da instituição, não para ongs', async () => {
+  const falso = supabaseFalso();
+  const lib = libOng(falso);
+  assert.equal((await lib.carregarPerfilOng('g')).whatsapp, '51999999999');
+  await lib.salvarPerfilOng({ whatsapp: '51988887777' });
+  assert.deepEqual(falso.atualizacoes, [{ tabela: 'configuracao_instituicao', valores: { whatsapp: '51988887777' }, filtros: [['id', 1]] }]);
+  assert.equal(falso.rpcs.length, 0, 'Seção de WhatsApp não chama a RPC do perfil');
+  const semConfiguracao = dados();
+  semConfiguracao.configuracao_instituicao = null;
+  await assert.rejects(libOng(supabaseFalso({ base: semConfiguracao })).salvarPerfilOng({ whatsapp: null }), /não foram atualizados/);
+});
+
+test('WhatsApp: link com código do país e números inválidos recusados', () => {
+  const { linkWhatsApp } = carregar('src/lib/whatsapp.ts', { 'react-native': { Linking: {} } });
+  assert.equal(linkWhatsApp('(51) 98888-7777', 'Olá & até'), 'https://wa.me/5551988887777?text=Ol%C3%A1%20%26%20at%C3%A9');
+  assert.equal(linkWhatsApp('5551988887777', 'x'), 'https://wa.me/5551988887777?text=x');
+  for (const invalido of ['', '123', '999999999999999']) assert.equal(linkWhatsApp(invalido, 'x'), null);
+});
+
+test('Perfil gestão: PIX lido e gravado na configuração; sem a coluna, a seção fica indisponível', async () => {
+  const falso = supabaseFalso();
+  const lib = libOng(falso);
+  const perfil = await lib.carregarPerfilOng('g');
+  assert.equal(perfil.chave_pix, 'chave-ficticia');
+  assert.equal(perfil.pixDisponivel, true);
+  await lib.salvarPerfilOng({ chave_pix: 'nova', nome_beneficiario_pix: null });
+  assert.deepEqual(falso.atualizacoes.at(-1).valores, { chave_pix: 'nova', nome_beneficiario_pix: null });
+  assert.equal(falso.rpcs.length, 0);
+  const semColuna = supabaseFalso();
+  const original = semColuna.supabase.from;
+  semColuna.supabase.from = tabela => {
+    const consulta = original(tabela);
+    if (tabela !== 'configuracao_instituicao') return consulta;
+    return { ...consulta, select: colunas => colunas.includes('chave_pix')
+      ? { maybeSingle: async () => ({ data: null, error: { code: '42703', message: 'column does not exist' } }) }
+      : consulta.select(colunas) };
+  };
+  const antigo = await libOng(semColuna).carregarPerfilOng('g');
+  assert.equal(antigo.pixDisponivel, false);
+  assert.equal(antigo.whatsapp, '51999999999');
 });

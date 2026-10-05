@@ -2,6 +2,18 @@
 
 Data de referência: 29/09/2026. Projeto remoto: `hnawclapixopwjyrpxpq`.
 
+> **Situação em 05/10/2026.**
+> - **Desfecho:** o plano foi executado em etapas (1A, 1B, 1C) e resultou nas reconciliações 01 e 02,
+>   aplicadas no remoto em 30/09.
+> - **Reversão de 05/10:** onde este relatório trata `metas_demandas`/`contribuicoes` como legado
+>   financeiro e as tabelas de materiais como contrato do MVP, vale o contrário: metas em dinheiro e de
+>   materiais são o modelo ativo, e `solicitacoes_materiais`/`contribuicoes_materiais` serão excluídas pela
+>   reconciliação pendente `20261005150000` ([CONTRIBUICOES.md](../mvp/CONTRIBUICOES.md)).
+> - Oficinas e certificados estão fora do MVP desde 05/10 ([ESCOPO_MVP.md](../mvp/ESCOPO_MVP.md)).
+> - O estado atual do remoto está em [COMPATIBILIDADE_SUPABASE_20260930.md](COMPATIBILIDADE_SUPABASE_20260930.md).
+>
+> O texto abaixo preserva a análise de 29/09.
+
 **Documento de análise, não autorização de implantação.** Nenhuma migration,
 policy, grant, função, trigger, tabela, dado ou configuração remota foi alterada.
 Não houve deploy. A única entrega local desta etapa é este relatório.
@@ -274,7 +286,7 @@ CREATEs/seeds nem substituir o trigger financeiro remoto pela versão mais antig
 | docs/mvp/CORRECOES_MVP.md | Contrato de salvamento da gestão precisa distinguir endereço institucional |
 | docs/auditoria/SEGURANCA_BASE.md, docs/auditoria/AUDITORIA_FINAL_MVP.md | Registram base antes desconhecida; conservar como retrato datado, acrescentando vínculo com evidências remotas depois |
 
-docs/mvp/MATERIAIS.md menciona endereço como dado que não é exposto, não como campo
+docs/mvp/CONTRIBUICOES.md (histórico de materiais) menciona endereço como dado que não é exposto, não como campo
 que precise ser transferido. docs/auditoria/AUDITORIA_SUPABASE_LEITURA.sql permanece roteiro
 de leitura; não é ferramenta de migração. Documentação antiga não deve ser lida
 como instrução para aplicar a sequência local sem reconciliar o histórico.

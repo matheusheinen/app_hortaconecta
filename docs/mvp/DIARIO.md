@@ -1,5 +1,21 @@
 # Prioridade 3 — Diário de Transparência
 
+> **Situação em 05/10/2026.** Fluxo **dentro do MVP** ([ESCOPO_MVP.md](ESCOPO_MVP.md)).
+> - **Requisitos e backlog ([CLAUDE.md](../../CLAUDE.md)):** RF0013, RNF0003 (imagens de menores), RNF0005 (consumo de dados); B25, B26, B27.
+> - **Banco:** colunas, RPCs com revisão (`diario_salvar_revisao`/`diario_status_revisao`) e o
+>   bucket privado `diario-imagens` estão no remoto desde 30/09, pela
+>   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql).
+>   A migration `20260924160000` fica como histórico; não aplicar no remoto.
+> - **Tipos:** o contrato local `DatabaseMateriais` citado abaixo foi substituído por
+>   `DatabaseAplicativo` (`src/lib/database.api.types.ts`), derivado dos tipos regenerados.
+> - **Lacuna conhecida (RNF0005, B27):** o app ainda não comprime nem redimensiona a imagem com
+>   `expo-image-manipulator`, como pede o CLAUDE.md; usa só `quality: 0.8` do seletor.
+> - **Legado financeiro:** metas e contribuições em dinheiro voltaram a fazer parte do MVP
+>   ([CONTRIBUICOES.md](CONTRIBUICOES.md)); as menções a "legado financeiro" abaixo são de 24/09.
+> - **Pendente:** Storage real (upload, URLs assinadas, limites HTTP) e homologação em Android.
+>
+> As seções abaixo preservam o registro de 24/09; contagens de testes são daquela data.
+
 > Correção integrada: a edição e a visibilidade agora exigem `revisao` nas RPCs
 > `diario_salvar_revisao`/`diario_status_revisao`. As versões antigas não são
 > executáveis pelo cliente. Ver [CORRECOES_MVP.md](CORRECOES_MVP.md).
@@ -60,6 +76,7 @@ ao formulário nesta etapa.
 Arquivos principais: PilhaDiario.tsx, TelasDiario.tsx, ImagemDiario.tsx,
 diario.ts, diario.types.ts e regrasDiario.ts. O contrato local de RPCs estende
 DatabaseMateriais; database.types.ts não foi apresentado como regenerado.
+*(30/09: tipos regenerados; o cliente usa `DatabaseAplicativo`.)*
 
 ## Banco e migration
 
@@ -228,6 +245,7 @@ falhas de conexão e expiração de URL. O bundle local não é teste ponta a po
 ## Legado e decisões pendentes
 
 Preservados contratos gerados, tabelas/trigger financeiros e campos PIX.
+*(05/10: esse modelo financeiro voltou a ser usado; ver [CONTRIBUICOES.md](CONTRIBUICOES.md).)*
 Apenas a indicação de que o Diário "chega em breve" foi retirada dos pontos que
 agora dão acesso ao Diário. Outros textos financeiros antigos continuam fora
 do escopo. url_imagem legada permanece no banco mas não é carregada no novo UI:
@@ -244,3 +262,4 @@ Referências técnicas consultadas:
 - [Supabase Storage: controle de acesso](https://supabase.com/docs/guides/storage/security/access-control)
 
 Parar na Prioridade 3; não iniciar Oficinas ou Certificados automaticamente.
+*(Oficinas e certificados foram implementados em 24/09 e estão fora do MVP desde 05/10.)*

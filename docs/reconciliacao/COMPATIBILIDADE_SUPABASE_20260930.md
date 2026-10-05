@@ -2,6 +2,20 @@
 
 Data: 30/09/2026. Projeto remoto: HortaConecta (`hnawclapixopwjyrpxpq`).
 
+> **Situação em 05/10/2026.** Este continua sendo o retrato do que foi aplicado no remoto.
+> Mudanças decididas depois:
+> - **Reconciliação pendente** `supabase/reconciliacao/20261005150000_contribuicoes_metas_pix.sql`:
+>   move o PIX para `configuracao_instituicao`, exige meta ABERTA para a contribuição do
+>   voluntário e **exclui** `solicitacoes_materiais`, `contribuicoes_materiais` e as funções
+>   `materiais_*` instaladas pela reconciliação 02. Ver [CONTRIBUICOES.md](../mvp/CONTRIBUICOES.md).
+> - **Fluxos do MVP:** voluntariado, contribuições por metas (dinheiro e materiais) e Diário.
+>   Oficinas e certificados continuam no banco, mas ocultos no app ([ESCOPO_MVP.md](../mvp/ESCOPO_MVP.md)).
+>   O "PIX legado" citado abaixo voltou a ser usado.
+> - **Tipos:** até a reconciliação pendente ser aplicada, `DatabaseAplicativo` tem de novo uma
+>   extensão provisória (`ColunasPix`) para as colunas de PIX. Remover ao regenerar `database.types.ts`.
+> - **Testes locais:** 117 aprovados em 05/10 (eram 91 nesta data).
+> - O projeto ficou fora do ar em 05/10 (DNS inexistente, provável pausa) e foi restaurado no mesmo dia.
+
 ## Resultado
 
 O aplicativo e o banco remoto agora compartilham o contrato de endereço estruturado e as funções dos cinco fluxos do MVP. As duas reconciliações foram aplicadas ao projeto remoto nesta tarefa, após ensaio local sobre o catálogo PUBLIC capturado por consultas de leitura. As migrations históricas não foram reaplicadas nem editadas.

@@ -30,7 +30,7 @@ export function TelaMinhasCandidaturas({
       {historico ? (
         <Text style={tipo.apoio}>
           A carga horária abaixo é a prevista na atividade, registrada no check-in. Não mede
-          horas efetivamente realizadas; os certificados de participação mantêm essa indicação.
+          horas efetivamente realizadas.
         </Text>
       ) : null}
       {!itens.length ? (

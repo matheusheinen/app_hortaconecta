@@ -20,10 +20,10 @@ function carregar(respostas = {}) {
   const dependencias = {
     './supabase': { supabase: {
       async rpc() { return respostas.elegibilidade ?? { data: true, error: null }; },
-      from() { return consulta; },
+      from(tabela) { return tabela === 'contribuicoes' ? { select: async () => ({ data: [], error: null }) } : consulta; },
     } },
     './voluntariado': { carregarMinhasInscricoes: async () => [] },
-    './materiais': { listarMateriais: async () => [], minhasContribuicoes: async () => [] },
+    './metas': { listarMetas: async () => [] },
     './diario': { listarDiario: async () => [] },
   };
   const modulo = new Module('resumoInicio');
@@ -36,10 +36,10 @@ function carregar(respostas = {}) {
   }).outputText, 'resumoInicio.cjs');
   return modulo.exports;
 }
-const { montarResumoInicio, formatarHorasInicio, progressoMaterialInicio } = carregar();
+const { montarResumoInicio, formatarHorasInicio, progressoMetaInicio } = carregar();
 const agora = new Date('2026-09-30T12:00:00Z');
 function dados(alteracoes = {}) {
-  return { perfilCompleto: true, inscricoes: [], contribuicoes: [], atividades: [], materiais: [], diario: [], ...alteracoes };
+  return { perfilCompleto: true, inscricoes: [], contribuicoes: [], atividades: [], metas: [], diario: [], ...alteracoes };
 }
 function presenca(carga, confirmada = true, checkin = '2026-09-29T12:00:00Z') {
   return { atividade: { carga_horaria: 99 }, inscricao: {
@@ -47,10 +47,10 @@ function presenca(carga, confirmada = true, checkin = '2026-09-29T12:00:00Z') {
   } };
 }
 
-test('Início: horas usam snapshots do check-in e contribuições contam apenas entregas confirmadas', () => {
+test('Início: horas usam snapshots do check-in e contribuições contam apenas as aprovadas', () => {
   const resumo = montarResumoInicio(dados({
     inscricoes: [presenca(2.5), presenca(1), presenca(null), presenca(5, false), presenca(7, true, null), presenca(8, true, '2026-10-01T12:00:00Z')],
-    contribuicoes: ['CONFIRMADA', 'PENDENTE', 'CANCELADA', 'CONFIRMADA'].map(status => ({ contribuicao: { status } })),
+    contribuicoes: ['APROVADA', 'PENDENTE', 'RECUSADA', 'APROVADA'].map(status_validacao => ({ status_validacao })),
   }), agora);
   assert.equal(resumo.horasRegistradas, 3.5);
   assert.equal(resumo.atividadesParticipadas, 5);
@@ -68,22 +68,24 @@ test('Início: destaca as duas próximas atividades abertas com vagas reais', ()
   assert.deepEqual(atividades.map(item => item.id), [1, 2, 3, 4, 5, 6]);
 });
 
-test('Início: solicitações encerradas e publicações ocultas não substituem conteúdo ativo', () => {
-  const materiais = [
-    { id: 1, status: 'CONCLUIDA', criado_em: '2026-09-30', quantidade_necessaria: 5, quantidade_recebida: 5 },
-    { id: 2, status: 'ABERTA', criado_em: '2026-09-29', quantidade_necessaria: 5, quantidade_recebida: 0 },
-    { id: 3, status: 'EM_ANDAMENTO', criado_em: '2026-09-30', quantidade_necessaria: 5, quantidade_recebida: 2 },
+test('Início: metas encerradas, atingidas ou vencidas e publicações ocultas não substituem conteúdo ativo', () => {
+  const meta = (id, extra) => ({ id, status: 'ABERTA', criado_em: '2026-09-28', data_limite: null, quantidade_meta: 5, quantidade_arrecadada: 0, ...extra });
+  const metas = [
+    meta(1, { status: 'ENCERRADA', criado_em: '2026-09-30' }),
+    meta(2, { criado_em: '2026-09-29T10:00:00Z', quantidade_arrecadada: 2 }),
+    meta(4, { criado_em: '2026-09-30', quantidade_arrecadada: 5 }),
+    meta(5, { criado_em: '2026-09-30', data_limite: '2026-09-29' }),
   ];
   const diario = [
     { id: 1, status: 'OCULTA', data_publicacao: '2026-09-30' },
     { id: 2, status: 'PUBLICADA', data_publicacao: '2026-09-29' },
   ];
-  const resumo = montarResumoInicio(dados({ materiais, diario }), agora);
-  assert.equal(resumo.material.id, 3);
-  assert.equal(progressoMaterialInicio(resumo.material), 40);
+  const resumo = montarResumoInicio(dados({ metas, diario }), agora);
+  assert.equal(resumo.meta.id, 2);
+  assert.equal(progressoMetaInicio(resumo.meta), 40);
   assert.equal(resumo.publicacao.id, 2);
   const vazio = montarResumoInicio(dados(), agora);
-  assert.equal(vazio.material, null);
+  assert.equal(vazio.meta, null);
   assert.equal(vazio.publicacao, null);
   assert.equal(vazio.horasRegistradas, 0);
 });

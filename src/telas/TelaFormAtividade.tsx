@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -10,11 +11,12 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { cores, espaco, tipo } from '../lib/tema';
-import type { Atividade } from '../lib/tipos';
+import type { Atividade, Habilidade } from '../lib/tipos';
 import { mascararDataHora } from '../lib/mascaras';
 import { Aviso, Botao, Campo } from '../componentes/Ui';
 import { interpretarCarga, interpretarDataHora } from '../lib/regrasVoluntariado';
 import { mensagemErro } from '../lib/voluntariado';
+import { carregarAreasAtividade, salvarAreasAtividade } from '../lib/areasAtividade';
 
 type Props = {
   atividade: Atividade | null;
@@ -33,6 +35,37 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
   const [carga, setCarga] = useState(String(atividade?.carga_horaria ?? ''));
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const [catalogo, setCatalogo] = useState<Habilidade[]>([]);
+  const [areas, setAreas] = useState<number[]>([]);
+  const [areasOriginais, setAreasOriginais] = useState<number[]>([]);
+  const [avisoAreas, setAvisoAreas] = useState<string | null>(null);
+
+  // Áreas são opcionais: se a carga falhar, a tarefa continua editável sem elas.
+  useEffect(() => {
+    let ativo = true;
+    void (async () => {
+      try {
+        const [lista, marcadas] = await Promise.all([
+          supabase.from('habilidades').select('*').order('categoria').order('nome_habilidade'),
+          atividade ? carregarAreasAtividade(atividade.id) : Promise.resolve([]),
+        ]);
+        if (lista.error) throw lista.error;
+        if (!ativo) return;
+        setCatalogo(lista.data ?? []);
+        setAreas(marcadas);
+        setAreasOriginais(marcadas);
+      } catch (falha) {
+        if (ativo) setAvisoAreas(`Não foi possível carregar as áreas: ${mensagemErro(falha)}`);
+      }
+    })();
+    return () => {
+      ativo = false;
+    };
+  }, [atividade]);
+
+  function alternarArea(id: number) {
+    setAreas((atual) => (atual.includes(id) ? atual.filter((a) => a !== id) : [...atual, id]));
+  }
 
   async function salvar() {
     setErro(null);
@@ -89,6 +122,13 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
             .single();
       if (error) throw error;
       if (!gravada) throw new Error('A atividade não foi salva. Recarregue e tente novamente.');
+      if (!avisoAreas) {
+        try {
+          await salvarAreasAtividade(gravada.id, areasOriginais, areas);
+        } catch (falha) {
+          Alert.alert('Tarefa salva', `As áreas não foram atualizadas: ${mensagemErro(falha)} Edite a tarefa para tentar de novo.`);
+        }
+      }
       onPronto();
     } catch (falha) {
       setErro(traduzErro(mensagemErro(falha)));
@@ -144,6 +184,30 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
           keyboardType="decimal-pad"
         />
 
+        <Text style={estilos.rotulo}>Áreas da tarefa (opcional)</Text>
+        <Text style={[tipo.apoio, { marginBottom: espaco.sm }]}>
+          Usadas para sugerir a tarefa a voluntários com habilidades da mesma área. Sem área
+          marcada, a sugestão considera só a disponibilidade.
+        </Text>
+        {avisoAreas ? <Text style={[tipo.apoio, { marginBottom: espaco.md }]}>{avisoAreas}</Text> : null}
+        <View style={estilos.chips}>
+          {catalogo.map((h) => {
+            const ativo = areas.includes(h.id);
+            return (
+              <Pressable
+                key={h.id}
+                onPress={() => alternarArea(h.id)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: ativo }}
+                accessibilityLabel={h.nome_habilidade}
+                style={[estilos.chip, ativo && estilos.chipAtivo]}
+              >
+                <Text style={[estilos.chipTexto, ativo && estilos.chipTextoAtivo]}>{h.nome_habilidade}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         <Botao
           titulo={editando ? 'Salvar alterações' : 'Publicar'}
           onPress={salvar}
@@ -174,6 +238,18 @@ function traduzErro(mensagem: string) {
 }
 
 const estilos = StyleSheet.create({
-  conteudo: { padding: espaco.lg, paddingTop: espaco.xl },
+  conteudo: { padding: espaco.lg, paddingTop: espaco.xl, width: '100%', maxWidth: 560, alignSelf: 'center' },
   multilinha: { minHeight: 110, textAlignVertical: 'top', paddingTop: 12 },
+  rotulo: { fontSize: 13, fontWeight: '600', color: cores.tintaSuave, marginBottom: espaco.xs },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: espaco.sm, marginBottom: espaco.lg },
+  chip: {
+    borderWidth: 1.5,
+    borderColor: cores.linha,
+    borderRadius: 20,
+    paddingHorizontal: espaco.md,
+    paddingVertical: espaco.xs + 2,
+  },
+  chipAtivo: { borderColor: cores.folha, backgroundColor: cores.folhaClara },
+  chipTexto: { fontSize: 13, fontWeight: '600', color: cores.tintaSuave },
+  chipTextoAtivo: { color: cores.folha },
 });

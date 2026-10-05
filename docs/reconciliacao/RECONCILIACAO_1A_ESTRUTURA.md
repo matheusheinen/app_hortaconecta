@@ -2,6 +2,18 @@
 
 Data: 29/09/2026. Projeto remoto: HortaConecta (`hnawclapixopwjyrpxpq`).
 
+> **Situação em 05/10/2026.**
+> - **Desfecho:** o inventário serviu de base para a 1B e para as reconciliações aplicadas em 30/09.
+>   As "dez migrations locais" comparadas aqui ficaram como histórico; não são aplicadas no remoto.
+> - **Reversão de 05/10:** onde este relatório trata `metas_demandas`/`contribuicoes` como legado
+>   financeiro e as tabelas de materiais como contrato do MVP, vale o contrário: metas em dinheiro e de
+>   materiais são o modelo ativo, e `solicitacoes_materiais`/`contribuicoes_materiais` serão excluídas pela
+>   reconciliação pendente `20261005150000` ([CONTRIBUICOES.md](../mvp/CONTRIBUICOES.md)).
+> - Oficinas e certificados estão fora do MVP desde 05/10 ([ESCOPO_MVP.md](../mvp/ESCOPO_MVP.md)).
+> - O estado atual do remoto está em [COMPATIBILIDADE_SUPABASE_20260930.md](COMPATIBILIDADE_SUPABASE_20260930.md).
+>
+> O texto abaixo preserva a análise de 29/09.
+
 ## 1. Estado remoto atual
 
 Esta entrega compara o catálogo remoto consultado nesta etapa com as dez migrations locais, `src/lib/database.types.ts`, `CLAUDE.md`, `docs/auditoria/AUDITORIA_FINAL_MVP.md` e `docs/reconciliacao/PLANO_RECONCILIACAO_SUPABASE.md`. Foram feitas somente consultas SELECT de metadados: ledger de migrations, information_schema e pg_catalog. Nenhuma função de negócio foi executada.
