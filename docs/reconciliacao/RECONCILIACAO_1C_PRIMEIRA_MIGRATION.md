@@ -3,6 +3,18 @@
 Data: 29/09/2026. Projeto: HortaConecta (`hnawclapixopwjyrpxpq`).
 **Somente análise. Nenhuma migration SQL foi criada ou aplicada.**
 
+> **Situação em 05/10/2026.**
+> - **Desfecho:** a migration definida aqui foi criada como `supabase/migrations/reconciliacao_01_base_perfis_endereco.sql`
+>   e aplicada no remoto em 30/09 (versão `20260930142505`).
+> - **Reversão de 05/10:** onde este relatório trata `metas_demandas`/`contribuicoes` como legado
+>   financeiro e as tabelas de materiais como contrato do MVP, vale o contrário: metas em dinheiro e de
+>   materiais são o modelo ativo, e `solicitacoes_materiais`/`contribuicoes_materiais` serão excluídas pela
+>   reconciliação pendente `20261005150000` ([CONTRIBUICOES.md](../mvp/CONTRIBUICOES.md)).
+> - Oficinas e certificados estão fora do MVP desde 05/10 ([ESCOPO_MVP.md](../mvp/ESCOPO_MVP.md)).
+> - O estado atual do remoto está em [COMPATIBILIDADE_SUPABASE_20260930.md](COMPATIBILIDADE_SUPABASE_20260930.md).
+>
+> O texto abaixo preserva a análise de 29/09.
+
 ## 1. Primeiro conflito escolhido
 
 **RECOMENDAÇÃO TÉCNICA:** começar pelo contrato de **identidade, perfil e endereço**, com nome conceitual `reconciliacao_01_base_perfis_endereco`. Não há timestamp/arquivo SQL definido nesta entrega.

@@ -1,5 +1,21 @@
 # Prioridade 1 — Voluntariado
 
+> **Situação em 05/10/2026.** Fluxo **dentro do MVP** ([ESCOPO_MVP.md](ESCOPO_MVP.md)).
+> - **Banco:** o contrato descrito aqui está no Supabase remoto desde 30/09, instalado pela
+>   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql)
+>   (derivada destas migrations). As migrations `20260923120000` e `20260924120000` **não** são
+>   aplicadas no remoto; ficam como histórico. Ver [COMPATIBILIDADE](../reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
+> - **Regras que mudaram depois deste registro:** a elegibilidade também exige logradouro,
+>   número e cidade (endereço estruturado em `voluntarios`); só candidaturas APROVADA ocupam vaga.
+> - **App:** o perfil virou um hub com cinco seções que salvam pela mesma RPC
+>   `voluntariado_salvar_perfil`, com busca de CEP pelo ViaCEP. O detalhe da atividade tem
+>   o botão de WhatsApp da gestão (`configuracao_instituicao.whatsapp`). A gestão marca áreas
+>   da tarefa (`atividade_habilidades`), e o Início sugere tarefas por disponibilidade e área.
+> - **Pendente:** homologação em Android e com JWT real; concorrência entre conexões independentes.
+>
+> As seções abaixo preservam o registro de 23–24/09; contagens de testes e estados de
+> implantação citados nelas são daquela data.
+
 > Correção integrada: após qualquer candidatura, os campos históricos da atividade
 > ficam imutáveis por trigger. Descrição e vagas mantêm edição nas regras existentes.
 > Ver [CORRECOES_MVP.md](CORRECOES_MVP.md) e [SEGURANCA_BASE.md](../auditoria/SEGURANCA_BASE.md).
@@ -10,9 +26,10 @@ de oficinas, certificados, WhatsApp e notificações não foram alterados nesta 
 
 ## Estado e dependências de implantação
 
-A migration `20260923120000_fluxo_voluntariado.sql` e a correção complementar
-`20260924120000_valida_seguranca_voluntariado.sql` **não foram aplicadas ao
-Supabase remoto**. Aplicar nessa ordem, após os pré-requisitos abaixo. As telas dependem
+*(Registro de 24/09. Em 30/09 o contrato foi instalado pela reconciliação 02; não
+aplicar estas migrations no remoto.)* A migration `20260923120000_fluxo_voluntariado.sql`
+e a correção complementar `20260924120000_valida_seguranca_voluntariado.sql` **não foram
+aplicadas ao Supabase remoto**. Aplicar nessa ordem, após os pré-requisitos abaixo. As telas dependem
 da primeira, e a restrição de leitura depende também da segunda; uma RPC ausente
 produz mensagem de servidor desatualizado. Não implantar somente o app.
 
@@ -56,8 +73,9 @@ integrar os tipos somente depois de conferir/aplicar o schema remoto.
   objetos `{dia, periodo}` com dias/períodos válidos e sem repetição. Array vazio
   é aceito como cadastro incompleto. Formato legado incompatível bloqueia o
   salvamento e solicita suporte, sem converter ou apagar dados automaticamente.
-- A elegibilidade atual exige perfil VOLUNTARIO, CPF preenchido, nascimento no
+- A elegibilidade exige perfil VOLUNTARIO, CPF preenchido, nascimento no
   passado, profissão, disponibilidade válida não vazia e alguma habilidade.
+  *(Desde 30/09 também logradouro, número e cidade.)*
   O app valida CPF pelo dígito verificador; o servidor valida formato e conserva
   as constraints existentes. A verificação é recalculada após salvar e ao voltar
   às telas, sem armazenar um nível de cadastro duplicado.
@@ -272,3 +290,5 @@ remoto e concorrência real entre conexões independentes.
     acesso e voltar. Verificar que o leitor abre sem precisar reiniciar o app.
 
 Parar nesta prioridade. A evolução para materiais e certificados requer outra etapa.
+*(Histórico: contribuições seguem hoje o modelo de metas, ver [CONTRIBUICOES.md](CONTRIBUICOES.md);
+certificados estão fora do MVP.)*

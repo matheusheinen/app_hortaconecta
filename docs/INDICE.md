@@ -42,7 +42,9 @@ Ocultos no app por `src/lib/escopoMvp.ts`; código, testes e banco preservados.
 
 ## Estado atual
 
-As duas reconciliações foram aplicadas ao Supabase em 30/09/2026. O app usa endereço estruturado e tipos regenerados; os cinco fluxos foram verificados por SQL no remoto com dados fictícios revertidos. Login, início e navegação foram atualizados, com indicadores ligados aos dados reais. A suíte local tem 99 testes aprovados e a exportação Android passou. Ver [resultado e limites da verificação](reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
+**05/10/2026.** O MVP compreende voluntariado, contribuições por metas (dinheiro e materiais) e Diário; oficinas e certificados estão ocultos no app ([escopo](mvp/ESCOPO_MVP.md)). As reconciliações 01 e 02 estão aplicadas no Supabase desde 30/09; a reconciliação `20261005150000` (PIX na configuração e exclusão das tabelas de materiais) **está pendente**. A suíte local tem 117 testes aprovados. Cada relatório das pastas `auditoria`, `mvp` e `reconciliacao` abre com um bloco "Situação em 05/10/2026" que indica o que mudou desde a data em que foi escrito. Pendências: [ESCOPO_MVP.md](mvp/ESCOPO_MVP.md#pendências-do-mvp-05102026).
+
+Em 30/09/2026 as duas reconciliações foram aplicadas e os fluxos foram verificados por SQL no remoto com dados fictícios revertidos. Ver [resultado e limites da verificação](reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 
 Os relatórios anteriores descrevem o estado de cada etapa e permanecem como histórico. A homologação em aparelho Android, Auth/Storage pelos serviços reais e concorrência entre conexões independentes continuam pendentes. Os comandos LAN, localhost e Cloudflare estão descritos no [guia de execução](EXECUTAR_APP.md). `npm test` executa a suíte sequencialmente para limitar o consumo de memória dos bancos PGLite.
 

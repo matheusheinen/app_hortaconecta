@@ -1,4 +1,8 @@
 -- Auditoria manual, somente leitura. NÃO é migration. Não executada no remoto.
+-- Situação em 05/10/2026: preparada em 24/09. O diagnóstico 1B (29/09) usou consultas próprias.
+-- Depois da reconciliação 20261005150000, solicitacoes_materiais e contribuicoes_materiais
+-- devem retornar NULL no bloco 1; metas_demandas e contribuicoes são o modelo ativo.
+-- O bloco 10, ao final, confere o resultado dessa reconciliação.
 -- Execute cada bloco separadamente no SQL Editor administrativo de homologação.
 -- Resultados de catálogo não substituem testes HTTP com JWT de usuários reais.
 -- Guarde os resultados em ambiente restrito; definições podem conter informação interna.
@@ -9,7 +13,8 @@ SELECT current_database(), current_user, version(),
 SELECT nome, to_regclass(nome) AS objeto
 FROM unnest(ARRAY['supabase_migrations.schema_migrations','auth.users',
  'public.usuarios','public.voluntarios','public.ongs','public.atividades',
- 'public.inscricoes_atividades','public.solicitacoes_materiais',
+ 'public.inscricoes_atividades','public.atividade_habilidades','public.metas_demandas',
+ 'public.contribuicoes','public.configuracao_instituicao','public.solicitacoes_materiais',
  'public.contribuicoes_materiais','public.diario_transparencia',
  'public.propostas_oficinas','public.certificados','storage.buckets','storage.objects']) AS t(nome);
 
@@ -116,3 +121,14 @@ WHERE d.imagem_caminho IS NOT NULL AND o.id IS NULL;
 SELECT count(*) AS imagens_sem_vinculo FROM storage.objects o
 WHERE o.bucket_id='diario-imagens' AND NOT EXISTS(SELECT 1 FROM public.diario_transparencia d WHERE d.imagem_caminho=o.name);
 -- Arquivos sem vínculo podem resultar de operações interrompidas: inventariar, não excluir.
+
+-- 10. (05/10/2026) Resultado da reconciliação 20261005150000_contribuicoes_metas_pix.
+-- Esperado: colunas de PIX presentes, policy restritiva de meta aberta, nenhuma função materiais_*.
+SELECT column_name, data_type FROM information_schema.columns
+WHERE table_schema='public' AND table_name='configuracao_instituicao'
+  AND column_name IN ('whatsapp','chave_pix','nome_beneficiario_pix');
+SELECT policyname, permissive, cmd, roles FROM pg_policies
+WHERE schemaname='public' AND tablename IN ('metas_demandas','contribuicoes') ORDER BY tablename, policyname;
+SELECT count(*) AS funcoes_materiais FROM pg_proc
+WHERE pronamespace='public'::regnamespace AND proname LIKE 'materiais\_%';
+

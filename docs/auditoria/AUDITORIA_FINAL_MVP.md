@@ -1,5 +1,21 @@
 # Auditoria final do MVP — 24/09/2026
 
+> **Situação em 05/10/2026.** Este relatório é de 24/09. O que mudou desde então:
+>
+> | Achado de 24/09 | Situação em 05/10 |
+> | --- | --- |
+> | Base original do remoto desconhecida | Catálogo remoto capturado em 29/09 ([1A](../reconciliacao/RECONCILIACAO_1A_ESTRUTURA.md), [1B](../reconciliacao/RECONCILIACAO_1B_DIAGNOSTICO.md)) e reconciliações 01 e 02 aplicadas em 30/09 ([compatibilidade](../reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md)). As dez migrations listadas abaixo **não** são aplicadas no remoto; o contrato delas chegou pelas reconciliações. |
+> | Leitura ampla de `ongs` e `usuarios` | Fechada pelas policies restritivas `ongs_privacidade_mvp` e `usuarios_privacidade_mvp` (reconciliação 02): cada conta lê o próprio cadastro; a gestão lê todos. |
+> | "Exposição de PIX" no perfil da gestão | Deixou de ser inconsistência: metas em dinheiro (PIX) voltaram ao MVP. A chave passa para `configuracao_instituicao` pela reconciliação pendente `20261005150000` ([CONTRIBUICOES.md](../mvp/CONTRIBUICOES.md)). |
+> | Contribuições de materiais (`solicitacoes_materiais`, `contribuicoes_materiais`, `materiais_*`) | Fluxo removido do app em 05/10; tabelas e funções serão **excluídas** pela reconciliação pendente. As linhas de materiais nas tabelas abaixo são históricas. |
+> | `metas_demandas`/`contribuicoes` como legado | Voltaram a ser o modelo ativo, com escrita direta protegida por RLS (voluntário insere PENDENTE; gestão insere APROVADA e confere). |
+> | Telas antigas `PilhaMetas`, `TelaMetas`, `TelaFormMeta`, `useOng` | Substituídas por `PilhaMetas` + `TelasMetas` novos; `useOng` removido. `expo-clipboard` é usado para copiar a chave PIX. |
+> | Oficinas e certificados no MVP | Fora do MVP desde 05/10, ocultos no app; banco preservado. |
+> | Escritas diretas do cliente | Além de atividades: `metas_demandas`, `contribuicoes`, `atividade_habilidades` e `configuracao_instituicao` (WhatsApp/PIX), todas sob RLS. |
+> | Concorrência, Storage, Auth real e Android | **Continuam pendentes.** |
+>
+> A suíte local passou de 65 para 117 testes. O restante do relatório preserva o registro de 24/09.
+
 ## Escopo e conclusão
 
 Revisão do repositório após as correções de coerência do MVP. Nesta etapa foram
@@ -112,18 +128,18 @@ considerar clientes antigos seguros. Nenhuma migration histórica deve ser remov
 | Tabela/objeto | Leitura | Escrita pelo cliente atual / banco |
 |---|---|---|
 | usuarios / voluntarios / atividades | RLS original não comprovada | Perfis via RPC, atividades ainda diretamente; autorização original pendente. Triggers adicionais conhecidos não substituem RLS |
-| ongs | Policy conhecida permite autenticados | RPC atômica nova; policies legadas ainda permitem INSERT/UPDATE próprios nas condições acima; grants reais pendentes |
+| ongs | Policy conhecida permite autenticados *(30/09: restrita ao próprio cadastro e à gestão)* | RPC atômica nova; policies legadas ainda permitem INSERT/UPDATE próprios nas condições acima; grants reais pendentes |
 | habilidades / usuario_habilidades | Autenticados / próprio ou gestão | Gestão mantém catálogo; associação própria INSERT/DELETE permitidos na policy antiga; perfil atual usa transação |
 | inscricoes_atividades | Próprio/gestão, limite restritivo | INSERT/UPDATE/DELETE diretos bloqueados; candidatura, decisão, cancelamento e presença somente RPCs conhecidas |
 | tokens_checkin | Schema privado sem acesso do cliente | Gestão recebe token por RPC; voluntário entrega token à validação, não o consulta na tabela |
-| solicitacoes_materiais | Disponíveis, gestão, ou solicitante com contribuição conforme regra de detalhe | Writes diretos bloqueados; gestão por RPC |
-| contribuicoes_materiais | Próprio/gestão | Writes diretos bloqueados; criar/cancelar próprio e confirmar gestão por RPC |
+| solicitacoes_materiais *(a excluir, 05/10)* | Disponíveis, gestão, ou solicitante com contribuição conforme regra de detalhe | Writes diretos bloqueados; gestão por RPC |
+| contribuicoes_materiais *(a excluir, 05/10)* | Próprio/gestão | Writes diretos bloqueados; criar/cancelar próprio e confirmar gestão por RPC |
 | diario_transparencia | Autenticado PUBLICADA; gestão também OCULTA | Writes diretos bloqueados; gestão por RPC com revisão |
 | storage.objects do Diário | Gestão ou imagem de publicação PUBLICADA para autenticados | Upload gestão/caminho autorizado; UPDATE proibido; DELETE gestão somente sem vínculo. Restritivas limitam policies amplas |
 | propostas_oficinas | Próprio/gestão, limite restritivo | Writes diretos bloqueados; RPCs, revisão e estados finais |
 | certificados | Próprio/gestão, limite restritivo | Writes diretos bloqueados; emissão própria por RPC verifica participação; gestão consulta |
 | configuracao_instituicao | Policy permite anon/autenticado | UPDATE gestão pela policy; grants/helper original pendentes |
-| metas_demandas / contribuicoes antigas | Policies antigas ainda presentes | Não foram desativadas. Acessibilidade por API depende dos grants reais; não confundir ausência de tela com ausência de backend |
+| metas_demandas / contribuicoes *(modelo ativo desde 05/10)* | Policies antigas ainda presentes | Não foram desativadas. Acessibilidade por API depende dos grants reais; não confundir ausência de tela com ausência de backend |
 
 Todas as permissões desta matriz relativas às migrations são comprovadas somente
 na combinação local conhecida. Conferir policies adicionais, grants por coluna,
@@ -273,6 +289,8 @@ final. Para cada tentativa negada, verificar também que nenhum registro mudou.
   até recebimento; Diário até ocultação/republicação; oficinas até decisão final.
 
 ## Legado e exposição financeira
+
+*(Seção de 24/09. Em 05/10 o modelo financeiro voltou ao MVP; ver o bloco de situação no topo.)*
 
 | Referência | Acessível/utilizada agora? | Tratamento nesta etapa |
 |---|---|---|

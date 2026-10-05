@@ -2,6 +2,18 @@
 
 Data: 29/09/2026.
 
+> **Situação em 05/10/2026.**
+> - **Desfecho:** os bloqueios foram resolvidos pelas decisões registradas em
+>   [RECONCILIACAO_01_IMPLEMENTACAO.md](RECONCILIACAO_01_IMPLEMENTACAO.md); a migration foi criada e aplicada em 30/09.
+> - **Reversão de 05/10:** onde este relatório trata `metas_demandas`/`contribuicoes` como legado
+>   financeiro e as tabelas de materiais como contrato do MVP, vale o contrário: metas em dinheiro e de
+>   materiais são o modelo ativo, e `solicitacoes_materiais`/`contribuicoes_materiais` serão excluídas pela
+>   reconciliação pendente `20261005150000` ([CONTRIBUICOES.md](../mvp/CONTRIBUICOES.md)).
+> - Oficinas e certificados estão fora do MVP desde 05/10 ([ESCOPO_MVP.md](../mvp/ESCOPO_MVP.md)).
+> - O estado atual do remoto está em [COMPATIBILIDADE_SUPABASE_20260930.md](COMPATIBILIDADE_SUPABASE_20260930.md).
+>
+> O texto abaixo preserva a análise de 29/09.
+
 **Migration `reconciliacao_01_base_perfis_endereco` não criada.** A implementação foi interrompida conforme a instrução de não escolher decisões de negócio pendentes. Nenhuma alteração remota foi executada.
 
 ## 1. Decisões que ainda impedem fechar o contrato

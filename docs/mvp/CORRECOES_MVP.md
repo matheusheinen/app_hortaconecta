@@ -1,5 +1,19 @@
 # Correções de coerência do MVP — 24/09/2026
 
+> **Situação em 05/10/2026.**
+> - **Banco:** as correções valem no remoto desde 30/09, instaladas pela
+>   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql).
+>   A migration `20260924210000` fica como histórico; não aplicar no remoto.
+> - **Continuam valendo:** revisão obrigatória do Diário, proteção do histórico de
+>   atividades após a primeira candidatura e tratamento de autenticação com timeout de 30s.
+> - **Perfil da gestão:** continua atômico por `gestao_salvar_perfil`, mas a tela virou um hub
+>   de seções. WhatsApp e chave PIX passaram para `configuracao_instituicao` (contato público
+>   da instituição); `ongs.whatsapp` e `ongs.chave_pix` ficaram como legado. O PIX depende da
+>   reconciliação pendente `20261005150000` ([CONTRIBUICOES.md](CONTRIBUICOES.md)).
+> - **Certificados:** fora do MVP desde 05/10; as regras abaixo continuam no banco.
+>
+> As seções abaixo preservam o registro de 24/09; contagens de testes são daquela data.
+
 Migration incremental: `20260924210000_coerencia_mvp.sql`, após as nove migrations
 anteriores. Nenhuma migration histórica, tabela financeira ou certificado emitido
 foi alterado ou removido. A implementação observou a documentação Expo SDK 57.
@@ -53,7 +67,8 @@ desfaz tudo. A ausência de `ongs` após uma consulta bem-sucedida é permitida:
 o perfil complementar é criado atomicamente para o gestor já existente. Não se
 cria usuário, conta Auth ou permissão de gestão. A RPC retorna true somente após
 as operações confirmadas. Campos PIX existentes são preservados no formulário
-e no salvamento, sem fluxo financeiro novo.
+e no salvamento, sem fluxo financeiro novo. *(05/10: o PIX exibido aos voluntários
+passa a vir de `configuracao_instituicao`; ver [CONTRIBUICOES.md](CONTRIBUICOES.md).)*
 
 Carregamento consulta usuário e ONG; qualquer erro impede exibir/salvar o
 formulário e oferece nova tentativa. Respostas de cargas anteriores são ignoradas.

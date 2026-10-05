@@ -23,12 +23,13 @@ posicionamento pode mudar e elementos faltantes podem ser adicionados.
 | Diário de Transparência | Publicações com revisão e imagens privadas | [DIARIO.md](DIARIO.md) |
 | Parametrização da instituição | Nome, textos e contatos de `configuracao_instituicao` | CLAUDE.md |
 | Perfil em seções | Hub com status por seção; voluntário com busca de CEP (ViaCEP) | Abaixo |
-| Contato por WhatsApp | Botão no detalhe da atividade, número de `configuracao_instituicao.whatsapp` | Abaixo |
+| Contato por WhatsApp | Botão no detalhe da atividade e da meta, número de `configuracao_instituicao.whatsapp` | Abaixo |
 | Áreas da atividade e sugestões | Gestão marca habilidades da tarefa; o Início sugere tarefas compatíveis | Abaixo |
 
 ## Funcionalidades trazidas do redesenho
 
-Adaptadas ao contrato atual do banco, sem migration nova.
+Adaptadas ao contrato atual do banco. Só o PIX da instituição depende de migration
+nova (ver Pendências).
 
 - **Perfil em seções.** Voluntário: dados pessoais, cadastro, endereço,
   disponibilidade e habilidades. Cada seção envia só suas chaves para
@@ -69,3 +70,14 @@ check-in. Sem certificados, o indicador leva ao histórico de participação.
 
 O tipo legado `OFICINA_AUTORAL` em `atividades` continua no banco e ainda pode
 aparecer no Início, com o rótulo "Oficina", caso exista uma atividade desse tipo.
+
+## Pendências do MVP (05/10/2026)
+
+| Pendência | Detalhe |
+| --- | --- |
+| Aplicar a reconciliação `20261005150000_contribuicoes_metas_pix.sql` | Move o PIX para `configuracao_instituicao`, exige meta aberta para o voluntário e exclui as tabelas de materiais. Depois, regenerar `database.types.ts` e remover o bloco `ColunasPix`. Ver [CONTRIBUICOES.md](CONTRIBUICOES.md). |
+| Compressão de imagens (RNF0003) | `expo-image-manipulator` ainda não está instalado; o Diário envia a imagem com `quality: 0.8`, sem redimensionar. |
+| Comprovante de doação | Upload de imagem planejado (B09); exige bucket privado e policies. |
+| Homologação | Android, login/JWT reais, Storage real, concorrência entre conexões independentes. |
+| Dependências | `npm audit` aponta 30 vulnerabilidades (19 altas), ainda não avaliadas. |
+| Política de `contribuicoes` | A gestão pode alterar a quantidade de uma contribuição já aprovada (policy de UPDATE herdada). Avaliar se deve ser travado. |

@@ -1,8 +1,14 @@
 # Prioridade 4 — Propostas de oficinas
 
-> **Fora do MVP por enquanto (05/10/2026):** o recurso está oculto no app por
-> `src/lib/escopoMvp.ts`. Código, testes, tabela e RPCs foram preservados. Ver
-> [ESCOPO_MVP.md](ESCOPO_MVP.md).
+> **Situação em 05/10/2026.** Recurso **fora do MVP por enquanto** ([ESCOPO_MVP.md](ESCOPO_MVP.md)).
+> - **App:** oculto por `src/lib/escopoMvp.ts` (`recursosPosMvp.oficinas = false`): rotas e atalhos
+>   do Início não são registrados. Código e testes (`tests/oficinas.test.cjs`, `tests/regras-oficinas.test.cjs`) preservados.
+> - **Banco:** `propostas_oficinas` e as RPCs `oficinas_*` estão no remoto desde 30/09, pela
+>   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql); continuam lá, sem uso pelo app.
+>   A migration `20260924180000` fica como histórico; não aplicar no remoto.
+> - **Para reativar:** mudar a flag para `true`, revisar textos de interface e homologar.
+>
+> As seções abaixo preservam o registro de 24/09; contagens de testes são daquela data.
 
 Implementação em 24/09/2026. Esta prioridade registra propostas privadas e a
 decisão da instituição. **Não é um sistema completo de eventos.** Uma aprovação

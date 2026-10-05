@@ -1,8 +1,15 @@
 # Prioridade 5 — Certificados de participação
 
-> **Fora do MVP por enquanto (05/10/2026):** o recurso está oculto no app por
-> `src/lib/escopoMvp.ts`. Código, testes, tabela e RPCs foram preservados. Ver
-> [ESCOPO_MVP.md](ESCOPO_MVP.md).
+> **Situação em 05/10/2026.** Recurso **fora do MVP por enquanto** ([ESCOPO_MVP.md](ESCOPO_MVP.md)).
+> - **App:** oculto por `src/lib/escopoMvp.ts` (`recursosPosMvp.certificados = false`). O indicador
+>   de horas do Início leva ao histórico de participação. Código e testes preservados.
+> - **Banco:** `certificados` e as RPCs `certificados_*` estão no remoto desde 30/09, pela
+>   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql); continuam lá, sem uso pelo app.
+>   A migration `20260924200000` fica como histórico; não aplicar no remoto.
+> - A carga horária continua sendo **prevista**, registrada no check-in; não é tempo medido.
+> - **Para reativar:** mudar a flag para `true`, revisar textos de interface e homologar.
+>
+> As seções abaixo preservam o registro de 24/09; contagens de testes são daquela data.
 
 > Correção integrada: título/data/carga da atividade são protegidos após a primeira
 > candidatura. Certificados existentes não foram reescritos; divergências anteriores
