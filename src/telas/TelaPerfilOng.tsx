@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,12 +15,14 @@ import type { Usuario } from '../lib/tipos';
 import { apenasDigitos, validarCnpj, validarTelefone } from '../lib/validadores';
 import { mascararCnpj, mascararTelefone } from '../lib/mascaras';
 import { Aviso, Botao, Campo } from '../componentes/Ui';
+import { mensagemErro } from '../lib/voluntariado';
+import { salvarPerfilGestao } from '../lib/perfilGestao';
 import { CampoData } from '../componentes/CampoData';
 
 type Props = {
   perfil: Usuario;
   sair: () => void;
-  recarregarPerfil: () => Promise<void>;
+  recarregarPerfil: (propagarErro?: boolean) => Promise<void>;
 };
 
 export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
@@ -28,11 +30,11 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
   const [ocupado, setOcupado] = useState(false);
-  const [ongExiste, setOngExiste] = useState(false);
+  const [cargaValida, setCargaValida] = useState(false);
+  const sequencia=useRef(0);
 
   const [nome, setNome] = useState(perfil.nome);
   const [telefone, setTelefone] = useState(mascararTelefone(perfil.telefone ?? ''));
-  const [endereco, setEndereco] = useState(perfil.endereco ?? '');
   const [instagram, setInstagram] = useState(perfil.perfil_instagram ?? '');
   const [descricao, setDescricao] = useState(perfil.descricao ?? '');
 
@@ -45,40 +47,29 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
   const [whatsapp, setWhatsapp] = useState('');
 
   const carregar = useCallback(async () => {
-    setCarregando(true);
-    setErro(null);
-
-    const { data, error } = await supabase
-      .from('ongs')
-      .select('*')
-      .eq('usuario_id', perfil.id)
-      .maybeSingle();
-
-    if (error) {
-      setErro(error.message);
-    } else if (data) {
-      setOngExiste(true);
-      setCnpj(mascararCnpj(data.cnpj ?? ''));
-      setRazaoSocial(data.razao_social ?? '');
-      setDataCriacao(paraCampoData(data.data_criacao));
-      setResponsavelLegal(data.responsavel_legal ?? '');
-      setChavePix(data.chave_pix ?? '');
-      setNomeBeneficiarioPix(data.nome_beneficiario_pix ?? '');
-      setWhatsapp(mascararTelefone(data.whatsapp ?? ''));
-    } else {
-      setOngExiste(false);
-    }
-
-    setCarregando(false);
-  }, [perfil.id]);
-
-  useFocusEffect(
-    useCallback(() => {
-      carregar();
-    }, [carregar]),
-  );
+    const atual=++sequencia.current;
+    setCarregando(true);setErro(null);setCargaValida(false);setSucesso(false);
+    try {
+      const [u,o]=await Promise.all([
+        supabase.from('usuarios').select('*').eq('id',perfil.id).single(),
+        supabase.from('ongs').select('*').eq('usuario_id',perfil.id).maybeSingle(),
+      ]);
+      if(atual!==sequencia.current)return;
+      if(u.error)throw u.error;if(o.error)throw o.error;
+      setNome(u.data.nome);setTelefone(mascararTelefone(u.data.telefone??''));
+      setInstagram(u.data.perfil_instagram??'');setDescricao(u.data.descricao??'');
+      const data=o.data;
+      setCnpj(mascararCnpj(data?.cnpj??''));setRazaoSocial(data?.razao_social??'');
+      setDataCriacao(paraCampoData(data?.data_criacao??null));setResponsavelLegal(data?.responsavel_legal??'');
+      setChavePix(data?.chave_pix??'');setNomeBeneficiarioPix(data?.nome_beneficiario_pix??'');
+      setWhatsapp(mascararTelefone(data?.whatsapp??''));setCargaValida(true);
+    }catch(f){if(atual===sequencia.current)setErro(mensagemErro(f));}
+    finally{if(atual===sequencia.current)setCarregando(false);}
+  },[perfil.id]);
+  useFocusEffect(useCallback(()=>{void carregar();return()=>{sequencia.current++;};},[carregar]));
 
   async function salvar() {
+    if(ocupado||!cargaValida||carregando)return;
     setErro(null);
     setSucesso(false);
 
@@ -110,46 +101,17 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
 
     setOcupado(true);
 
-    const { error: erroUsuario } = await supabase
-      .from('usuarios')
-      .update({
-        nome: nome.trim(),
-        telefone: telefone.trim() ? apenasDigitos(telefone) : null,
-        endereco: endereco.trim() || null,
-        perfil_instagram: instagram.trim() ? instagram.trim().replace(/^@/, '') : null,
-        descricao: descricao.trim() || null,
-      })
-      .eq('id', perfil.id);
-
-    if (erroUsuario) {
-      setOcupado(false);
-      return setErro(erroUsuario.message);
-    }
-
-    const camposOng = {
-      cnpj: cnpj.trim() ? apenasDigitos(cnpj) : null,
-      razao_social: razaoSocial.trim() || null,
-      data_criacao: dataCriacaoIso,
-      responsavel_legal: responsavelLegal.trim() || null,
-      chave_pix: chavePix.trim() || null,
-      nome_beneficiario_pix: nomeBeneficiarioPix.trim() || null,
-      whatsapp: whatsapp.trim() ? apenasDigitos(whatsapp) : null,
-    };
-
-    const { error: erroOng } = ongExiste
-      ? await supabase.from('ongs').update(camposOng).eq('usuario_id', perfil.id)
-      : await supabase.from('ongs').insert({ usuario_id: perfil.id, ...camposOng });
-
-    if (erroOng) {
-      setOcupado(false);
-      return setErro(erroOng.message);
-    }
-
-    setOngExiste(true);
-    await recarregarPerfil();
-    setOcupado(false);
-    setSucesso(true);
-    setTimeout(() => setSucesso(false), 3000);
+    try {
+      await salvarPerfilGestao(cargaValida,{
+        nome:nome.trim(),telefone:telefone.trim()?apenasDigitos(telefone):null,
+        perfil_instagram:instagram.trim().replace(/^@/,'')||null,descricao:descricao.trim()||null,
+        cnpj:cnpj.trim()?apenasDigitos(cnpj):null,razao_social:razaoSocial.trim()||null,data_criacao:dataCriacaoIso,
+        responsavel_legal:responsavelLegal.trim()||null,chave_pix:chavePix.trim()||null,
+        nome_beneficiario_pix:nomeBeneficiarioPix.trim()||null,whatsapp:whatsapp.trim()?apenasDigitos(whatsapp):null,
+      });
+      setSucesso(true);
+      try{await recarregarPerfil(true);}catch(f){setErro('Perfil salvo, mas a exibição não foi atualizada: '+mensagemErro(f));}
+    }catch(f){setErro(mensagemErro(f));}finally{setOcupado(false);}
   }
 
   return (
@@ -170,6 +132,11 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
       <ScrollView contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled">
         {carregando ? (
           <Text style={tipo.apoio}>Carregando...</Text>
+        ) : !cargaValida ? (
+          <>
+            <Aviso mensagem={erro ?? 'Não foi possível carregar o perfil.'} />
+            <Botao titulo="Tentar novamente" onPress={() => { void carregar(); }} />
+          </>
         ) : (
           <>
             {erro ? <Aviso mensagem={erro} /> : null}
@@ -191,12 +158,6 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
               keyboardType="phone-pad"
             />
             <Campo
-              rotulo="Endereço"
-              value={endereco}
-              onChangeText={setEndereco}
-              placeholder="Rua, número, bairro"
-            />
-            <Campo
               rotulo="Instagram"
               value={instagram}
               onChangeText={setInstagram}
@@ -212,6 +173,7 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
             />
 
             <Text style={estilos.secao}>Dados institucionais</Text>
+            <Text style={tipo.apoio}>O nome de exibição identifica esta conta. A razão social pertence ao perfil da gestão. O nome oficial nos certificados e o endereço da horta vêm da configuração institucional, administrada separadamente.</Text>
             <Campo
               rotulo="CNPJ"
               value={cnpj}

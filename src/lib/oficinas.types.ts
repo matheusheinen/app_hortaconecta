@@ -1,0 +1,6 @@
+export type PropostaOficina = {
+ id: number; autor_id: string; nome_autor?: string; titulo: string; descricao: string;
+ tema: string; objetivo: string; duracao_minutos: number; conhecimentos: string | null; observacoes: string | null;
+ status: 'PENDENTE' | 'APROVADA' | 'REJEITADA' | 'CANCELADA'; criado_em: string; atualizado_em: string;
+ revisao: number; decidido_em: string | null; decidido_por: string | null; observacao_decisao: string | null; cancelado_em: string | null;
+};

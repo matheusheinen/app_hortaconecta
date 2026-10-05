@@ -13,6 +13,8 @@ import { cores, espaco, tipo } from '../lib/tema';
 import type { Atividade } from '../lib/tipos';
 import { mascararDataHora } from '../lib/mascaras';
 import { Aviso, Botao, Campo } from '../componentes/Ui';
+import { interpretarCarga, interpretarDataHora } from '../lib/regrasVoluntariado';
+import { mensagemErro } from '../lib/voluntariado';
 
 type Props = {
   atividade: Atividade | null;
@@ -35,9 +37,10 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
   async function salvar() {
     setErro(null);
 
-    const data = interpretarData(quando);
+    if (ocupado) return;
+    const data = interpretarDataHora(quando);
     const nVagas = Number(vagas);
-    const nCarga = Number(carga);
+    const nCarga = interpretarCarga(carga);
 
     if (titulo.trim().length < 3) return setErro('O título precisa de ao menos 3 caracteres.');
     if (titulo.trim().length > 120) return setErro('O título pode ter no máximo 120 caracteres.');
@@ -51,39 +54,47 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
     if (!Number.isInteger(nVagas) || nVagas < 1 || nVagas > 500) {
       return setErro('Informe entre 1 e 500 vagas.');
     }
-    if (!(nCarga > 0) || nCarga > 999.99) {
+    if (nCarga === null) {
       return setErro('Informe a carga horária em horas (até 999,99).');
     }
 
     setOcupado(true);
+    try {
+      const campos = {
+        titulo: titulo.trim(),
+        descricao: descricao.trim(),
+        data_hora_prevista: data.toISOString(),
+        vagas_totais: nVagas,
+        carga_horaria: nCarga,
+      };
 
-    const campos = {
-      titulo: titulo.trim(),
-      descricao: descricao.trim(),
-      data_hora_prevista: data.toISOString(),
-      vagas_totais: nVagas,
-      carga_horaria: nCarga,
-    };
-
-    // O status não vem do formulário: tarefa da ONG nasce ABERTA, e a
-    // política de RLS confere autor_id contra o usuário autenticado.
-    const { error } = editando
-      ? await supabase.from('atividades').update(campos).eq('id', atividade.id)
-      : await supabase.from('atividades').insert({
-          ...campos,
-          tipo: 'TAREFA_ONG',
-          status: 'ABERTA',
-          autor_id: autorId,
-        });
-
-    setOcupado(false);
-
-    if (error) {
-      setErro(traduzErro(error.message));
-      return;
+      // O status não vem do formulário: tarefa da ONG nasce ABERTA, e a
+      // política de RLS confere autor_id contra o usuário autenticado.
+      const { error, data: gravada } = editando
+        ? await supabase
+            .from('atividades')
+            .update(campos)
+            .eq('id', atividade.id)
+            .select('id')
+            .single()
+        : await supabase
+            .from('atividades')
+            .insert({
+              ...campos,
+              tipo: 'TAREFA_ONG',
+              status: 'ABERTA',
+              autor_id: autorId,
+            })
+            .select('id')
+            .single();
+      if (error) throw error;
+      if (!gravada) throw new Error('A atividade não foi salva. Recarregue e tente novamente.');
+      onPronto();
+    } catch (falha) {
+      setErro(traduzErro(mensagemErro(falha)));
+    } finally {
+      setOcupado(false);
     }
-
-    onPronto();
   }
 
   return (
@@ -102,6 +113,7 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
 
         {erro ? <Aviso mensagem={erro} /> : null}
 
+        <Text style={tipo.apoio}>Após a primeira candidatura, título, data, horário e carga horária ficam protegidos no servidor. Descrição e vagas continuam editáveis dentro das regras.</Text>
         <Campo rotulo="Título" value={titulo} onChangeText={setTitulo} />
 
         <Campo
@@ -128,7 +140,7 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
           rotulo="Carga horária"
           value={carga}
           onChangeText={setCarga}
-          dica="Em horas. Usada depois no certificado do voluntário."
+          dica="Carga horária prevista, não medida. Preservada após a primeira candidatura."
           keyboardType="decimal-pad"
         />
 
@@ -154,18 +166,6 @@ function paraCampo(iso?: string) {
 }
 
 /** Lê DD/MM/AAAA HH:MM no fuso do aparelho. Devolve null se inválido. */
-function interpretarData(texto: string): Date | null {
-  const m = texto.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
-  if (!m) return null;
-
-  const [, dia, mes, ano, hora, minuto] = m.map(Number);
-  const d = new Date(ano, mes - 1, dia, hora, minuto);
-
-  // Rejeita datas que "transbordam", como 31/02.
-  if (d.getDate() !== dia || d.getMonth() !== mes - 1) return null;
-  return d;
-}
-
 function traduzErro(mensagem: string) {
   if (mensagem.includes('row-level security')) {
     return 'Sua conta não tem permissão para publicar tarefas. Só a gestão da ONG pode.';

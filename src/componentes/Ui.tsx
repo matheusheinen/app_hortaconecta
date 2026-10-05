@@ -32,6 +32,8 @@ export function Botao({
       onPress={onPress}
       disabled={inativo}
       accessibilityRole="button"
+      accessibilityLabel={titulo}
+      accessibilityState={{ disabled: inativo, busy: carregando }}
       style={({ pressed }) => [
         estilos.botao,
         variante === 'primario' && estilos.botaoPrimario,
@@ -42,7 +44,9 @@ export function Botao({
       ]}
     >
       {carregando ? (
-        <ActivityIndicator color={variante === 'primario' ? cores.fundo : cores.folha} />
+        <ActivityIndicator
+          color={variante === 'primario' ? cores.fundo : variante === 'destrutivo' ? cores.beterraba : cores.folha}
+        />
       ) : (
         <Text
           style={[
@@ -64,13 +68,15 @@ type CampoProps = TextInputProps & {
   dica?: string;
 };
 
-export function Campo({ rotulo, dica, ...resto }: CampoProps) {
+export function Campo({ rotulo, dica, style, ...resto }: CampoProps) {
   return (
     <View style={{ marginBottom: espaco.md }}>
       <Text style={estilos.rotulo}>{rotulo}</Text>
       <TextInput
-        style={estilos.entrada}
+        style={[estilos.entrada, style]}
+        accessibilityLabel={rotulo}
         placeholderTextColor={cores.tintaSuave}
+        selectionColor={cores.folha}
         {...resto}
       />
       {dica ? <Text style={[tipo.apoio, { marginTop: espaco.xs }]}>{dica}</Text> : null}
@@ -80,7 +86,7 @@ export function Campo({ rotulo, dica, ...resto }: CampoProps) {
 
 export function Aviso({ mensagem }: { mensagem: string }) {
   return (
-    <View style={estilos.aviso}>
+    <View style={estilos.aviso} accessibilityRole="alert" accessibilityLiveRegion="polite">
       <Text style={[tipo.apoio, { color: cores.beterraba }]}>{mensagem}</Text>
     </View>
   );
@@ -88,18 +94,22 @@ export function Aviso({ mensagem }: { mensagem: string }) {
 
 const estilos = StyleSheet.create({
   botao: {
-    height: 48,
-    borderRadius: 8,
+    minHeight: 54,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: espaco.lg,
+    paddingVertical: 14,
   },
-  botaoPrimario: { backgroundColor: cores.folha },
-  botaoContorno: { borderWidth: 1.5, borderColor: cores.folha },
-  botaoDestrutivo: { borderWidth: 1.5, borderColor: cores.beterraba },
-  botaoPressionado: { opacity: 0.7 },
+  botaoPrimario: {
+    backgroundColor: cores.folha,
+    boxShadow: '0px 3px 5px rgba(28, 67, 48, 0.12)',
+  },
+  botaoContorno: { borderWidth: 1, borderColor: cores.linha, backgroundColor: cores.fundo },
+  botaoDestrutivo: { borderWidth: 1, borderColor: '#EACCD4', backgroundColor: '#FBEFF2' },
+  botaoPressionado: { opacity: 0.8 },
   botaoInativo: { opacity: 0.45 },
-  botaoTexto: { fontSize: 15, fontWeight: '600' },
+  botaoTexto: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
   rotulo: {
     fontSize: 13,
     fontWeight: '600',
@@ -109,17 +119,17 @@ const estilos = StyleSheet.create({
   entrada: {
     borderWidth: 1,
     borderColor: cores.linha,
-    borderRadius: 8,
+    borderRadius: 18,
     paddingHorizontal: espaco.md,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 15,
     color: cores.tinta,
-    backgroundColor: cores.fundo,
-    minHeight: 48,
+    backgroundColor: cores.mint,
+    minHeight: 54,
   },
   aviso: {
     backgroundColor: '#FBEFF2',
-    borderRadius: 8,
+    borderRadius: 16,
     padding: espaco.md,
     marginBottom: espaco.md,
   },

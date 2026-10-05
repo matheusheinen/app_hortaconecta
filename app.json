@@ -22,7 +22,22 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permita que o Horta Conecta use a câmera para ler o QR Code de presença.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permita selecionar fotos das atividades para o Diário institucional.",
+          "microphonePermission": false
+        }
+      ]
     ]
   }
 }
