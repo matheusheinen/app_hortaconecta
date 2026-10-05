@@ -274,7 +274,7 @@ CREATEs/seeds nem substituir o trigger financeiro remoto pela versão mais antig
 | docs/mvp/CORRECOES_MVP.md | Contrato de salvamento da gestão precisa distinguir endereço institucional |
 | docs/auditoria/SEGURANCA_BASE.md, docs/auditoria/AUDITORIA_FINAL_MVP.md | Registram base antes desconhecida; conservar como retrato datado, acrescentando vínculo com evidências remotas depois |
 
-docs/mvp/MATERIAIS.md menciona endereço como dado que não é exposto, não como campo
+docs/mvp/CONTRIBUICOES.md (histórico de materiais) menciona endereço como dado que não é exposto, não como campo
 que precise ser transferido. docs/auditoria/AUDITORIA_SUPABASE_LEITURA.sql permanece roteiro
 de leitura; não é ferramenta de migração. Documentação antiga não deve ser lida
 como instrução para aplicar a sequência local sem reconciliar o histórico.

@@ -12,6 +12,14 @@ Aplicados em 30/09/2026 ao projeto `hnawclapixopwjyrpxpq`, como `postgres`, nest
    de materiais, Diário, propostas de oficinas e certificados.
 
 Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivamente.
+
+**Pendente de aplicação** (decisão de 05/10/2026), depois dos dois acima:
+
+3. `20261005150000_contribuicoes_metas_pix.sql`: PIX em `configuracao_instituicao`,
+   voluntário só contribui em meta aberta e **exclusão** de `solicitacoes_materiais`,
+   `contribuicoes_materiais` e funções `materiais_*`, com os dados. Ver
+   [CONTRIBUICOES.md](../../docs/mvp/CONTRIBUICOES.md). Verificação local:
+   `node --test tests/contribuicoes-metas.test.cjs`.
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 

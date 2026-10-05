@@ -1,13 +1,14 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { carregarPerfilOng, salvarPerfilOng, type DadosPerfilOng } from '../lib/perfilOng';
+import { carregarPerfilOng, salvarPerfilOng, type DadosPerfilOng, type PerfilOngCarregado } from '../lib/perfilOng';
 import { mensagemErro } from '../lib/voluntariado';
 import {
   ProvedorPerfilOng,
   TelaHubPerfilOng,
   TelaSecaoContaOng,
   TelaSecaoInstitucionalOng,
+  TelaSecaoRecebimentoOng,
   TelaSecaoWhatsappOng,
 } from '../telas/TelasPerfilOng';
 
@@ -16,6 +17,7 @@ export type ParametrosPerfilOng = {
   conta: undefined;
   institucional: undefined;
   whatsapp: undefined;
+  recebimento: undefined;
 };
 
 const Pilha = createNativeStackNavigator<ParametrosPerfilOng>();
@@ -28,7 +30,7 @@ type Props = {
 };
 
 export function PilhaPerfilOng({ usuarioId, nome, sair, recarregarPerfil }: Props) {
-  const [dados, setDados] = useState<DadosPerfilOng | null>(null);
+  const [dados, setDados] = useState<PerfilOngCarregado | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
   const sequencia = useRef(0);
@@ -77,6 +79,7 @@ export function PilhaPerfilOng({ usuarioId, nome, sair, recarregarPerfil }: Prop
         <Pilha.Screen name="conta">{({ navigation }) => <TelaSecaoContaOng voltar={() => navigation.goBack()} />}</Pilha.Screen>
         <Pilha.Screen name="institucional">{({ navigation }) => <TelaSecaoInstitucionalOng voltar={() => navigation.goBack()} />}</Pilha.Screen>
         <Pilha.Screen name="whatsapp">{({ navigation }) => <TelaSecaoWhatsappOng voltar={() => navigation.goBack()} />}</Pilha.Screen>
+        <Pilha.Screen name="recebimento">{({ navigation }) => <TelaSecaoRecebimentoOng voltar={() => navigation.goBack()} />}</Pilha.Screen>
       </Pilha.Navigator>
     </ProvedorPerfilOng>
   );

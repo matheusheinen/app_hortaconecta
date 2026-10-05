@@ -19,8 +19,7 @@ posicionamento pode mudar e elementos faltantes podem ser adicionados.
 | --- | --- | --- |
 | Autenticação e perfil progressivo | Cadastro simples, perfil completo verificado pelo banco | [VOLUNTARIADO.md](VOLUNTARIADO.md) |
 | Voluntariado | Tarefas da gestão, candidatura, triagem, check-in por QR e histórico | [VOLUNTARIADO.md](VOLUNTARIADO.md) |
-| Contribuição de materiais | Solicitações da gestão e intenções de entrega confirmadas no recebimento | [MATERIAIS.md](MATERIAIS.md) |
-| Lançamento de doação pela gestão | A gestão registra uma entrega recebida em mãos | A especificar |
+| Contribuições (apadrinhamento) | Metas em dinheiro (PIX) e de materiais; voluntário informa a doação e a gestão confere, ou a gestão registra o que recebeu | [CONTRIBUICOES.md](CONTRIBUICOES.md) (migration pendente no remoto) |
 | Diário de Transparência | Publicações com revisão e imagens privadas | [DIARIO.md](DIARIO.md) |
 | Parametrização da instituição | Nome, textos e contatos de `configuracao_instituicao` | CLAUDE.md |
 | Perfil em seções | Hub com status por seção; voluntário com busca de CEP (ViaCEP) | Abaixo |
@@ -35,8 +34,8 @@ Adaptadas ao contrato atual do banco, sem migration nova.
   disponibilidade e habilidades. Cada seção envia só suas chaves para
   `voluntariado_salvar_perfil` (que preserva as omitidas) e sempre reenvia as
   habilidades atuais, porque a RPC substitui esse conjunto. A elegibilidade
-  exibida vem do banco. Gestão: conta, dados institucionais e WhatsApp, por
-  `gestao_salvar_perfil`. Os campos PIX saíram da tela, mas continuam no banco.
+  exibida vem do banco. Gestão: conta e dados institucionais, por
+  `gestao_salvar_perfil`; WhatsApp e PIX, no registro da instituição.
 - **CEP.** Consulta ao ViaCEP (público, sem chave) quando o CEP tem 8 dígitos.
   CEP inexistente ou falha de rede mantêm o preenchimento manual.
 - **WhatsApp.** A RLS `ongs_privacidade_mvp` impede voluntários de lerem `ongs`,
@@ -57,7 +56,8 @@ Adaptadas ao contrato atual do banco, sem migration nova.
 | --- | --- |
 | Propostas de oficinas | Implementado em 24/09 ([OFICINAS.md](OFICINAS.md)). Oculto no app; código, testes, tabela e RPCs preservados. |
 | Certificados de participação | Implementado em 24/09 ([CERTIFICADOS.md](CERTIFICADOS.md)). Oculto no app; código, testes, tabela e RPCs preservados. |
-| PIX, comprovantes e metas financeiras | Legado; ver seção de legado em [MATERIAIS.md](MATERIAIS.md). |
+| Comprovante de doação em imagem | Planejado (B09). Por ora o voluntário informa o valor e a gestão confere no extrato. |
+| Solicitações de materiais (24/09) | Removidas: duplicavam metas/contribuições. Ver histórico em [CONTRIBUICOES.md](CONTRIBUICOES.md). |
 
 A ocultação é feita por `src/lib/escopoMvp.ts` (`recursosPosMvp`). Com a flag em
 `false`, as rotas não são registradas e os atalhos das telas de Início não

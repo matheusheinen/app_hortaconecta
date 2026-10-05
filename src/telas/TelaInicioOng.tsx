@@ -53,8 +53,8 @@ export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas, a
             onPress={aoIrParaAtividades}
           />
           <CartaoGestao
-            titulo="Materiais"
-            resumo="Solicite materiais e confirme as entregas."
+            titulo="Metas e doações"
+            resumo="Metas em dinheiro ou de materiais, com conferência das contribuições."
             icone="caixa"
             onPress={aoIrParaMetas}
           />

@@ -4,7 +4,8 @@ import { Aviso, Botao } from './Ui';
 import { Icone, type NomeIcone } from './Icone';
 import { ImagemDiario } from './ImagemDiario';
 import { cores } from '../lib/tema';
-import { formatarHorasInicio, progressoMaterialInicio, type AtividadeInicio, type ResumoInicio } from '../lib/resumoInicio';
+import { formatarHorasInicio, progressoMetaInicio, type AtividadeInicio, type ResumoInicio } from '../lib/resumoInicio';
+import { descreverProgresso } from '../lib/regrasMetas';
 import type { Atividade } from '../lib/tipos';
 
 export type AcoesInicio = {
@@ -18,7 +19,7 @@ export type AcoesInicio = {
   aoIrParaOficinas?: () => void;
   aoPerfil: () => void;
   abrirAtividade: (id: number) => void;
-  abrirMaterial: (id: number) => void;
+  abrirMeta: (id: number) => void;
   abrirPublicacao: (id: number) => void;
   minhasAtividades: () => void;
   minhasContribuicoes: () => void;
@@ -86,10 +87,10 @@ function dataAtividade(iso: string, horas: number) {
 
 export function PainelInicioVoluntario({ nome, resumo, sugestoes = [], erro, carregando, atualizar, aoPerfil,
   aoIrParaAtividades, aoIrParaMetas, aoIrParaDiario, aoIrParaCertificados, aoIrParaOficinas,
-  abrirAtividade, abrirMaterial, abrirPublicacao, minhasAtividades, minhasContribuicoes }: PropsPainel) {
-  const material = resumo?.material;
+  abrirAtividade, abrirMeta, abrirPublicacao, minhasAtividades, minhasContribuicoes }: PropsPainel) {
+  const meta = resumo?.meta;
   const publicacao = resumo?.publicacao;
-  const progresso = material ? progressoMaterialInicio(material) : 0;
+  const progresso = meta ? progressoMetaInicio(meta) : 0;
   const aguardando = carregando && !resumo;
   // Não repete no bloco de sugestões o que já aparece em destaque.
   const emDestaque = new Set(resumo?.destaques.map(({ atividade }) => atividade.id));
@@ -140,17 +141,17 @@ export function PainelInicioVoluntario({ nome, resumo, sugestoes = [], erro, car
       </> : null}
 
       <CabecalhoSecao titulo="PRECISAMOS DE" acao="Ver todas" onPress={aoIrParaMetas} />
-      {material ? <Pressable onPress={() => abrirMaterial(material.id)} accessibilityRole="button"
-        accessibilityLabel={`${material.nome}. ${progresso}% recebido. Quero contribuir.`}
+      {meta ? <Pressable onPress={() => abrirMeta(meta.id)} accessibilityRole="button"
+        accessibilityLabel={`${meta.titulo}. ${progresso}% arrecadado. Quero contribuir.`}
         style={({ pressed }) => [estilos.material, pressed && estilos.pressionado]}>
-        <View style={estilos.materialTopo}><View style={estilos.materialIcone}><Icone nome="caixa" tamanho={24} /></View>
-          <View style={estilos.flex}><Text style={estilos.cartaoTitulo}>{material.nome}</Text><Text style={estilos.apoio}>
-            {numero(material.quantidade_recebida)} de {numero(material.quantidade_necessaria)} recebidos</Text></View>
+        <View style={estilos.materialTopo}><View style={estilos.materialIcone}><Icone nome={meta.tipo === 'FINANCEIRA' ? 'presente' : 'caixa'} tamanho={24} /></View>
+          <View style={estilos.flex}><Text style={estilos.cartaoTitulo}>{meta.titulo}</Text>
+            <Text style={estilos.apoio}>{descreverProgresso(meta)}</Text></View>
           <Text style={estilos.percentual}>{progresso}%</Text></View>
-        <View style={estilos.progresso} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: progresso }} accessibilityLabel="Meta de materiais">
+        <View style={estilos.progresso} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: progresso }} accessibilityLabel="Progresso da meta">
           <View style={[estilos.progressoPreenchido, { width: `${progresso}%` }]} /></View>
         <View style={estilos.contribuir}><Text style={estilos.contribuirTexto}>Quero contribuir</Text><Icone nome="seta" tamanho={14} /></View>
-      </Pressable> : resumo ? <EstadoVazio icone="caixa" titulo="Tudo em dia por aqui" texto="Quando a instituição precisar de materiais, você verá aqui." /> : null}
+      </Pressable> : resumo ? <EstadoVazio icone="caixa" titulo="Tudo em dia por aqui" texto="Quando a instituição abrir uma meta de doação, você verá aqui." /> : null}
 
       <CabecalhoSecao titulo="DIÁRIO" acao="Ver mais" onPress={aoIrParaDiario} />
       {publicacao ? <View style={estilos.diario}>

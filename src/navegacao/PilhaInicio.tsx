@@ -8,9 +8,9 @@ import { recursosPosMvp } from '../lib/escopoMvp';
 export type ParametrosInicio={resumo:undefined;certificados:undefined;certificado:{id:string};oficinas:undefined;oficina:{id:number};propor:{id:number|null}};
 const Pilha=createNativeStackNavigator<ParametrosInicio>();
 export function PilhaInicio({gestao,usuarioId,nome,sair,atividades,materiais,diario,perfil,
- abrirAtividade,abrirMaterial,abrirPublicacao,minhasAtividades,minhasContribuicoes}:{
+ abrirAtividade,abrirMeta,abrirPublicacao,minhasAtividades,minhasContribuicoes}:{
  gestao:boolean;usuarioId:string;nome:string;sair:()=>void;atividades:()=>void;materiais:()=>void;diario:()=>void;perfil:()=>void;
- abrirAtividade:(id:number)=>void;abrirMaterial:(id:number)=>void;abrirPublicacao:(id:number)=>void;
+ abrirAtividade:(id:number)=>void;abrirMeta:(id:number)=>void;abrirPublicacao:(id:number)=>void;
  minhasAtividades:()=>void;minhasContribuicoes:()=>void;
 }){
  return <Pilha.Navigator screenOptions={{headerShown:false}}>
@@ -19,7 +19,7 @@ export function PilhaInicio({gestao,usuarioId,nome,sair,atividades,materiais,dia
     aoIrParaCertificados:recursosPosMvp.certificados?()=>navigation.navigate('certificados'):undefined,
     aoIrParaOficinas:recursosPosMvp.oficinas?()=>navigation.navigate('oficinas'):undefined};
    return gestao?<TelaInicioOng {...acoes}/>:<TelaInicioVoluntario {...acoes} usuarioId={usuarioId}
-    aoPerfil={perfil} abrirAtividade={abrirAtividade} abrirMaterial={abrirMaterial} abrirPublicacao={abrirPublicacao}
+    aoPerfil={perfil} abrirAtividade={abrirAtividade} abrirMeta={abrirMeta} abrirPublicacao={abrirPublicacao}
     minhasAtividades={minhasAtividades} minhasContribuicoes={minhasContribuicoes}/>;
   }}</Pilha.Screen>
   {recursosPosMvp.oficinas?<>

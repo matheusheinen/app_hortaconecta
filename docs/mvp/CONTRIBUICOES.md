@@ -1,11 +1,95 @@
-# Prioridade 2 — Contribuição de materiais
+# Contribuições: metas em dinheiro e de materiais
+
+Decisão da equipe em 05/10/2026. Contribuições usam **metas** (`metas_demandas`)
+de dois tipos, **em dinheiro (PIX)** ou **de materiais**, e **contribuições**
+(`contribuicoes`) conferidas pela gestão. É o modelo que já existia no banco e
+foi evoluído no redesenho (27–29/09). As tabelas de solicitações de materiais
+criadas em 24/09 duplicavam esse papel e são removidas (ver Histórico, abaixo).
+
+## Fluxo
+
+| Quem | Meta em dinheiro | Meta de materiais |
+| --- | --- | --- |
+| Gestão | Publica a meta com valor e prazo opcional | Publica a meta com quantidade, unidade e prazo opcional |
+| Voluntário | Copia a chave PIX, transfere fora do app e informa o valor (PENDENTE) | Combina a entrega com a gestão, pelo WhatsApp se houver número cadastrado |
+| Gestão | Confere no extrato e confirma ou recusa | Registra a doação recebida, já APROVADA |
+
+- O pagamento acontece **fora do app**. Não há integração bancária, PIX dinâmico
+  nem conciliação automática. Comprovante em imagem fica para depois:
+  `url_comprovante` é opcional no banco.
+- A gestão pode registrar diretamente qualquer doação recebida, em dinheiro ou
+  material, desde que o doador seja um voluntário cadastrado. O registro entra
+  APROVADA, com `validado_por` e `validado_em` da gestão.
+- `quantidade_arrecadada` é calculada pelo trigger `atualizar_arrecadacao_meta`,
+  que soma só contribuições APROVADA em qualquer inserção, alteração ou exclusão.
+  O app nunca grava esse total.
+- Prazo vencido não encerra a meta: o app deixa de convidar a doar e a gestão
+  decide quando encerrar. Metas podem ser encerradas, canceladas e reabertas.
+  O app não exclui metas, para preservar o histórico de doações.
+- O voluntário vê só as próprias contribuições; a gestão vê todas (RLS).
+- O tipo da meta não muda depois de haver contribuições confirmadas.
+
+## Banco
+
+Tabelas e policies que já existem no remoto (migrations `20260914120000` e
+`20260928010000_gestao_lanca_contribuicao`):
+
+- `metas_demandas`: leitura para autenticados; inserção, alteração e exclusão só pela gestão.
+- `contribuicoes`: o voluntário insere a própria como PENDENTE; a gestão insere
+  APROVADA como validadora e confere (UPDATE) as pendentes.
+
+Reconciliação `supabase/reconciliacao/20261005150000_contribuicoes_metas_pix.sql`,
+**ainda não aplicada no Supabase remoto**:
+
+1. Adiciona `chave_pix` e `nome_beneficiario_pix` em `configuracao_instituicao`.
+   A policy `ongs_privacidade_mvp` impede voluntários de lerem `ongs`, então a
+   chave precisa estar no registro público da instituição. Se houver exatamente
+   uma chave em `ongs`, ela é copiada. `ongs.chave_pix` fica como legado.
+2. Cria a policy restritiva `contribuicoes_meta_aberta`: o voluntário só declara
+   contribuição em meta ABERTA. A gestão continua podendo registrar doações
+   recebidas depois do encerramento.
+3. **Exclui** `solicitacoes_materiais`, `contribuicoes_materiais` e as funções
+   `materiais_*`, **com os dados** (decisão da equipe). Faça backup antes, se
+   houver algo a guardar.
+
+Aplicar pelo SQL Editor (ou MCP), depois das reconciliações 01 e 02. Não usar
+`db push` sobre o histórico. A migration aborta se já tiver sido aplicada.
+Depois, regenerar `src/lib/database.types.ts` e remover o bloco `ColunasPix` de
+`src/lib/database.api.types.ts`. Até lá, a seção de PIX do perfil da gestão fica
+indisponível e as metas em dinheiro avisam que a chave não foi cadastrada.
+
+## App
+
+- Aba **Contribuir** (voluntário) / **Doações** (gestão): `src/navegacao/PilhaMetas.tsx`,
+  telas em `src/telas/TelasMetas.tsx`, acesso a dados em `src/lib/metas.ts` e
+  regras puras em `src/lib/regrasMetas.ts`.
+- Perfil da gestão: seção **Recebimento de doações (PIX)**.
+- Início do voluntário: "Precisamos de" mostra a meta aberta mais recente, ainda
+  não atingida e dentro do prazo. O indicador de contribuições conta as APROVADA
+  do voluntário.
+- Testes: `tests/contribuicoes-metas.test.cjs` (reconciliação em PGlite sobre o
+  catálogo remoto, dados fictícios), `tests/regras-metas.test.cjs` e
+  `tests/resumo-inicio.test.cjs`.
+
+**Pendente de validação:** aplicação remota da migration, fluxo completo com JWT
+real entre voluntário e gestão e homologação em Android.
+
+## Histórico — fluxo de solicitações de materiais (24/09/2026, removido em 05/10/2026)
+
+O registro abaixo descreve a implementação anterior, que criou
+`solicitacoes_materiais` e `contribuicoes_materiais` com RPCs próprias e tratou o
+modelo de metas como legado financeiro. A equipe decidiu voltar ao modelo de
+metas, que já estava em uso. O código do app foi removido; as migrations
+históricas permanecem no repositório como registro.
+
+### Prioridade 2 — Contribuição de materiais (registro original)
 
 Implementação de 24/09/2026. **"Contribuição" significa entrega de materiais ou
 itens físicos. Não significa contribuição financeira.** Não há campos monetários,
 PIX, pagamentos ou comprovantes no novo fluxo. Diário, Oficinas e Certificados
 não foram implementados.
 
-## Auditoria anterior à implementação
+#### Auditoria anterior à implementação
 
 | Estrutura encontrada | Avaliação e decisão |
 | --- | --- |
@@ -26,7 +110,7 @@ mudanças, mas exibe **Contribuir** para voluntários e **Materiais** para gest�
 Se existirem metas antigas do tipo MATERIAL, sua migração exige inventário e
 conferência de unidades, autor e recebimentos; elas não aparecem automaticamente.
 
-## Regras de negócio implementadas
+#### Regras de negócio implementadas
 
 - Quantidades inteiras de 1 a 1.000.000, em **unidades**. Pacotes, caixas ou kits
   devem ser descritos claramente como unidade do item. Não há frações/kg/litros
@@ -59,7 +143,7 @@ conferência de unidades, autor e recebimentos; elas não aparecem automaticamen
 - Descrição pode conter orientações de entrega, sem novo módulo de contato.
   Não há WhatsApp, notificações ou agendamento automático.
 
-## Banco, segurança e dependências
+#### Banco, segurança e dependências
 
 Migration nova: 20260924140000_contribuicao_materiais.sql.
 Aplicar depois das migrations existentes, incluindo as duas da Prioridade 1.
@@ -109,7 +193,7 @@ As novas FKs usam RESTRICT para preservar histórico: exclusão administrativa d
 usuários com contribuições exigirá decisão de retenção/anonimização futura.
 Nenhum dado real foi alterado ou apagado.
 
-## Validações executadas
+#### Validações executadas
 
 Revisão de preparação em 24/09/2026. A migration de materiais foi executada
 depois das migrations da Prioridade 1 na fixture; nenhuma correção SQL foi
@@ -172,7 +256,7 @@ concorrência em duas conexões PostgreSQL independentes, APK/build nativo,
 renderização/interações em Android ou teste ponta a ponta. PGlite não comprova
 compatibilidade remota nem concorrência real.
 
-## Homologação manual
+#### Homologação manual
 
 1. Conferir pré-requisitos e aplicar a migration em homologação. Configurar URL
    e chave pública; usar uma gestão e dois voluntários fictícios.
@@ -199,7 +283,7 @@ compatibilidade remota nem concorrência real.
     confirmada no servidor: recarregar antes de repetir.
 11. Conferir que a aba atual abre materiais e não oferece a tela financeira antiga.
 
-## Legado preservado e limpeza futura
+#### Legado preservado e limpeza futura
 
 ### Ainda utilizado
 

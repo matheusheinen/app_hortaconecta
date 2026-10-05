@@ -34,7 +34,7 @@ const dados = () => ({
   habilidades: [{ id: 1, nome_habilidade: 'Plantio', categoria: 'Horta' }],
   usuario_habilidades: [{ habilidade_id: 1 }],
   ongs: { cnpj: null, razao_social: 'Instituição de Teste', data_criacao: null, responsavel_legal: null },
-  configuracao_instituicao: { whatsapp: '51999999999' },
+  configuracao_instituicao: { whatsapp: '51999999999', chave_pix: 'chave-ficticia', nome_beneficiario_pix: 'Horta Teste' },
 });
 
 /** Supabase simulado: registra consultas e RPCs; `falhaTabela` faz a carga falhar. */
@@ -282,7 +282,7 @@ test('Perfil gestão: WhatsApp vai para a configuração da instituição, não 
   assert.equal(falso.rpcs.length, 0, 'Seção de WhatsApp não chama a RPC do perfil');
   const semConfiguracao = dados();
   semConfiguracao.configuracao_instituicao = null;
-  await assert.rejects(libOng(supabaseFalso({ base: semConfiguracao })).salvarPerfilOng({ whatsapp: null }), /não foi atualizado/);
+  await assert.rejects(libOng(supabaseFalso({ base: semConfiguracao })).salvarPerfilOng({ whatsapp: null }), /não foram atualizados/);
 });
 
 test('WhatsApp: link com código do país e números inválidos recusados', () => {
@@ -290,4 +290,27 @@ test('WhatsApp: link com código do país e números inválidos recusados', () =
   assert.equal(linkWhatsApp('(51) 98888-7777', 'Olá & até'), 'https://wa.me/5551988887777?text=Ol%C3%A1%20%26%20at%C3%A9');
   assert.equal(linkWhatsApp('5551988887777', 'x'), 'https://wa.me/5551988887777?text=x');
   for (const invalido of ['', '123', '999999999999999']) assert.equal(linkWhatsApp(invalido, 'x'), null);
+});
+
+test('Perfil gestão: PIX lido e gravado na configuração; sem a coluna, a seção fica indisponível', async () => {
+  const falso = supabaseFalso();
+  const lib = libOng(falso);
+  const perfil = await lib.carregarPerfilOng('g');
+  assert.equal(perfil.chave_pix, 'chave-ficticia');
+  assert.equal(perfil.pixDisponivel, true);
+  await lib.salvarPerfilOng({ chave_pix: 'nova', nome_beneficiario_pix: null });
+  assert.deepEqual(falso.atualizacoes.at(-1).valores, { chave_pix: 'nova', nome_beneficiario_pix: null });
+  assert.equal(falso.rpcs.length, 0);
+  const semColuna = supabaseFalso();
+  const original = semColuna.supabase.from;
+  semColuna.supabase.from = tabela => {
+    const consulta = original(tabela);
+    if (tabela !== 'configuracao_instituicao') return consulta;
+    return { ...consulta, select: colunas => colunas.includes('chave_pix')
+      ? { maybeSingle: async () => ({ data: null, error: { code: '42703', message: 'column does not exist' } }) }
+      : consulta.select(colunas) };
+  };
+  const antigo = await libOng(semColuna).carregarPerfilOng('g');
+  assert.equal(antigo.pixDisponivel, false);
+  assert.equal(antigo.whatsapp, '51999999999');
 });

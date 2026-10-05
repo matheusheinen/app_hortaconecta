@@ -1,45 +1,34 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { TelaMetas } from '../telas/TelaMetas';
-import { TelaFormMeta } from '../telas/TelaFormMeta';
-import type { Meta } from '../lib/tipos';
+import {
+  TelaDetalheMeta, TelaFormMeta, TelaMetas, TelaMinhasContribuicoesMetas, TelaRegistrarRecebimento,
+} from '../telas/TelasMetas';
 
-export type ParametrosPilhaMetas = {
+export type ParametrosMetas = {
   lista: undefined;
-  formulario: { meta: Meta | null };
+  detalhe: { id: number };
+  formulario: { id: number | null };
+  registrar: { id: number };
+  minhas: undefined;
 };
+const Pilha = createNativeStackNavigator<ParametrosMetas>();
 
-const Pilha = createNativeStackNavigator<ParametrosPilhaMetas>();
-
-type Props = {
-  ehGestao: boolean;
-  nome: string;
-  sair: () => void;
-};
-
-export function PilhaMetas({ ehGestao, nome, sair }: Props) {
-  return (
-    <Pilha.Navigator screenOptions={{ headerShown: false }}>
-      <Pilha.Screen name="lista">
-        {({ navigation }) => (
-          <TelaMetas
-            ehGestao={ehGestao}
-            nome={nome}
-            onNova={() => navigation.navigate('formulario', { meta: null })}
-            onEditar={(meta) => navigation.navigate('formulario', { meta })}
-            onSair={sair}
-          />
-        )}
-      </Pilha.Screen>
-      <Pilha.Screen name="formulario">
-        {({ navigation, route }) => (
-          <TelaFormMeta
-            meta={route.params.meta}
-            onPronto={() => navigation.goBack()}
-            onCancelar={() => navigation.goBack()}
-          />
-        )}
-      </Pilha.Screen>
-    </Pilha.Navigator>
-  );
+/** Metas em dinheiro (PIX) ou de materiais, com contribuições conferidas pela gestão. */
+export function PilhaMetas({ ehGestao, usuarioId, inicio }: { ehGestao: boolean; usuarioId: string; inicio: () => void }) {
+  return <Pilha.Navigator screenOptions={{ headerShown: false }}>
+    <Pilha.Screen name="lista">{({ navigation }) => <TelaMetas ehGestao={ehGestao} voltar={inicio}
+      abrir={id => navigation.navigate('detalhe', { id })} criar={() => navigation.navigate('formulario', { id: null })}
+      minhas={() => navigation.navigate('minhas')} />}</Pilha.Screen>
+    <Pilha.Screen name="detalhe">{({ navigation, route }) => <TelaDetalheMeta key={route.params.id} id={route.params.id}
+      ehGestao={ehGestao} usuarioId={usuarioId} voltar={() => navigation.goBack()}
+      editar={() => navigation.navigate('formulario', route.params)} registrar={() => navigation.navigate('registrar', route.params)}
+      minhas={() => navigation.navigate('minhas')} />}</Pilha.Screen>
+    {ehGestao ? <>
+      <Pilha.Screen name="formulario">{({ navigation, route }) => <TelaFormMeta id={route.params.id}
+        voltar={() => navigation.goBack()} />}</Pilha.Screen>
+      <Pilha.Screen name="registrar">{({ navigation, route }) => <TelaRegistrarRecebimento id={route.params.id}
+        gestaoId={usuarioId} voltar={() => navigation.goBack()} />}</Pilha.Screen>
+    </> : <Pilha.Screen name="minhas">{({ navigation }) => <TelaMinhasContribuicoesMetas usuarioId={usuarioId}
+      voltar={() => navigation.goBack()} abrir={id => navigation.navigate('detalhe', { id })} />}</Pilha.Screen>}
+  </Pilha.Navigator>;
 }

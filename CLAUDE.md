@@ -3,8 +3,10 @@
 > **Escopo do MVP — 05/10/2026:** a referência do que entra no MVP é
 > [docs/mvp/ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md). Oficinas e certificados
 > ficam **fora do MVP por enquanto**: ocultos no app por `src/lib/escopoMvp.ts`,
-> com código, testes e banco preservados. Doações = materiais + lançamento de
-> entrega pela gestão. O estilo base das telas é o atual de `origin/main`; o
+> com código, testes e banco preservados. Contribuições = metas em dinheiro (PIX)
+> e de materiais em `metas_demandas`/`contribuicoes`, conferidas pela gestão
+> ([CONTRIBUICOES.md](docs/mvp/CONTRIBUICOES.md)); as tabelas de solicitações de
+> materiais de 24/09 são removidas. O estilo base das telas é o atual de `origin/main`; o
 > redesenho local (27–29/09) é fonte de funcionalidades a portar, não de estilo.
 > Quando este aviso divergir de seções abaixo, ele prevalece.
 
@@ -28,11 +30,10 @@
 > inscrição, presença ou certificado. O tipo legado OFICINA_AUTORAL permanece
 > preservado; o fluxo atual usa propostas_oficinas, sem calendário.
 
-> Atualização — 24/09/2026: a Prioridade 2 está descrita em
-> [docs/mvp/MATERIAIS.md](docs/mvp/MATERIAIS.md), com modelo, regras, migration e limites
-> de validação. Contribuição significa entrega de materiais ou itens físicos,
-> não contribuição financeira. Referências abaixo a PIX, pagamentos e comprovantes
-> financeiros são legado obsoleto, preservado para revisão posterior.
+> Atualização — 24/09/2026 (**substituída em 05/10/2026**): a Prioridade 2 criou um
+> fluxo só de materiais e tratou PIX como legado. A equipe voltou ao modelo de metas
+> em dinheiro e de materiais; ver [docs/mvp/CONTRIBUICOES.md](docs/mvp/CONTRIBUICOES.md),
+> que preserva o registro original no histórico.
 
 > Atualização de implementação — 23/09/2026: o fluxo da Prioridade 1
 > (voluntariado) e sua migration incremental estão descritos em

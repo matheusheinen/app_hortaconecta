@@ -13,7 +13,7 @@ Os relatórios são registros datados: suas conclusões descrevem a etapa em que
 ## MVP implementado
 
 - [Voluntariado](mvp/VOLUNTARIADO.md)
-- [Contribuição de materiais](mvp/MATERIAIS.md)
+- [Contribuições: metas em dinheiro e de materiais](mvp/CONTRIBUICOES.md)
 - [Diário de Transparência](mvp/DIARIO.md)
 - [Correções do MVP](mvp/CORRECOES_MVP.md)
 

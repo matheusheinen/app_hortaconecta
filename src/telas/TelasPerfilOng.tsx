@@ -10,11 +10,12 @@ import {
   SECOES_PERFIL_ONG,
   secaoOngCompleta,
   type DadosPerfilOng,
+  type PerfilOngCarregado,
   type SecaoPerfilOng,
 } from '../lib/perfilOng';
 
 export type ContextoPerfilOng = {
-  dados: DadosPerfilOng | null;
+  dados: PerfilOngCarregado | null;
   erro: string | null;
   carregando: boolean;
   carregar: () => void;
@@ -42,7 +43,9 @@ export function TelaHubPerfilOng({ nome, sair, abrir }: {
   if (!contexto) throw new Error('Perfil da gestão fora do provedor.');
   const { dados, erro, carregando, carregar } = contexto;
   const completas = dados ? SECOES_PERFIL_ONG.filter((s) => secaoOngCompleta(s.chave, dados)).length : 0;
-  const temWhatsapp = !!dados && secaoOngCompleta('whatsapp', dados);
+  const pendencias = dados
+    ? [!secaoOngCompleta('whatsapp', dados) && 'o WhatsApp', !secaoOngCompleta('recebimento', dados) && 'a chave PIX'].filter(Boolean)
+    : [];
 
   return (
     <HubPerfil nome={nome} papel="gestão da ONG" sair={sair} erro={erro} carregando={carregando && !dados} carregar={carregar}>
@@ -51,9 +54,9 @@ export function TelaHubPerfilOng({ nome, sair, abrir }: {
           <StatusPerfil
             ok={completas === SECOES_PERFIL_ONG.length}
             titulo={completas === SECOES_PERFIL_ONG.length ? 'Perfil completo' : 'Complete o perfil da gestão'}
-            texto={temWhatsapp
-              ? 'Os voluntários conseguem falar com a gestão pelo WhatsApp das atividades.'
-              : 'Cadastre o WhatsApp para que os voluntários consigam entrar em contato.'}
+            texto={pendencias.length
+              ? `Cadastre ${pendencias.join(' e ')} para que os voluntários consigam entrar em contato e doar.`
+              : 'Os voluntários conseguem falar com a gestão e doar pelas metas em dinheiro.'}
             feitas={completas}
             total={SECOES_PERFIL_ONG.length}
           />
@@ -144,6 +147,37 @@ export function TelaSecaoWhatsappOng({ voltar }: { voltar: () => void }) {
       </Text>
       <Campo rotulo="WhatsApp" value={whatsapp} onChangeText={(t) => setWhatsapp(mascararTelefone(t))}
         placeholder="(51) 99999-9999" keyboardType="phone-pad" />
+    </SecaoPerfil>
+  );
+}
+
+export function TelaSecaoRecebimentoOng({ voltar }: { voltar: () => void }) {
+  const { dados, salvar } = usePerfilOng();
+  const disponivel = dados.pixDisponivel;
+  const [chave, setChave] = useState(dados.chave_pix ?? '');
+  const [beneficiario, setBeneficiario] = useState(dados.nome_beneficiario_pix ?? '');
+  return (
+    <SecaoPerfil titulo="Recebimento de doações (PIX)" voltar={voltar} salvar={async () => {
+      if (!disponivel) return 'O servidor ainda não tem o campo de PIX da instituição. Avise quem administra o Supabase.';
+      if (chave.trim().length > 140) return 'A chave PIX pode ter no máximo 140 caracteres.';
+      if (beneficiario.trim() && (beneficiario.trim().length < 2 || beneficiario.trim().length > 120)) {
+        return 'O nome do beneficiário precisa ter entre 2 e 120 caracteres.';
+      }
+      await salvar({ chave_pix: chave.trim() || null, nome_beneficiario_pix: beneficiario.trim() || null });
+      return null;
+    }}>
+      <Text style={estilosPerfil.explicacao}>
+        A chave aparece para os voluntários nas metas em dinheiro. O pagamento acontece fora do app; a gestão confere as
+        doações informadas no extrato antes de confirmá-las.
+      </Text>
+      {!disponivel ? (
+        <Text style={estilosPerfil.explicacao}>
+          Esta seção fica disponível depois que a atualização do banco for aplicada no Supabase.
+        </Text>
+      ) : null}
+      <Campo rotulo="Chave PIX" value={chave} onChangeText={setChave} autoCapitalize="none"
+        placeholder="CNPJ, e-mail, telefone ou chave aleatória" editable={disponivel} />
+      <Campo rotulo="Nome do beneficiário" value={beneficiario} onChangeText={setBeneficiario} editable={disponivel} />
     </SecaoPerfil>
   );
 }
