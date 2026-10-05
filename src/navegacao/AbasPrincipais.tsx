@@ -4,8 +4,8 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 import { PilhaAtividades, type ParametrosPilhaAtividades } from './PilhaAtividades';
 import { PilhaMateriais, type ParametrosMateriais } from './PilhaMateriais';
 import { PilhaInicio, type ParametrosInicio } from './PilhaInicio';
-import { TelaPerfilOng } from '../telas/TelaPerfilOng';
-import { TelaPerfilVoluntario } from '../telas/TelaPerfilVoluntario';
+import { PilhaPerfilOng } from './PilhaPerfilOng';
+import { PilhaPerfilVoluntario } from './PilhaPerfilVoluntario';
 import { PilhaDiario } from './PilhaDiario';
 import { cores } from '../lib/tema';
 import type { Usuario } from '../lib/tipos';
@@ -112,9 +112,9 @@ export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Pro
       <Abas.Screen name="perfil" options={{ tabBarLabel: 'Perfil' }}>
         {() =>
           ehGestao ? (
-            <TelaPerfilOng perfil={perfil} sair={sair} recarregarPerfil={recarregarPerfil} />
+            <PilhaPerfilOng usuarioId={perfil.id} nome={perfil.nome} sair={sair} recarregarPerfil={recarregarPerfil} />
           ) : (
-            <TelaPerfilVoluntario perfil={perfil} sair={sair} recarregarPerfil={recarregarPerfil} />
+            <PilhaPerfilVoluntario usuarioId={perfil.id} nome={perfil.nome} sair={sair} recarregarPerfil={recarregarPerfil} />
           )
         }
       </Abas.Screen>

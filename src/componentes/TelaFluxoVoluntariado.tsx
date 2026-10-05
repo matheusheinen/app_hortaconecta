@@ -39,7 +39,7 @@ export function CartaoFluxo({ children }: { children: ReactNode }) {
   return <View style={estilosFluxo.cartao}>{children}</View>;
 }
 export const estilosFluxo = StyleSheet.create({
-  conteudo: { padding: 20, paddingTop: espaco.lg, paddingBottom: espaco.xl, gap: espaco.md },
+  conteudo: { padding: 20, paddingTop: espaco.lg, paddingBottom: espaco.xl, gap: espaco.md, width: '100%', maxWidth: 560, alignSelf: 'center' },
   cartao: {
     backgroundColor: cores.fundo,
     borderRadius: 18,

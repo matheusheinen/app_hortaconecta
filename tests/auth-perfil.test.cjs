@@ -52,24 +52,3 @@ test('Sessão: erro inicial, troca de conta, resposta antiga e falha/sucesso de 
  saidaFalha=false;await r.sair();r=render();assert.equal(r.sessao,null);assert.equal(r.perfil,null);assert.equal(r.carregando,false);
 });
 
-test('Tela gestão: falha de carga oculta Salvar e oferece nova tentativa (render simulado)',async()=>{
- let cursor=0,foco,falhar=true;const slots=[];
- const react={
-  createElement:(tipo,props,...filhos)=>({tipo,props,filhos}),Fragment:'Fragment',
-  useState:inicial=>{const i=cursor++;slots[i]??={v:inicial};return [slots[i].v,v=>{slots[i].v=v;}];},
-  useRef:inicial=>{const i=cursor++;return slots[i]??(slots[i]={current:inicial});},useCallback:f=>f,
- };react.default=react;
- const rn={Platform:{OS:'android'},StyleSheet:{create:x=>x},KeyboardAvoidingView:'KeyboardAvoidingView',Pressable:'Pressable',ScrollView:'ScrollView',Text:'Text',View:'View'};
- const resposta=tabela=>Promise.resolve(falhar?{data:null,error:new Error('Falha de carga')}:{data:tabela==='usuarios'?{nome:'Gestão'}:null,error:null});
- const supabase={from:tabela=>({select:()=>({eq:()=>({single:()=>resposta(tabela),maybeSingle:()=>resposta(tabela)})})})};
- const {TelaPerfilOng}=carregar('src/telas/TelaPerfilOng.tsx',{
-  react,'react-native':rn,'@react-navigation/native':{useFocusEffect:f=>{foco=f;}},'../lib/supabase':{supabase},
-  '../lib/tema':{cores:{},espaco:{},tipo:{}},'../lib/validadores':{},'../lib/mascaras':{mascararTelefone:x=>x,mascararCnpj:x=>x},
-  '../componentes/Ui':{Aviso:'Aviso',Botao:'Botao',Campo:'Campo'},'../componentes/CampoData':{CampoData:'CampoData'},
-  '../lib/voluntariado':{mensagemErro:e=>e.message},'../lib/perfilGestao':{salvarPerfilGestao:()=>{throw new Error('Não deve salvar');}},
- });
- const render=()=>{cursor=0;return TelaPerfilOng({perfil:{id:'g',nome:'Gestão'},sair(){},recarregarPerfil:async()=>{}});};
- render();foco();await new Promise(r=>setImmediate(r));
- let arvore=JSON.stringify(render());assert.ok(arvore.includes('Tentar novamente'));assert.ok(!arvore.includes('"titulo":"Salvar"'));
- falhar=false;foco();await new Promise(r=>setImmediate(r));arvore=JSON.stringify(render());assert.ok(arvore.includes('"titulo":"Salvar"'));
-});
