@@ -129,7 +129,6 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 | RF0013 | Diário de Transparência |
 | RF0014 | Notificações Push |
 | RF0015 | Gestão dos Dados da Instituição |
-| RF0016 | Apresentação da Instituição |
 
 ### Não funcionais
 
@@ -184,9 +183,8 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 | B29 | Notificações push (Expo) | RF0014 | Baixa | 10h | Em planejamento |
 | B30 | Tela de perfil da ONG (dados cadastrais, PIX e WhatsApp) | RF0015 | Alta | 4h | Em planejamento |
 | B31 | Edição de perfil e foto do usuário | RF0002 | Média | 5h | Em planejamento |
-| B32 | Tela de apresentação da instituição | RF0016 | Baixa | 3h | Em planejamento |
-| B33 | Histórico de participação e mensagem de impacto | RF0008 | Média | 6h | Em planejamento |
-| B34 | Tela "Minhas contribuições" com situação de validação | RF0011 | Média | 4h | Em planejamento |
+| B32 | Histórico de participação e mensagem de impacto | RF0008 | Média | 6h | Em planejamento |
+| B33 | Tela "Minhas contribuições" com situação de validação | RF0011 | Média | 4h | Em planejamento |
 
 ### Implementado na branch `integracao/mvp` (aguardando revisão da equipe)
 
@@ -206,8 +204,8 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | B26 | Feed só com publicações PUBLICADA | Regra específica para imagens de menores |
 | B30 | Perfil da gestão em seções (conta, institucional, WhatsApp, PIX) | Seção de PIX depende da reconciliação pendente |
 | B31 | Perfil do voluntário em seções com busca de CEP | Foto do usuário |
-| B33 | Histórico de participação com carga prevista | Mensagem de impacto |
-| B34 | "Minhas contribuições" com situação de conferência | Homologação |
+| B32 | Histórico de participação com carga prevista | Mensagem de impacto |
+| B33 | "Minhas contribuições" com situação de conferência | Homologação |
 
 ## Cronograma
 
