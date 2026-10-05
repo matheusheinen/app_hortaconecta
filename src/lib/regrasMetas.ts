@@ -38,6 +38,11 @@ export function prazoVencido(meta: Pick<MetaBase, 'data_limite'>, hojeIso: strin
   return meta.data_limite !== null && meta.data_limite < hojeIso;
 }
 
+/** Aba da listagem: encerradas e canceladas saem das abertas. */
+export function metaFinalizada(meta: Pick<MetaBase, 'status'>): boolean {
+  return meta.status !== 'ABERTA';
+}
+
 export function recebendoContribuicoes(meta: Pick<MetaBase, 'status' | 'data_limite'>, hojeIso: string): boolean {
   return meta.status === 'ABERTA' && !prazoVencido(meta, hojeIso);
 }

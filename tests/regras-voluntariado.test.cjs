@@ -8,7 +8,7 @@ const modulo = new Module('regras');
 modulo._compile(ts.transpileModule(fs.readFileSync('src/lib/regrasVoluntariado.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText, 'regras.cjs');
-const { interpretarDataHora, interpretarCarga, disponibilidadeValida, lerQrCheckin } = modulo.exports;
+const { interpretarDataHora, interpretarCarga, disponibilidadeValida, lerQrCheckin, atividadeFinalizada } = modulo.exports;
 
 test('datas rejeitam horário normalizado, datas inexistentes e aceitam ano bissexto', () => {
   for (const valor of ['24/09/2026 10:60', '24/09/2026 10:99', '24/09/2026 24:00', '31/02/2026 10:00', '29/02/2025 10:00']) {
@@ -35,4 +35,8 @@ test('leitura de QR exige versão, atividade correta e token aleatório', () => 
   assert.throws(() => lerQrCheckin('1', 1));
   assert.throws(() => lerQrCheckin('{', 1));
   assert.throws(() => lerQrCheckin(JSON.stringify({ tipo: 'hortaconecta-checkin-v1', atividade_id: 1, token: '1' }), 1));
+});
+test('aba de finalizadas: realizada, cancelada e recusada; encerrada ainda acontece', () => {
+  for (const status of ['REALIZADA', 'CANCELADA', 'RECUSADA']) assert.equal(atividadeFinalizada(status), true, status);
+  for (const status of ['PENDENTE_APROVACAO', 'ABERTA', 'ENCERRADA']) assert.equal(atividadeFinalizada(status), false, status);
 });

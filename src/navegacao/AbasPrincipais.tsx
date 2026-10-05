@@ -97,7 +97,7 @@ export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Pro
 
       <Abas.Screen name="atividades" options={{ tabBarLabel: ehGestao ? 'Atividades' : 'Voluntariado' }}>
         {({ navigation }) => (
-          <PilhaAtividades ehGestao={ehGestao} nome={perfil.nome} autorId={perfil.id} sair={sair} aoPerfil={() => navigation.navigate('perfil')} />
+          <PilhaAtividades ehGestao={ehGestao} autorId={perfil.id} inicio={() => navigation.navigate('inicio', { screen: 'resumo' })} aoPerfil={() => navigation.navigate('perfil')} />
         )}
       </Abas.Screen>
 

@@ -12,6 +12,11 @@
 >   `expo-image-manipulator`, como pede o CLAUDE.md; usa só `quality: 0.8` do seletor.
 > - **Legado financeiro:** metas e contribuições em dinheiro voltaram a fazer parte do MVP
 >   ([CONTRIBUICOES.md](CONTRIBUICOES.md)); as menções a "legado financeiro" abaixo são de 24/09.
+> - **Exclusão (05/10):** a gestão pode excluir publicações (botão no detalhe), pela RPC
+>   `diario_excluir_revisao` da [reconciliação 20261005170000](../../supabase/reconciliacao/20261005170000_diario_excluir.sql),
+>   **pendente de aplicação no remoto**. Substitui a decisão "desativação é ocultação, não DELETE"
+>   descrita abaixo; ocultar continua disponível. O app apaga a imagem pela API Storage depois
+>   da exclusão; se falhar, o arquivo fica sem vínculo e invisível à comunidade.
 > - **Pendente:** Storage real (upload, URLs assinadas, limites HTTP) e homologação em Android.
 >
 > As seções abaixo preservam o registro de 24/09; contagens de testes são daquela data.

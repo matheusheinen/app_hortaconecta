@@ -41,6 +41,17 @@ export async function statusDiario(id: number, status: 'PUBLICADA' | 'OCULTA', r
  const { error } = await supabase.rpc('diario_status_revisao', { p_id: id, p_status: status, p_revisao: revisao });
  if(error) throw error;
 }
+/**
+ * A publicação sai do banco primeiro; só então a imagem fica sem vínculo e o
+ * Storage aceita apagá-la. Se a remoção do arquivo falhar, ele fica solto
+ * (invisível à comunidade) sem desfazer a exclusão já confirmada.
+ */
+export async function excluirDiario(id: number, revisao: number) {
+ const { data: caminho, error } = await supabase.rpc('diario_excluir_revisao', { p_id: id, p_revisao: revisao });
+ if(error) throw error;
+ if(!caminho) return;
+ try { await supabase.storage.from(BUCKET_DIARIO).remove([caminho]); } catch { /* arquivo fica sem vínculo */ }
+}
 export async function urlImagemDiario(caminho: string) {
  const { data, error } = await supabase.storage.from(BUCKET_DIARIO).createSignedUrl(caminho, 60);
  if(error) throw error;

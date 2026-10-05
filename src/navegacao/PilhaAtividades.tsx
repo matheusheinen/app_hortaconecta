@@ -22,21 +22,19 @@ export type ParametrosPilhaAtividades = {
 const Pilha = createNativeStackNavigator<ParametrosPilhaAtividades>();
 type Props = {
   ehGestao: boolean;
-  nome: string;
   autorId: string;
-  sair: () => void;
+  inicio: () => void;
   aoPerfil: () => void;
 };
 
-export function PilhaAtividades({ ehGestao, nome, autorId, sair, aoPerfil }: Props) {
+export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil }: Props) {
   return (
     <Pilha.Navigator screenOptions={{ headerShown: false }}>
       <Pilha.Screen name="lista">
         {({ navigation }) => (
           <TelaAtividades
             ehGestao={ehGestao}
-            nome={nome}
-            onSair={sair}
+            voltar={inicio}
             onNova={() => navigation.navigate('formulario', { atividadeId: null })}
             onEditar={(atividade) =>
               navigation.navigate('formulario', { atividadeId: atividade.id })

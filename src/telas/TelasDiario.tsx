@@ -4,7 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { Botao, Campo, Aviso } from '../componentes/Ui';
 import { CartaoFluxo, TelaFluxoVoluntariado as TelaFluxo } from '../componentes/TelaFluxoVoluntariado';
 import { ImagemDiario } from '../componentes/ImagemDiario';
-import { detalheDiario, listarDiario, salvarDiario, statusDiario } from '../lib/diario';
+import { detalheDiario, excluirDiario, listarDiario, salvarDiario, statusDiario } from '../lib/diario';
+import { confirmarExclusao } from '../lib/confirmar';
 import { imagemJpeg } from '../lib/regrasDiario';
 import { useDadosVoluntariado } from '../lib/useDadosVoluntariado';
 import { mensagemErro } from '../lib/voluntariado';
@@ -43,6 +44,13 @@ export function TelaDetalheDiario({ id, gestao, voltar, editar }: {
   catch(f) { setErroAcao(mensagemErro(f)); }
   finally { trava.current=false; setOcupado(false); }
  }
+ async function excluir() {
+  if(!dados || trava.current) return;
+  trava.current=true; setOcupado(true); setErroAcao(null);
+  try { await excluirDiario(id, dados.revisao); voltar(); }
+  catch(f) { setErroAcao(mensagemErro(f)); }
+  finally { trava.current=false; setOcupado(false); }
+ }
  return <TelaFluxo titulo="Publicação" voltar={voltar} erro={erroAcao ?? erro} carregando={carregando}
   atualizar={() => { setErroAcao(null); void carregar(); }}>
   {dados ? <>
@@ -54,6 +62,10 @@ export function TelaDetalheDiario({ id, gestao, voltar, editar }: {
     <Botao titulo={dados.status === 'PUBLICADA' ? 'Ocultar publicação' : 'Publicar novamente'} variante="contorno" carregando={ocupado}
      onPress={() => Alert.alert('Alterar visibilidade?', dados.status === 'PUBLICADA' ? 'A publicação deixará de aparecer para a comunidade.' : 'A publicação ficará visível para usuários autenticados.',
       [{ text: 'Voltar', style: 'cancel' }, { text: 'Confirmar', onPress: () => { void mudar(); } }])} />
+    <Botao titulo="Excluir publicação" variante="destrutivo" desabilitado={ocupado}
+     onPress={() => confirmarExclusao('Excluir publicação?',
+      `"${dados.titulo}" será apagada definitivamente${dados.imagem_caminho ? ', com a imagem' : ''}.${dados.status === 'PUBLICADA' ? ' Para só tirar do ar, use "Ocultar publicação".' : ''}`,
+      () => { void excluir(); })} />
    </> : null}
   </> : null}
  </TelaFluxo>;

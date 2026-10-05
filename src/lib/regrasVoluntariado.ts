@@ -1,4 +1,12 @@
-import type { SlotDisponibilidade } from './tipos';
+import type { SlotDisponibilidade, StatusAtividade } from './tipos';
+
+/**
+ * Aba da listagem. ENCERRADA só fecha as candidaturas: a atividade ainda
+ * acontece e recebe check-in, então continua entre as abertas.
+ */
+export function atividadeFinalizada(status: StatusAtividade): boolean {
+  return status === 'REALIZADA' || status === 'CANCELADA' || status === 'RECUSADA';
+}
 
 export function disponibilidadeValida(valor: unknown): valor is SlotDisponibilidade[] {
   if (!Array.isArray(valor)) return false;

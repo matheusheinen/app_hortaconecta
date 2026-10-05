@@ -4,7 +4,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -13,7 +12,8 @@ import { supabase } from '../lib/supabase';
 import { cores, espaco, tipo } from '../lib/tema';
 import type { Atividade, Habilidade } from '../lib/tipos';
 import { mascararDataHora } from '../lib/mascaras';
-import { Aviso, Botao, Campo } from '../componentes/Ui';
+import { Botao, Campo } from '../componentes/Ui';
+import { CartaoFluxo, TelaFluxoVoluntariado as TelaFluxo } from '../componentes/TelaFluxoVoluntariado';
 import { interpretarCarga, interpretarDataHora } from '../lib/regrasVoluntariado';
 import { mensagemErro } from '../lib/voluntariado';
 import { carregarAreasAtividade, salvarAreasAtividade } from '../lib/areasAtividade';
@@ -138,21 +138,8 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: cores.fundo }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={onCancelar} hitSlop={12} style={{ marginBottom: espaco.md }}>
-          <Text style={[tipo.apoio, { color: cores.folha, fontWeight: '600' }]}>Voltar</Text>
-        </Pressable>
-
-        <Text style={[tipo.titulo, { marginBottom: espaco.lg }]}>
-          {editando ? 'Editar tarefa' : 'Publicar tarefa'}
-        </Text>
-
-        {erro ? <Aviso mensagem={erro} /> : null}
-
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <TelaFluxo titulo={editando ? 'Editar tarefa' : 'Publicar tarefa'} voltar={onCancelar} erro={erro}>
         <Text style={tipo.apoio}>Após a primeira candidatura, título, data, horário e carga horária ficam protegidos no servidor. Descrição e vagas continuam editáveis dentro das regras.</Text>
         <Campo rotulo="Título" value={titulo} onChangeText={setTitulo} />
 
@@ -184,39 +171,38 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
           keyboardType="decimal-pad"
         />
 
-        <Text style={estilos.rotulo}>Áreas da tarefa (opcional)</Text>
-        <Text style={[tipo.apoio, { marginBottom: espaco.sm }]}>
-          Usadas para sugerir a tarefa a voluntários com habilidades da mesma área. Sem área
-          marcada, a sugestão considera só a disponibilidade.
-        </Text>
-        {avisoAreas ? <Text style={[tipo.apoio, { marginBottom: espaco.md }]}>{avisoAreas}</Text> : null}
-        <View style={estilos.chips}>
-          {catalogo.map((h) => {
-            const ativo = areas.includes(h.id);
-            return (
-              <Pressable
-                key={h.id}
-                onPress={() => alternarArea(h.id)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: ativo }}
-                accessibilityLabel={h.nome_habilidade}
-                style={[estilos.chip, ativo && estilos.chipAtivo]}
-              >
-                <Text style={[estilos.chipTexto, ativo && estilos.chipTextoAtivo]}>{h.nome_habilidade}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <CartaoFluxo>
+          <Text style={tipo.secao}>Áreas da tarefa (opcional)</Text>
+          <Text style={tipo.apoio}>
+            Usadas para sugerir a tarefa a voluntários com habilidades da mesma área. Sem área
+            marcada, a sugestão considera só a disponibilidade.
+          </Text>
+          {avisoAreas ? <Text style={tipo.apoio}>{avisoAreas}</Text> : null}
+          <View style={estilos.chips}>
+            {catalogo.map((h) => {
+              const ativo = areas.includes(h.id);
+              return (
+                <Pressable
+                  key={h.id}
+                  onPress={() => alternarArea(h.id)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: ativo }}
+                  accessibilityLabel={h.nome_habilidade}
+                  style={[estilos.chip, ativo && estilos.chipAtivo]}
+                >
+                  <Text style={[estilos.chipTexto, ativo && estilos.chipTextoAtivo]}>{h.nome_habilidade}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </CartaoFluxo>
 
         <Botao
-          titulo={editando ? 'Salvar alterações' : 'Publicar'}
+          titulo={editando ? 'Salvar alterações' : 'Publicar tarefa'}
           onPress={salvar}
           carregando={ocupado}
         />
-
-        <View style={{ height: espaco.sm }} />
-        <Botao titulo="Cancelar" variante="contorno" onPress={onCancelar} />
-      </ScrollView>
+      </TelaFluxo>
     </KeyboardAvoidingView>
   );
 }
@@ -238,10 +224,8 @@ function traduzErro(mensagem: string) {
 }
 
 const estilos = StyleSheet.create({
-  conteudo: { padding: espaco.lg, paddingTop: espaco.xl, width: '100%', maxWidth: 560, alignSelf: 'center' },
   multilinha: { minHeight: 110, textAlignVertical: 'top', paddingTop: 12 },
-  rotulo: { fontSize: 13, fontWeight: '600', color: cores.tintaSuave, marginBottom: espaco.xs },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: espaco.sm, marginBottom: espaco.lg },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: espaco.sm },
   chip: {
     borderWidth: 1.5,
     borderColor: cores.linha,
