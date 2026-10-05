@@ -1,0 +1,8 @@
+# Fim de linha LF no repositório, independente do sistema de quem clona.
+# Sem isso o Windows grava CRLF e quem usa Linux ou Mac vê o arquivo inteiro
+# como alterado, escondendo a mudança real no diff.
+* text=auto eol=lf
+
+# Gerados: não contam como código escrito à mão nas estatísticas do GitHub.
+package-lock.json linguist-generated=true
+src/lib/database.types.ts linguist-generated=true

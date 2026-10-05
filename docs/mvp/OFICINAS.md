@@ -1,5 +1,9 @@
 # Prioridade 4 — Propostas de oficinas
 
+> **Fora do MVP por enquanto (05/10/2026):** o recurso está oculto no app por
+> `src/lib/escopoMvp.ts`. Código, testes, tabela e RPCs foram preservados. Ver
+> [ESCOPO_MVP.md](ESCOPO_MVP.md).
+
 Implementação em 24/09/2026. Esta prioridade registra propostas privadas e a
 decisão da instituição. **Não é um sistema completo de eventos.** Uma aprovação
 não cria atividade, calendário, inscrição, presença ou certificado.

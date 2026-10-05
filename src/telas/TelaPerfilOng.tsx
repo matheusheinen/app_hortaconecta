@@ -173,7 +173,7 @@ export function TelaPerfilOng({ perfil, sair, recarregarPerfil }: Props) {
             />
 
             <Text style={estilos.secao}>Dados institucionais</Text>
-            <Text style={tipo.apoio}>O nome de exibição identifica esta conta. A razão social pertence ao perfil da gestão. O nome oficial nos certificados e o endereço da horta vêm da configuração institucional, administrada separadamente.</Text>
+            <Text style={tipo.apoio}>O nome de exibição identifica esta conta. A razão social pertence ao perfil da gestão. O nome oficial e o endereço da horta vêm da configuração institucional, administrada separadamente.</Text>
             <Campo
               rotulo="CNPJ"
               value={cnpj}

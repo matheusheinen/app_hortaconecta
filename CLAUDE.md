@@ -1,5 +1,13 @@
 # Horta Conecta
 
+> **Escopo do MVP — 05/10/2026:** a referência do que entra no MVP é
+> [docs/mvp/ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md). Oficinas e certificados
+> ficam **fora do MVP por enquanto**: ocultos no app por `src/lib/escopoMvp.ts`,
+> com código, testes e banco preservados. Doações = materiais + lançamento de
+> entrega pela gestão. O estilo base das telas é o atual de `origin/main`; o
+> redesenho local (27–29/09) é fonte de funcionalidades a portar, não de estilo.
+> Quando este aviso divergir de seções abaixo, ele prevalece.
+
 > Compatibilidade — 30/09/2026: app adaptado ao endereço estruturado, tipos
 > regenerados e duas reconciliações aplicadas no Supabase. Cinco fluxos verificados
 > por SQL remoto com dados fictícios revertidos; 91 testes locais e export Android
@@ -165,6 +173,7 @@ Não implementar sem combinar com a equipe:
 
 - *Matching* automático entre habilidades de voluntários e tarefas
 - Emissão de certificados de horas em PDF
+- Propostas de oficinas e certificados de participação: já implementados, mas ocultos no app até nova decisão (ver [ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md))
 - Integração bancária ou PIX dinâmico com conciliação automática
 - Cadastro de múltiplas instituições (a estrutura prevê, o MVP não entrega)
 - Build e homologação para iOS

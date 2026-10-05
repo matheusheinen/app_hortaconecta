@@ -1,5 +1,9 @@
 # Prioridade 5 — Certificados de participação
 
+> **Fora do MVP por enquanto (05/10/2026):** o recurso está oculto no app por
+> `src/lib/escopoMvp.ts`. Código, testes, tabela e RPCs foram preservados. Ver
+> [ESCOPO_MVP.md](ESCOPO_MVP.md).
+
 > Correção integrada: título/data/carga da atividade são protegidos após a primeira
 > candidatura. Certificados existentes não foram reescritos; divergências anteriores
 > exigem decisão administrativa. Ver [CORRECOES_MVP.md](CORRECOES_MVP.md).

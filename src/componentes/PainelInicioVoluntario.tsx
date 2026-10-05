@@ -12,8 +12,9 @@ export type AcoesInicio = {
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
-  aoIrParaCertificados: () => void;
-  aoIrParaOficinas: () => void;
+  /** Ausente quando o recurso está fora do MVP (ver lib/escopoMvp). */
+  aoIrParaCertificados?: () => void;
+  aoIrParaOficinas?: () => void;
   aoPerfil: () => void;
   abrirAtividade: (id: number) => void;
   abrirMaterial: (id: number) => void;
@@ -85,7 +86,8 @@ export function PainelInicioVoluntario({ nome, resumo, erro, carregando, atualiz
 
       <View style={estilos.indicadores}>
         <Indicador icone="relogio" valor={resumo ? formatarHorasInicio(resumo.horasRegistradas) : '—'} titulo="Horas previstas" cor="#628B9C"
-          onPress={aoIrParaCertificados} descricao="Carga prevista registrada no check-in das presenças confirmadas. Ver certificados." />
+          onPress={aoIrParaCertificados ?? minhasAtividades}
+          descricao={`Carga prevista registrada no check-in das presenças confirmadas. ${aoIrParaCertificados ? 'Ver certificados.' : 'Ver histórico de participação.'}`} />
         <Indicador icone="check" valor={numero(resumo?.atividadesParticipadas)} titulo="Atividades" cor="#45B78A"
           onPress={minhasAtividades} descricao="Presenças confirmadas. Ver histórico de participação." />
         <Indicador icone="presente" valor={numero(resumo?.contribuicoesConfirmadas)} titulo="Contribuições" cor="#D49A4A"
@@ -144,14 +146,14 @@ export function PainelInicioVoluntario({ nome, resumo, erro, carregando, atualiz
         </Pressable>
       </View> : resumo ? <EstadoVazio icone="livro" titulo="Nossa história continua" texto="Os novos relatos da instituição aparecerão no diário." /> : null}
 
-      <View style={estilos.atalhos}>
-        <Pressable onPress={aoIrParaOficinas} accessibilityRole="button" style={({ pressed }) => [estilos.atalho, pressed && estilos.pressionado]}>
+      {aoIrParaOficinas || aoIrParaCertificados ? <View style={estilos.atalhos}>
+        {aoIrParaOficinas ? <Pressable onPress={aoIrParaOficinas} accessibilityRole="button" style={({ pressed }) => [estilos.atalho, pressed && estilos.pressionado]}>
           <Icone nome="oficina" tamanho={23} /><Text style={estilos.atalhoTitulo}>Oficinas</Text><Text style={estilos.apoio}>Compartilhe saberes</Text>
-        </Pressable>
-        <Pressable onPress={aoIrParaCertificados} accessibilityRole="button" style={({ pressed }) => [estilos.atalho, pressed && estilos.pressionado]}>
+        </Pressable> : null}
+        {aoIrParaCertificados ? <Pressable onPress={aoIrParaCertificados} accessibilityRole="button" style={({ pressed }) => [estilos.atalho, pressed && estilos.pressionado]}>
           <Icone nome="certificado" tamanho={23} /><Text style={estilos.atalhoTitulo}>Certificados</Text><Text style={estilos.apoio}>Veja sua participação</Text>
-        </Pressable>
-      </View>
+        </Pressable> : null}
+      </View> : null}
       <Text style={estilos.assinatura}>Pequenas ações. Um impacto que cresce.</Text>
     </View>
   </ScrollView>;

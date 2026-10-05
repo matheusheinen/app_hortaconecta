@@ -10,8 +10,9 @@ type Props = {
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
-  aoIrParaCertificados: () => void;
-  aoIrParaOficinas: () => void;
+  /** Ausente quando o recurso está fora do MVP (ver lib/escopoMvp). */
+  aoIrParaCertificados?: () => void;
+  aoIrParaOficinas?: () => void;
 };
 
 export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas, aoIrParaDiario, aoIrParaOficinas, aoIrParaCertificados }: Props) {
@@ -57,18 +58,22 @@ export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas, a
             icone="caixa"
             onPress={aoIrParaMetas}
           />
-          <CartaoGestao
-            titulo="Certificados"
-            resumo="Acompanhe os certificados emitidos."
-            icone="certificado"
-            onPress={aoIrParaCertificados}
-          />
-          <CartaoGestao
-            titulo="Oficinas"
-            resumo="Conheça as propostas da comunidade."
-            icone="oficina"
-            onPress={aoIrParaOficinas}
-          />
+          {aoIrParaCertificados ? (
+            <CartaoGestao
+              titulo="Certificados"
+              resumo="Acompanhe os certificados emitidos."
+              icone="certificado"
+              onPress={aoIrParaCertificados}
+            />
+          ) : null}
+          {aoIrParaOficinas ? (
+            <CartaoGestao
+              titulo="Oficinas"
+              resumo="Conheça as propostas da comunidade."
+              icone="oficina"
+              onPress={aoIrParaOficinas}
+            />
+          ) : null}
           <CartaoGestao
             titulo="Diário de Transparência"
             resumo="Compartilhe os avanços e as histórias da ONG."

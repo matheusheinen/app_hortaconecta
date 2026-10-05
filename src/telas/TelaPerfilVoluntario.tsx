@@ -324,7 +324,7 @@ export function TelaPerfilVoluntario({ perfil, sair, recarregarPerfil }: Props) 
             <Text style={estilos.secao}>Cadastro de voluntário</Text>
             <Text style={[tipo.apoio, { marginBottom: espaco.md }]}>
               CPF, data de nascimento, profissão, endereço, habilidades e disponibilidade liberam
-              candidatura a tarefas e propostas de oficina.
+              candidatura a tarefas.
             </Text>
             <Campo
               rotulo="CPF"

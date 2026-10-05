@@ -6,14 +6,23 @@ Os relatórios são registros datados: suas conclusões descrevem a etapa em que
 
 - [Windows, Expo Go, LAN e túnel Cloudflare](EXECUTAR_APP.md)
 
+## Escopo do MVP
+
+- [O que está dentro e fora do MVP (decisão de 05/10/2026)](mvp/ESCOPO_MVP.md)
+
 ## MVP implementado
 
 - [Voluntariado](mvp/VOLUNTARIADO.md)
 - [Contribuição de materiais](mvp/MATERIAIS.md)
 - [Diário de Transparência](mvp/DIARIO.md)
+- [Correções do MVP](mvp/CORRECOES_MVP.md)
+
+## Implementado, fora do MVP por enquanto
+
+Ocultos no app por `src/lib/escopoMvp.ts`; código, testes e banco preservados.
+
 - [Propostas de oficinas](mvp/OFICINAS.md)
 - [Certificados](mvp/CERTIFICADOS.md)
-- [Correções do MVP](mvp/CORRECOES_MVP.md)
 
 ## Auditorias e segurança
 
