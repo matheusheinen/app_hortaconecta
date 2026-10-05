@@ -15,10 +15,10 @@ export function PilhaInicio({gestao,usuarioId,nome,sair,atividades,materiais,dia
 }){
  return <Pilha.Navigator screenOptions={{headerShown:false}}>
   <Pilha.Screen name="resumo">{({navigation})=>{
-   const Inicio=gestao?TelaInicioOng:TelaInicioVoluntario;
-   return <Inicio nome={nome} sair={sair} aoIrParaAtividades={atividades} aoIrParaMetas={materiais} aoIrParaDiario={diario}
-    aoIrParaCertificados={recursosPosMvp.certificados?()=>navigation.navigate('certificados'):undefined}
-    aoIrParaOficinas={recursosPosMvp.oficinas?()=>navigation.navigate('oficinas'):undefined}
+   const acoes={nome,sair,aoIrParaAtividades:atividades,aoIrParaMetas:materiais,aoIrParaDiario:diario,
+    aoIrParaCertificados:recursosPosMvp.certificados?()=>navigation.navigate('certificados'):undefined,
+    aoIrParaOficinas:recursosPosMvp.oficinas?()=>navigation.navigate('oficinas'):undefined};
+   return gestao?<TelaInicioOng {...acoes}/>:<TelaInicioVoluntario {...acoes} usuarioId={usuarioId}
     aoPerfil={perfil} abrirAtividade={abrirAtividade} abrirMaterial={abrirMaterial} abrirPublicacao={abrirPublicacao}
     minhasAtividades={minhasAtividades} minhasContribuicoes={minhasContribuicoes}/>;
   }}</Pilha.Screen>

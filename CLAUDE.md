@@ -171,7 +171,7 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 
 Não implementar sem combinar com a equipe:
 
-- *Matching* automático entre habilidades de voluntários e tarefas
+- *Matching* automático entre habilidades de voluntários e tarefas (escalar ou inscrever alguém sem ação dele). As **sugestões** do Início são permitidas: só recomendam leitura, por disponibilidade e área (ver [ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md))
 - Emissão de certificados de horas em PDF
 - Propostas de oficinas e certificados de participação: já implementados, mas ocultos no app até nova decisão (ver [ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md))
 - Integração bancária ou PIX dinâmico com conciliação automática

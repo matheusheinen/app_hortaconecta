@@ -23,6 +23,33 @@ posicionamento pode mudar e elementos faltantes podem ser adicionados.
 | Lançamento de doação pela gestão | A gestão registra uma entrega recebida em mãos | A especificar |
 | Diário de Transparência | Publicações com revisão e imagens privadas | [DIARIO.md](DIARIO.md) |
 | Parametrização da instituição | Nome, textos e contatos de `configuracao_instituicao` | CLAUDE.md |
+| Perfil em seções | Hub com status por seção; voluntário com busca de CEP (ViaCEP) | Abaixo |
+| Contato por WhatsApp | Botão no detalhe da atividade, número de `configuracao_instituicao.whatsapp` | Abaixo |
+| Áreas da atividade e sugestões | Gestão marca habilidades da tarefa; o Início sugere tarefas compatíveis | Abaixo |
+
+## Funcionalidades trazidas do redesenho
+
+Adaptadas ao contrato atual do banco, sem migration nova.
+
+- **Perfil em seções.** Voluntário: dados pessoais, cadastro, endereço,
+  disponibilidade e habilidades. Cada seção envia só suas chaves para
+  `voluntariado_salvar_perfil` (que preserva as omitidas) e sempre reenvia as
+  habilidades atuais, porque a RPC substitui esse conjunto. A elegibilidade
+  exibida vem do banco. Gestão: conta, dados institucionais e WhatsApp, por
+  `gestao_salvar_perfil`. Os campos PIX saíram da tela, mas continuam no banco.
+- **CEP.** Consulta ao ViaCEP (público, sem chave) quando o CEP tem 8 dígitos.
+  CEP inexistente ou falha de rede mantêm o preenchimento manual.
+- **WhatsApp.** A RLS `ongs_privacidade_mvp` impede voluntários de lerem `ongs`,
+  então o número vem de `configuracao_instituicao.whatsapp`, que é público. A
+  seção "WhatsApp para voluntários" grava nesse registro (policy "só a gestão
+  atualiza"). Sem número cadastrado, o botão não aparece.
+- **Áreas e sugestões.** O formulário de tarefa grava `atividade_habilidades`
+  (policy da migration `20260927230000_areas_da_atividade`, já aplicada no
+  remoto). A sugestão exige que a tarefa caiba na disponibilidade do
+  voluntário; quando a tarefa tem área, a categoria precisa coincidir com a de
+  alguma habilidade dele. Não sugere tarefas lotadas, passadas ou já pedidas.
+  **É recomendação, não matching:** ninguém é inscrito ou escalado
+  automaticamente.
 
 ## Fora do MVP por enquanto
 
