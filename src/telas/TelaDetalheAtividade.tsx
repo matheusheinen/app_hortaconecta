@@ -8,6 +8,9 @@ import { supabase } from '../lib/supabase';
 import { carregarDetalhe, mensagemErro } from '../lib/voluntariado';
 import { rotuloInscricao } from '../lib/voluntariado.types';
 import { useDadosVoluntariado } from '../lib/useDadosVoluntariado';
+import { useConfiguracaoInstituicao } from '../lib/useConfiguracaoInstituicao';
+import { abrirWhatsApp } from '../lib/whatsapp';
+import { mascararTelefone } from '../lib/mascaras';
 
 type Props = {
   atividadeId: number;
@@ -43,6 +46,15 @@ export function TelaDetalheAtividade({
       setErroAcao(mensagemErro(falha));
     } finally {
       setOcupado(false);
+    }
+  }
+  const { configuracao } = useConfiguracaoInstituicao();
+  const whatsapp = configuracao?.whatsapp ?? null;
+  async function falarComGestao(titulo: string, quando: string) {
+    if (!whatsapp) return;
+    const mensagem = `Olá! Tenho uma dúvida sobre a atividade "${titulo}" (${new Date(quando).toLocaleString('pt-BR')}).`;
+    if (!(await abrirWhatsApp(whatsapp, mensagem))) {
+      Alert.alert('Não foi possível abrir o WhatsApp', `Fale com a gestão pelo número ${mascararTelefone(whatsapp)}.`);
     }
   }
   const a = dados?.atividade;
@@ -235,6 +247,13 @@ export function TelaDetalheAtividade({
                   </Text>
                 </>
               )}
+              {whatsapp ? (
+                <Botao
+                  titulo="Falar com a gestão no WhatsApp"
+                  variante="contorno"
+                  onPress={() => { void falarComGestao(a.titulo, a.data_hora_prevista); }}
+                />
+              ) : null}
             </>
           )}
         </>

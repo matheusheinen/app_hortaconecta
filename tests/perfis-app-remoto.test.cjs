@@ -33,14 +33,15 @@ const dados = () => ({
   },
   habilidades: [{ id: 1, nome_habilidade: 'Plantio', categoria: 'Horta' }],
   usuario_habilidades: [{ habilidade_id: 1 }],
-  ongs: { cnpj: null, razao_social: 'Instituição de Teste', data_criacao: null, responsavel_legal: null, whatsapp: '51999999999' },
+  ongs: { cnpj: null, razao_social: 'Instituição de Teste', data_criacao: null, responsavel_legal: null },
+  configuracao_instituicao: { whatsapp: '51999999999' },
 });
 
 /** Supabase simulado: registra consultas e RPCs; `falhaTabela` faz a carga falhar. */
 function supabaseFalso({ falhaTabela = null, base = dados() } = {}) {
-  const consultas = [], rpcs = [];
+  const consultas = [], rpcs = [], atualizacoes = [];
   return {
-    consultas, rpcs,
+    consultas, rpcs, atualizacoes,
     supabase: {
       from: tabela => ({
         select: colunas => {
@@ -50,6 +51,13 @@ function supabaseFalso({ falhaTabela = null, base = dados() } = {}) {
             : { data: base[tabela], error: null });
           const builder = { eq: () => builder, order: () => builder, single: resposta, maybeSingle: resposta,
             then: (ok, falha) => resposta().then(ok, falha) };
+          return builder;
+        },
+        update: valores => {
+          const atualizacao = { tabela, valores, filtros: [] };
+          atualizacoes.push(atualizacao);
+          const builder = { eq: (campo, valor) => { atualizacao.filtros.push([campo, valor]); return builder; },
+            select: async () => ({ data: base[tabela] ? [{ id: 1 }] : [], error: null }) };
           return builder;
         },
       }),
@@ -237,7 +245,7 @@ test('Perfil gestão: conta sem complemento carrega e salva só a seção, sem e
   const falso = supabaseFalso({ base });
   const lib = libOng(falso);
   const perfil = await lib.carregarPerfilOng('g');
-  assert.equal(perfil.whatsapp, null);
+  assert.equal(perfil.razao_social, null);
   assert.doesNotMatch(falso.consultas.find(c => c.tabela === 'ongs').colunas, /pix/);
   await lib.salvarPerfilOng({ nome: 'Nova Gestão', razao_social: 'Instituição Nova' });
   const { p_dados } = falso.rpcs.find(r => r.nome === 'gestao_salvar_perfil').parametros;
@@ -263,4 +271,23 @@ test('Perfil gestão: falha de carga é propagada e o hub não oferece seções'
   const arvore = telas.TelaHubPerfilOng({ nome: 'Gestão', sair() {}, abrir() {} });
   assert.equal(arvore.props.erro, 'Falha');
   assert.equal(encontrar(arvore, 'CartaoSecao'), undefined);
+});
+
+test('Perfil gestão: WhatsApp vai para a configuração da instituição, não para ongs', async () => {
+  const falso = supabaseFalso();
+  const lib = libOng(falso);
+  assert.equal((await lib.carregarPerfilOng('g')).whatsapp, '51999999999');
+  await lib.salvarPerfilOng({ whatsapp: '51988887777' });
+  assert.deepEqual(falso.atualizacoes, [{ tabela: 'configuracao_instituicao', valores: { whatsapp: '51988887777' }, filtros: [['id', 1]] }]);
+  assert.equal(falso.rpcs.length, 0, 'Seção de WhatsApp não chama a RPC do perfil');
+  const semConfiguracao = dados();
+  semConfiguracao.configuracao_instituicao = null;
+  await assert.rejects(libOng(supabaseFalso({ base: semConfiguracao })).salvarPerfilOng({ whatsapp: null }), /não foi atualizado/);
+});
+
+test('WhatsApp: link com código do país e números inválidos recusados', () => {
+  const { linkWhatsApp } = carregar('src/lib/whatsapp.ts', { 'react-native': { Linking: {} } });
+  assert.equal(linkWhatsApp('(51) 98888-7777', 'Olá & até'), 'https://wa.me/5551988887777?text=Ol%C3%A1%20%26%20at%C3%A9');
+  assert.equal(linkWhatsApp('5551988887777', 'x'), 'https://wa.me/5551988887777?text=x');
+  for (const invalido of ['', '123', '999999999999999']) assert.equal(linkWhatsApp(invalido, 'x'), null);
 });
