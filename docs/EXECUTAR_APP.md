@@ -1,10 +1,30 @@
 # Executar o HortaConecta no Windows
 
-Abra o PowerShell na pasta do projeto. Para a primeira instalação, use Node.js 22.13 ou superior e instale as dependências com `npm.cmd ci`. O projeto usa [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/).
+O projeto usa [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/) e Node.js 22.13 ou superior.
+
+## Primeira execução
+
+Abra o PowerShell na pasta do repositório clonado (o caminho varia em cada máquina):
 
 ```powershell
-Set-Location -LiteralPath 'C:\Projetos\app_hortaconecta'
+Set-Location -LiteralPath '<pasta do projeto>\app_hortaconecta'
+git switch integracao/mvp      # branch de trabalho em 05/10/2026; ver CLAUDE.md
+npm.cmd ci
+Copy-Item .env.example .env
 ```
+
+Preencha o `.env` com `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_KEY` (chave **pública**) do painel do Supabase. O arquivo não é versionado; nunca use a chave `service_role` no app. Sem essas variáveis o app encerra na abertura com a mensagem "Faltam EXPO_PUBLIC_SUPABASE_URL e EXPO_PUBLIC_SUPABASE_KEY".
+
+Antes de commitar:
+
+```powershell
+npm.cmd run typecheck
+npm.cmd test
+```
+
+`npm test` roda a suíte em sequência (bancos PGlite em memória); leva cerca de 40 segundos.
+
+## Iniciar o app
 
 Escolha o comando conforme a conexão do aparelho:
 
@@ -62,3 +82,13 @@ npm.cmd run start:tunnel
 O modo integrado usa `@expo/ngrok`, instalado no projeto. Se aparecer `Cannot read properties of undefined (reading 'body')` ou ocorrer timeout, use LAN ou Cloudflare para continuar trabalhando.
 
 A equipe do Expo já [registrou limites da conta Ngrok compartilhada](https://github.com/expo/expo/issues/43335). Um estado operacional na [página de status do Ngrok](https://status.ngrok.com/) descreve o serviço em geral e pode coexistir com limites de uma conta; isoladamente, ele não identifica a causa da falha neste projeto. A documentação da [Expo CLI sobre túneis](https://docs.expo.dev/more/expo-cli/#tunneling) também descreve sua dependência de serviços externos.
+
+## Problemas comuns
+
+| Sintoma | Causa provável | O que fazer |
+| --- | --- | --- |
+| "Failed to fetch" no login; tela de carregamento demora ~30 s | Projeto Supabase fora do ar (pausado) ou URL errada no `.env` | Conferir no painel do Supabase se o projeto está ativo e restaurar; conferir a URL. O app espera até 30 s antes de desistir. |
+| `EADDRINUSE ... 8081` | Outro Expo já usa a porta | Encerrar o processo anterior ou usar `-- --port 8083`. |
+| Mudanças no `.env` não aparecem | Variáveis `EXPO_PUBLIC_*` são lidas ao iniciar o Metro | Reiniciar o Expo, se necessário com `-- --clear`. |
+| Testes de banco falham com "diverge do catálogo auditado" | Arquivos SQL com CRLF no checkout | O `.gitattributes` exige LF; reextrair os arquivos (`git rm --cached -r . ; git reset --hard`) com a árvore limpa. |
+| Seção de PIX indisponível no perfil da gestão | Reconciliação `20261005150000` ainda não aplicada no Supabase | Ver [CONTRIBUICOES.md](mvp/CONTRIBUICOES.md). |

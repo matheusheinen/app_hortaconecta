@@ -1,6 +1,7 @@
 # Prioridade 1 — Voluntariado
 
 > **Situação em 05/10/2026.** Fluxo **dentro do MVP** ([ESCOPO_MVP.md](ESCOPO_MVP.md)).
+> - **Requisitos e backlog ([CLAUDE.md](../../CLAUDE.md)):** RF0001–RF0005, RF0007, RF0008, RF0009; B01–B14, B16, B17, B18 (WhatsApp), B31 (perfil), B33 (histórico).
 > - **Banco:** o contrato descrito aqui está no Supabase remoto desde 30/09, instalado pela
 >   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql)
 >   (derivada destas migrations). As migrations `20260923120000` e `20260924120000` **não** são

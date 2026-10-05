@@ -1,6 +1,7 @@
 # Prioridade 4 — Propostas de oficinas
 
 > **Situação em 05/10/2026.** Recurso **fora do MVP por enquanto** ([ESCOPO_MVP.md](ESCOPO_MVP.md)).
+> - **Requisitos e backlog ([CLAUDE.md](../../CLAUDE.md)):** RF0006 e a parte de oficinas do RF0007; B15 e B16. O backlog ainda prevê B15 na Sprint 3; a decisão de deixá-lo fora do MVP precisa ser conciliada pela equipe.
 > - **App:** oculto por `src/lib/escopoMvp.ts` (`recursosPosMvp.oficinas = false`): rotas e atalhos
 >   do Início não são registrados. Código e testes (`tests/oficinas.test.cjs`, `tests/regras-oficinas.test.cjs`) preservados.
 > - **Banco:** `propostas_oficinas` e as RPCs `oficinas_*` estão no remoto desde 30/09, pela

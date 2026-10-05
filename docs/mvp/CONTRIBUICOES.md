@@ -6,6 +6,11 @@ de dois tipos, **em dinheiro (PIX)** ou **de materiais**, e **contribuições**
 foi evoluído no redesenho (27–29/09). As tabelas de solicitações de materiais
 criadas em 24/09 duplicavam esse papel e são removidas (ver Histórico, abaixo).
 
+**Requisitos e backlog ([CLAUDE.md](../../CLAUDE.md)):** RF0010 (B19, B20), RF0011
+(B21, B22, B34), RF0012 (B23, B24), RF0015 (PIX no perfil da gestão, B30) e RNF0004.
+Na branch `integracao/mvp` falta o upload de comprovante (B22); o restante aguarda a
+reconciliação pendente e homologação.
+
 ## Fluxo
 
 | Quem | Meta em dinheiro | Meta de materiais |
