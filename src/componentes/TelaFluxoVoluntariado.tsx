@@ -27,11 +27,11 @@ export function TelaFluxoVoluntariado({
         atualizar ? <RefreshControl refreshing={carregando} onRefresh={atualizar} tintColor={cores.folha} colors={[cores.folha]} /> : undefined
       }
     >
-      <Botao titulo="Voltar" variante="contorno" onPress={voltar} />
       <Text style={tipo.titulo} accessibilityRole="header">{titulo}</Text>
       {erro ? <Aviso mensagem={erro} /> : null}
       {erro && atualizar ? <Botao titulo="Tentar novamente" onPress={atualizar} /> : null}
       {carregando ? <Text style={tipo.apoio}>Carregando...</Text> : children}
+      <Botao titulo="Voltar" variante="contorno" onPress={voltar} />
     </ScrollView>
   );
 }
