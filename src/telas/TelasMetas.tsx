@@ -56,8 +56,8 @@ function Etiqueta({ meta }: { meta: Meta }) {
   </Text>;
 }
 
-export function TelaMetas({ ehGestao, voltar, abrir, criar, minhas }: {
-  ehGestao: boolean; voltar: () => void; abrir: (id: number) => void; criar: () => void; minhas: () => void;
+export function TelaMetas({ ehGestao, voltar, abrir, criar, minhas, convidado = false }: {
+  ehGestao: boolean; voltar: () => void; abrir: (id: number) => void; criar: () => void; minhas: () => void; convidado?: boolean;
 }) {
   const { dados, erro, carregando, carregar } = useDadosVoluntariado(listarMetas);
   const hoje = hojeIso();
@@ -71,7 +71,7 @@ export function TelaMetas({ ehGestao, voltar, abrir, criar, minhas }: {
         ? 'Publique metas em dinheiro ou de materiais, confira as contribuições e registre o que receber.'
         : 'Apoie a horta com uma doação em dinheiro (PIX) ou com materiais. Só contam no total as doações confirmadas pela gestão.'}
     </Text>
-    {ehGestao ? <Botao titulo="Nova meta" onPress={criar} /> : <Botao titulo="Minhas contribuições" variante="contorno" onPress={minhas} />}
+    {ehGestao ? <Botao titulo="Nova meta" onPress={criar} /> : convidado ? null : <Botao titulo="Minhas contribuições" variante="contorno" onPress={minhas} />}
     <AbasFiltro valor={aba} aoMudar={setAba} opcoes={[
       { valor: 'abertas', rotulo: 'Abertas', quantidade: dados ? abertas.length : undefined },
       { valor: 'finalizadas', rotulo: 'Finalizadas', quantidade: dados ? finalizadas.length : undefined },
@@ -92,8 +92,9 @@ export function TelaMetas({ ehGestao, voltar, abrir, criar, minhas }: {
   </TelaFluxo>;
 }
 
-export function TelaDetalheMeta({ id, ehGestao, usuarioId, voltar, editar, registrar, minhas }: {
+export function TelaDetalheMeta({ id, ehGestao, usuarioId, voltar, editar, registrar, minhas, convidado = false, criarConta }: {
   id: number; ehGestao: boolean; usuarioId: string; voltar: () => void; editar: () => void; registrar: () => void; minhas: () => void;
+  convidado?: boolean; criarConta?: () => void;
 }) {
   const consulta = useCallback(() => carregarMeta(id), [id]);
   const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
@@ -129,7 +130,13 @@ export function TelaDetalheMeta({ id, ehGestao, usuarioId, voltar, editar, regis
       {ehGestao
         ? <PainelGestao meta={meta} contribuicoes={dados.contribuicoes} ocupado={acao.ocupado} editar={editar}
             registrar={registrar} conferir={conferir} mudarStatus={mudarStatus} />
-        : <PainelVoluntario meta={meta} contribuicoes={dados.contribuicoes} recebendo={recebendoContribuicoes(meta, hoje)}
+        : convidado
+          ? <CartaoFluxo>
+              <Text style={tipo.secao}>Você está como convidado</Text>
+              <Text style={tipo.corpo}>Crie uma conta para contribuir com esta meta.</Text>
+              {criarConta ? <Botao titulo="Criar conta ou entrar" onPress={criarConta} /> : null}
+            </CartaoFluxo>
+          : <PainelVoluntario meta={meta} contribuicoes={dados.contribuicoes} recebendo={recebendoContribuicoes(meta, hoje)}
             vencido={prazoVencido(meta, hoje)} usuarioId={usuarioId} aoDeclarar={carregar} minhas={minhas} />}
     </> : null}
   </TelaFluxo>;

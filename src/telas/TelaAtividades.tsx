@@ -18,9 +18,10 @@ type Props = {
   onDetalhe: (id: number) => void;
   onMinhas: () => void;
   onHistorico: () => void;
+  convidado?: boolean;
 };
 
-export function TelaAtividades({ ehGestao, voltar, onNova, onEditar, onDetalhe, onMinhas, onHistorico }: Props) {
+export function TelaAtividades({ ehGestao, voltar, onNova, onEditar, onDetalhe, onMinhas, onHistorico, convidado = false }: Props) {
   const { dados, carregando, erro, carregar } = useDadosVoluntariado(
     useCallback(async () => {
       // A visibilidade da listagem continua dependendo do RLS de atividades.
@@ -57,9 +58,10 @@ export function TelaAtividades({ ehGestao, voltar, onNova, onEditar, onDetalhe, 
     <Text style={tipo.corpo}>
       {ehGestao
         ? 'Publique tarefas para a comunidade, acompanhe as candidaturas e registre a presença no dia.'
-        : 'Candidate-se às tarefas da horta e acompanhe suas participações. As horas confirmadas viram certificado.'}
+        : convidado ? 'Veja as tarefas da horta. Para se candidatar, crie uma conta.'
+          : 'Candidate-se às tarefas da horta e acompanhe suas participações. As horas confirmadas viram certificado.'}
     </Text>
-    {ehGestao ? <Botao titulo="Publicar tarefa" onPress={onNova} /> : <>
+    {ehGestao ? <Botao titulo="Publicar tarefa" onPress={onNova} /> : convidado ? null : <>
       <Botao titulo="Minhas candidaturas" onPress={onMinhas} />
       <Botao titulo="Histórico de participação" variante="contorno" onPress={onHistorico} />
     </>}

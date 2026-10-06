@@ -94,6 +94,14 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
     }catch(f){setErro(erroAuth(f));}
   }
 
+  async function entrarConvidado() {
+    if(ocupado)return;
+    setErro(null);
+    setAviso(null);
+    try{await executarAuth(()=>supabase.auth.signInAnonymously(),setOcupado);}
+    catch(f){setErro(erroAuth(f));}
+  }
+
   return (
     <KeyboardAvoidingView
       style={estilos.tela}
@@ -176,6 +184,21 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
         </View>
 
         <View style={estilos.rodape}>
+          {!cadastrando ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Entrar como convidado"
+              accessibilityHint="Só visualização, sem criar conta"
+              disabled={ocupado}
+              accessibilityState={{ disabled: ocupado }}
+              onPress={() => { void entrarConvidado(); }}
+              style={({ pressed }) => [estilos.alternar, pressed && estilos.pressionado]}
+            >
+              <Text style={estilos.rodapeTexto}>
+                Só quer conhecer? <Text style={estilos.link}>Entrar como convidado</Text>
+              </Text>
+            </Pressable>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             disabled={ocupado}

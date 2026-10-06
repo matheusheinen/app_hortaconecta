@@ -41,11 +41,11 @@ export function useSessao(){
  },[sessao?.user?.id,carregarPerfil]);
  // O servidor decide quem é da gestão; vale também quando já está em modo voluntário.
  useEffect(()=>{
-  if(!perfil){setPodeAlternarModo(false);return;}
+  if(!perfil||sessao?.user.is_anonymous){setPodeAlternarModo(false);return;}
   let ativo=true;
   gestorPodeAlternarModo().then(v=>{if(ativo)setPodeAlternarModo(v);}).catch(()=>{if(ativo)setPodeAlternarModo(false);});
   return()=>{ativo=false;};
- },[perfil?.id,perfil?.tipo_perfil]);
+ },[perfil?.id,perfil?.tipo_perfil,sessao?.user.is_anonymous]);
  async function alternarModo(gestor:boolean){
   const id=sessao?.user?.id;
   if(!id)return;
@@ -58,6 +58,6 @@ export function useSessao(){
   try{await executarAuth(()=>supabase.auth.signOut(),v=>{saindo.current=v;});}
   catch(f){if(versao===revisaoSessao.current)Alert.alert('Não foi possível sair',erroAuth(f));}
  }
- return {sessao,perfil,carregando,erroPerfil,ehGestao:perfil?.tipo_perfil==='ONG',podeAlternarModo:podeAlternarModo||perfil?.tipo_perfil==='ONG',alternarModo,sair,
+ return {sessao,perfil,carregando,erroPerfil,ehConvidado:!!sessao?.user.is_anonymous,ehGestao:perfil?.tipo_perfil==='ONG',podeAlternarModo:podeAlternarModo||perfil?.tipo_perfil==='ONG',alternarModo,sair,
   recarregarPerfil:(propagarErro=false)=>sessao?.user?carregarPerfil(sessao.user.id).catch(f=>{if(propagarErro)throw f;}):Promise.resolve()};
 }

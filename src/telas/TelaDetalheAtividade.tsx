@@ -20,6 +20,8 @@ type Props = {
   candidatos: () => void;
   checkin: () => void;
   perfil: () => void;
+  convidado?: boolean;
+  criarConta?: () => void;
 };
 export function TelaDetalheAtividade({
   atividadeId,
@@ -29,6 +31,8 @@ export function TelaDetalheAtividade({
   candidatos,
   checkin,
   perfil,
+  convidado = false,
+  criarConta,
 }: Props) {
   const consulta = useCallback(() => carregarDetalhe(atividadeId), [atividadeId]);
   const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
@@ -166,6 +170,21 @@ export function TelaDetalheAtividade({
                     </>
                   ) : null}
                 </>
+              ) : null}
+            </>
+          ) : convidado ? (
+            <>
+              <CartaoFluxo>
+                <Text style={tipo.secao}>Você está como convidado</Text>
+                <Text style={tipo.corpo}>Crie uma conta para se candidatar a esta atividade.</Text>
+                {criarConta ? <Botao titulo="Criar conta ou entrar" onPress={criarConta} /> : null}
+              </CartaoFluxo>
+              {whatsapp ? (
+                <Botao
+                  titulo="Falar com a gestão no WhatsApp"
+                  variante="contorno"
+                  onPress={() => { void falarComGestao(a.titulo, a.data_hora_prevista); }}
+                />
               ) : null}
             </>
           ) : (

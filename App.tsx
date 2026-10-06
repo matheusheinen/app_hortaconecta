@@ -4,12 +4,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { useSessao } from './src/lib/useSessao';
 import { fundoLogin, TelaLogin } from './src/telas/TelaLogin';
 import { AbasPrincipais } from './src/navegacao/AbasPrincipais';
+import { AbasConvidado } from './src/navegacao/AbasConvidado';
 import { cores } from './src/lib/tema';
 import { Aviso, Botao } from './src/componentes/Ui';
 import { ProvedorModoGestor } from './src/componentes/ModoGestor';
 
 export default function App() {
-  const { sessao, perfil, carregando, erroPerfil, ehGestao, podeAlternarModo, alternarModo, sair, recarregarPerfil } = useSessao();
+  const { sessao, perfil, carregando, erroPerfil, ehConvidado, ehGestao, podeAlternarModo, alternarModo, sair, recarregarPerfil } = useSessao();
 
   if (carregando) {
     return (
@@ -41,6 +42,17 @@ export default function App() {
       <SafeAreaView style={[estilos.raiz, { backgroundColor: fundoLogin }]}>
         <StatusBar barStyle="dark-content" />
         <TelaLogin erroSessao={erroPerfil} />
+      </SafeAreaView>
+    );
+  }
+
+  if (ehConvidado) {
+    return (
+      <SafeAreaView style={estilos.raiz}>
+        <StatusBar barStyle="dark-content" />
+        <NavigationContainer>
+          <AbasConvidado usuarioId={perfil.id} sair={sair} />
+        </NavigationContainer>
       </SafeAreaView>
     );
   }

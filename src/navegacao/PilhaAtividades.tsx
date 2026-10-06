@@ -25,9 +25,11 @@ type Props = {
   autorId: string;
   inicio: () => void;
   aoPerfil: () => void;
+  convidado?: boolean;
+  aoCriarConta?: () => void;
 };
 
-export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil }: Props) {
+export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil, convidado = false, aoCriarConta }: Props) {
   return (
     <Pilha.Navigator screenOptions={{ headerShown: false }}>
       <Pilha.Screen name="lista">
@@ -42,6 +44,7 @@ export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil }: Props) 
             onDetalhe={(atividadeId) => navigation.navigate('detalhe', { atividadeId })}
             onMinhas={() => navigation.navigate('minhas')}
             onHistorico={() => navigation.navigate('historico')}
+            convidado={convidado}
           />
         )}
       </Pilha.Screen>
@@ -57,6 +60,8 @@ export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil }: Props) 
             candidatos={() => navigation.navigate('candidatos', route.params)}
             checkin={() => navigation.navigate('checkin', route.params)}
             perfil={aoPerfil}
+            convidado={convidado}
+            criarConta={aoCriarConta}
           />
         )}
       </Pilha.Screen>

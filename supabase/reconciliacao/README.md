@@ -30,6 +30,15 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
    `usuarios.tipo_perfil`; só quem já foi ONG consegue). Depende da reconciliação 02.
    Verificação local: `node --test tests/modo-gestor.test.cjs`. Até ser aplicada, o
    interruptor "Modo gestor" não aparece no perfil.
+6. `20261006180000_convidado.sql`: convidado = sessão anônima do Supabase Auth, só leitura.
+   Gatilho por instrução em toda tabela com escrita barra INSERT/UPDATE/DELETE quando o
+   JWT tem `is_anonymous` (vale também dentro das RPCs SECURITY DEFINER), o Diário (tabela e
+   imagens) fica fechado a convidado e `handle_new_user` aceita usuário sem e-mail e nome.
+   Depende do modo gestor (tabela `voluntariado_privado.gestores`). **Pré-requisito fora do
+   SQL:** ligar "Allow anonymous sign-ins" em Authentication > Sign In / Providers. Verificação
+   local: `node --test tests/convidado.test.cjs`. Até ser aplicada, "Entrar como convidado"
+   cria a sessão, mas o convidado não ficaria impedido de escrever pelo banco. Contas
+   anônimas se acumulam em `auth.users`: ainda falta uma limpeza periódica (não há pg_cron).
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 

@@ -13,6 +13,7 @@ export function erroAuth(erro:unknown):string{
  const msg=erro&&typeof erro==='object'&&'message' in erro?String(erro.message):'Não foi possível concluir. Verifique a conexão e tente novamente.';
  if(msg.includes('Invalid login credentials'))return 'E-mail ou senha incorretos.';
  if(msg.includes('already registered'))return 'Este e-mail já tem conta.';
+ if(/anonymous sign-ins are disabled/i.test(msg))return 'O acesso como convidado ainda não está disponível.';
  if(msg.includes('Password should be'))return 'A senha precisa ter ao menos 6 caracteres.';
  return msg;
 }
