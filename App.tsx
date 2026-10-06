@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useSessao } from './src/lib/useSessao';
+import { useRecuperacaoAtiva } from './src/lib/recuperacaoSenha';
 import { fundoLogin, TelaLogin } from './src/telas/TelaLogin';
 import { AbasPrincipais } from './src/navegacao/AbasPrincipais';
 import { AbasConvidado } from './src/navegacao/AbasConvidado';
@@ -11,6 +12,17 @@ import { ProvedorModoGestor } from './src/componentes/ModoGestor';
 
 export default function App() {
   const { sessao, perfil, carregando, erroPerfil, ehConvidado, ehGestao, podeAlternarModo, alternarModo, sair, recarregarPerfil } = useSessao();
+
+  const recuperandoSenha = useRecuperacaoAtiva();
+
+  if (recuperandoSenha) {
+    return (
+      <SafeAreaView style={[estilos.raiz, { backgroundColor: fundoLogin }]}>
+        <StatusBar barStyle="dark-content" />
+        <TelaLogin erroSessao={erroPerfil} />
+      </SafeAreaView>
+    );
+  }
 
   if (carregando) {
     return (

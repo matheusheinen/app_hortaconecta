@@ -15,6 +15,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { executarAuth, erroAuth } from '../lib/operacaoAuth';
 import { supabase } from '../lib/supabase';
+import { codigoRecuperacaoValido, definirRecuperacaoAtiva } from '../lib/recuperacaoSenha';
 import { Aviso } from '../componentes/Ui';
 
 export const fundoLogin = '#F7F5EF';
@@ -59,7 +60,10 @@ function SimboloHorta() {
 }
 
 export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
-  const [modo, setModo] = useState<'entrar' | 'cadastrar'>('entrar');
+  const [modo, setModo] = useState<'entrar' | 'cadastrar' | 'recuperar'>('entrar');
+  const [etapa, setEtapa] = useState<'email' | 'codigo'>('email');
+  const [codigo, setCodigo] = useState('');
+  const [verificado, setVerificado] = useState(false);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -71,6 +75,75 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
   const { height } = useWindowDimensions();
 
   const cadastrando = modo === 'cadastrar';
+  const recuperando = modo === 'recuperar';
+  const botaoRotulo = recuperando ? (etapa === 'email' ? 'Enviar código' : 'Redefinir senha') : cadastrando ? 'Criar conta' : 'Entrar';
+
+  function abrirRecuperacao() {
+    setModo('recuperar');
+    setEtapa('email');
+    setCodigo('');
+    setSenha('');
+    setVerificado(false);
+    setErro(null);
+    setAviso(null);
+  }
+
+  async function voltarAoLogin() {
+    if (ocupado) return;
+    // Com o código já validado há sessão aberta; sem fechá-la o app entraria sem a nova senha.
+    if (verificado) await supabase.auth.signOut().catch(() => {});
+    definirRecuperacaoAtiva(false);
+    setModo('entrar');
+    setVerificado(false);
+    setCodigo('');
+    setSenha('');
+    setErro(null);
+    setAviso(null);
+  }
+
+  async function enviarCodigo() {
+    if (ocupado) return;
+    setErro(null);
+    setAviso(null);
+    if (!email.trim()) {
+      setErro('Informe o e-mail da conta.');
+      return;
+    }
+    try {
+      await executarAuth(() => supabase.auth.resetPasswordForEmail(email.trim()), setOcupado);
+      setEtapa('codigo');
+      setAviso('Se existir uma conta com este e-mail, enviamos um código de verificação.');
+    } catch (f) { setErro(erroAuth(f)); }
+  }
+
+  async function redefinirSenha() {
+    if (ocupado) return;
+    setErro(null);
+    setAviso(null);
+    if (!verificado && !codigoRecuperacaoValido(codigo)) {
+      setErro('Informe o código recebido por e-mail.');
+      return;
+    }
+    if (senha.length < 6) {
+      setErro('A senha precisa ter ao menos 6 caracteres.');
+      return;
+    }
+    let sessaoAberta = verificado;
+    try {
+      if (!sessaoAberta) {
+        definirRecuperacaoAtiva(true);
+        await executarAuth(() => supabase.auth.verifyOtp({ email: email.trim(), token: codigo.trim(), type: 'recovery' }), setOcupado);
+        sessaoAberta = true;
+        setVerificado(true);
+      }
+      await executarAuth(() => supabase.auth.updateUser({ password: senha }), setOcupado);
+      // Senha trocada: libera o App, que já encontra a sessão aberta.
+      definirRecuperacaoAtiva(false);
+    } catch (f) {
+      if (!sessaoAberta) definirRecuperacaoAtiva(false);
+      setErro(erroAuth(f));
+    }
+  }
 
   async function enviar() {
     if(ocupado)return;
@@ -121,6 +194,7 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
 
         <View style={estilos.formulario}>
           {cadastrando ? <Text style={estilos.tituloCadastro}>Crie sua conta</Text> : null}
+          {recuperando ? <Text style={estilos.tituloCadastro}>Recuperar senha</Text> : null}
           {erro||erroSessao ? <View accessibilityLiveRegion="polite"><Aviso mensagem={erro??erroSessao!} /></View> : null}
           {aviso ? <View style={estilos.aviso} accessibilityLiveRegion="polite"><Text style={estilos.avisoTexto}>{aviso}</Text></View> : null}
 
@@ -151,40 +225,81 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
             textContentType="emailAddress"
             keyboardType="email-address"
             returnKeyType="next"
-            onSubmitEditing={() => campoSenha.current?.focus()}
-            editable={!ocupado}
+            onSubmitEditing={() => { if (recuperando) void enviarCodigo(); else campoSenha.current?.focus(); }}
+            editable={!ocupado && !(recuperando && etapa === 'codigo')}
           />
 
-          <CampoAcesso
-            rotulo="SENHA"
+          {recuperando && etapa === 'codigo' ? (
+            <CampoAcesso
+              rotulo="CÓDIGO DO E-MAIL"
+              value={codigo}
+              onChangeText={setCodigo}
+              placeholder="Código recebido"
+              keyboardType="number-pad"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="one-time-code"
+              textContentType="oneTimeCode"
+              maxLength={10}
+              returnKeyType="next"
+              onSubmitEditing={() => campoSenha.current?.focus()}
+              editable={!ocupado && !verificado}
+            />
+          ) : null}
+
+          {!recuperando || etapa === 'codigo' ? <CampoAcesso
+            rotulo={recuperando ? 'NOVA SENHA' : 'SENHA'}
             referencia={campoSenha}
             value={senha}
             onChangeText={setSenha}
-            placeholder={cadastrando ? 'Crie sua senha' : 'Digite sua senha'}
+            placeholder={cadastrando ? 'Crie sua senha' : recuperando ? 'Crie a nova senha' : 'Digite sua senha'}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
-            autoComplete={cadastrando ? 'new-password' : 'current-password'}
-            textContentType={cadastrando ? 'newPassword' : 'password'}
+            autoComplete={cadastrando || recuperando ? 'new-password' : 'current-password'}
+            textContentType={cadastrando || recuperando ? 'newPassword' : 'password'}
             returnKeyType="go"
-            onSubmitEditing={() => { void enviar(); }}
+            onSubmitEditing={() => { void (recuperando ? redefinirSenha() : enviar()); }}
             editable={!ocupado}
-          />
+          /> : null}
+
+          {modo === 'entrar' ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Esqueci minha senha"
+              disabled={ocupado}
+              onPress={abrirRecuperacao}
+              style={({ pressed }) => [estilos.esqueci, pressed && estilos.pressionado]}
+            >
+              <Text style={estilos.link}>Esqueci minha senha</Text>
+            </Pressable>
+          ) : null}
 
           <Pressable
-            onPress={() => { void enviar(); }}
+            onPress={() => { void (recuperando ? (etapa === 'email' ? enviarCodigo() : redefinirSenha()) : enviar()); }}
             disabled={ocupado}
             accessibilityRole="button"
-            accessibilityLabel={cadastrando ? 'Criar conta' : 'Entrar'}
+            accessibilityLabel={botaoRotulo}
             accessibilityState={{ disabled: ocupado, busy: ocupado }}
             style={({ pressed }) => [estilos.botao, pressed && estilos.pressionado, ocupado && estilos.inativo]}
           >
-            {ocupado ? <ActivityIndicator color="#FFFFFF" /> : <Text style={estilos.botaoTexto}>{cadastrando ? 'Criar conta' : 'Entrar'}</Text>}
+            {ocupado ? <ActivityIndicator color="#FFFFFF" /> : <Text style={estilos.botaoTexto}>{botaoRotulo}</Text>}
           </Pressable>
         </View>
 
         <View style={estilos.rodape}>
-          {!cadastrando ? (
+          {recuperando ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={ocupado}
+              accessibilityState={{ disabled: ocupado }}
+              onPress={() => { void voltarAoLogin(); }}
+              style={({ pressed }) => [estilos.alternar, pressed && estilos.pressionado]}
+            >
+              <Text style={estilos.rodapeTexto}><Text style={estilos.link}>Voltar para o login</Text></Text>
+            </Pressable>
+          ) : null}
+          {modo === 'entrar' ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Entrar como convidado"
@@ -199,7 +314,7 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
               </Text>
             </Pressable>
           ) : null}
-          <Pressable
+          {!recuperando ? <Pressable
             accessibilityRole="button"
             disabled={ocupado}
             accessibilityState={{ disabled: ocupado }}
@@ -214,7 +329,7 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
               {cadastrando ? 'Já tem conta? ' : 'Não tem conta? '}
               <Text style={estilos.link}>{cadastrando ? 'Entrar' : 'Criar conta'}</Text>
             </Text>
-          </Pressable>
+          </Pressable> : null}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -297,5 +412,6 @@ const estilos = StyleSheet.create({
     paddingVertical: 12,
   },
   rodapeTexto: { color: '#718578', fontSize: 14, textAlign: 'center', lineHeight: 22 },
+  esqueci: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center', marginTop: -8, marginBottom: 4 },
   link: { color: verde, fontWeight: '600' },
 });
