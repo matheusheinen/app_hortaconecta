@@ -6,9 +6,10 @@ import { fundoLogin, TelaLogin } from './src/telas/TelaLogin';
 import { AbasPrincipais } from './src/navegacao/AbasPrincipais';
 import { cores } from './src/lib/tema';
 import { Aviso, Botao } from './src/componentes/Ui';
+import { ProvedorModoGestor } from './src/componentes/ModoGestor';
 
 export default function App() {
-  const { sessao, perfil, carregando, erroPerfil, ehGestao, sair, recarregarPerfil } = useSessao();
+  const { sessao, perfil, carregando, erroPerfil, ehGestao, podeAlternarModo, alternarModo, sair, recarregarPerfil } = useSessao();
 
   if (carregando) {
     return (
@@ -47,14 +48,17 @@ export default function App() {
   return (
     <SafeAreaView style={estilos.raiz}>
       <StatusBar barStyle="dark-content" />
-      <NavigationContainer>
-        <AbasPrincipais
-          perfil={perfil}
-          ehGestao={ehGestao}
-          sair={sair}
-          recarregarPerfil={recarregarPerfil}
-        />
-      </NavigationContainer>
+      <ProvedorModoGestor value={podeAlternarModo ? { ativo: ehGestao, alternar: alternarModo } : null}>
+        {/* A chave reinicia as pilhas ao trocar de modo, evitando telas do outro papel. */}
+        <NavigationContainer key={perfil.tipo_perfil}>
+          <AbasPrincipais
+            perfil={perfil}
+            ehGestao={ehGestao}
+            sair={sair}
+            recarregarPerfil={recarregarPerfil}
+          />
+        </NavigationContainer>
+      </ProvedorModoGestor>
     </SafeAreaView>
   );
 }

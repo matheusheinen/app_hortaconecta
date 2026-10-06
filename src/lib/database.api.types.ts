@@ -42,6 +42,8 @@ type TabelasAplicativo = Omit<Database['public']['Tables'], 'configuracao_instit
 // remoto. Remover este bloco ao regenerar database.types.ts.
 type FuncoesPendentes = {
   diario_excluir_revisao: { Args: { p_id: number; p_revisao: number }; Returns: string | null };
+  gestor_alternar_modo: { Args: { p_gestor: boolean }; Returns: string };
+  gestor_pode_alternar_modo: { Args: Record<string, never>; Returns: boolean };
 };
 
 export type DatabaseAplicativo = Omit<Database, 'public'> & {

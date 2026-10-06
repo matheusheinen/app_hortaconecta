@@ -5,6 +5,7 @@ import { mensagemErro } from '../lib/voluntariado';
 import { Aviso, Botao } from './Ui';
 import { Icone } from './Icone';
 import { TelaFluxoVoluntariado } from './TelaFluxoVoluntariado';
+import { CartaoModoGestor } from './ModoGestor';
 
 /** Tela inicial do perfil: cabeçalho, resumo de status e lista de seções. */
 export function HubPerfil({ nome, papel, sair, erro, carregando, carregar, children }: {
@@ -31,6 +32,7 @@ export function HubPerfil({ nome, papel, sair, erro, carregando, carregar, child
       {erro ? <Botao titulo="Tentar novamente" onPress={carregar} /> : null}
       {carregando && !erro ? <ActivityIndicator color={cores.folha} /> : null}
       {children}
+      <CartaoModoGestor />
     </ScrollView>
   );
 }

@@ -39,7 +39,7 @@ test('Sessão: erro inicial, troca de conta, resposta antiga e falha/sucesso de 
   getSession:async()=>{throw new Error('Sessão indisponível');},
   signOut:async()=>{if(saidaFalha)return {error:new Error('Sem rede')};evento('SIGNED_OUT',null);return {error:null};},
  },from:()=>({select:()=>({eq:(_campo,id)=>({single:()=>new Promise(resolve=>pendentes.push({id,resolve}))})})})};
- const {useSessao}=carregar('src/lib/useSessao.ts',{'react':react,'react-native':{Alert:{alert:(...a)=>alertas.push(a)}},'./supabase':{supabase},'./operacaoAuth':{executarAuth,erroAuth}});
+ const {useSessao}=carregar('src/lib/useSessao.ts',{'react':react,'react-native':{Alert:{alert:(...a)=>alertas.push(a)}},'./supabase':{supabase},'./operacaoAuth':{executarAuth,erroAuth},'./modoGestor':{alternarModoGestor:async()=>{},gestorPodeAlternarModo:async()=>false}});
  const render=()=>{cursor=0;const r=useSessao();const fila=efeitos;efeitos=[];fila.forEach(f=>f());return r;};
  const tick=()=>new Promise(r=>setImmediate(r));
  render();await tick();let r=render();assert.equal(r.carregando,false);assert.match(r.erroPerfil,/indisponível/);

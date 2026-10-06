@@ -25,6 +25,11 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
    bloqueado. Depende só da reconciliação 02. Verificação local:
    `node --test tests/diario-excluir.test.cjs`. Até ser aplicada, o botão
    "Excluir publicação" do app falha com erro de função inexistente.
+5. `20261006120000_modo_gestor.sql`: RPC `gestor_alternar_modo` para a gestão
+   alternar entre ONG e voluntário com as permissões reais de cada papel (troca
+   `usuarios.tipo_perfil`; só quem já foi ONG consegue). Depende da reconciliação 02.
+   Verificação local: `node --test tests/modo-gestor.test.cjs`. Até ser aplicada, o
+   interruptor "Modo gestor" não aparece no perfil.
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 
