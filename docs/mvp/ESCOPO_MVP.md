@@ -4,7 +4,7 @@ Decisão da equipe em 05/10/2026, após a comparação entre a versão de redese
 (commits locais de 27–29/09) e a versão integrada ao Supabase (`origin/main`,
 PRs #1 e #2). A primeira documentação não deixava claro o que compunha o MVP;
 este documento passa a ser a referência de escopo. Requisitos (RF/RNF), backlog
-(B01–B34) e cronograma estão no [CLAUDE.md](../../CLAUDE.md); a situação oficial
+(B01–B34) e cronograma estão no [DOCUMENTACAO.md](../../DOCUMENTACAO.md); a situação oficial
 de cada item é a registrada lá. Os relatórios em `docs/mvp/` continuam como
 registro histórico de cada implementação.
 
@@ -64,7 +64,7 @@ nova (ver Pendências).
 | Certificados de participação | Complemento do RF0008 | Implementado em 24/09 ([CERTIFICADOS.md](CERTIFICADOS.md)). Oculto no app; código, testes, tabela e RPCs preservados. PDF fora de escopo. |
 | Solicitações de materiais (24/09) | — | Removidas: duplicavam metas/contribuições. Ver histórico em [CONTRIBUICOES.md](CONTRIBUICOES.md). |
 
-A ocultação é feita por `src/lib/escopoMvp.ts` (`recursosPosMvp`). Com a flag em
+A ocultação é feita por `src/compartilhado/escopoMvp.ts` (`recursosPosMvp`). Com a flag em
 `false`, as rotas não são registradas e os atalhos das telas de Início não
 aparecem. O banco não foi alterado. Para reativar um recurso, basta mudar a
 flag para `true` e revisar os textos de interface.

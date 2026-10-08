@@ -1,7 +1,7 @@
 # Correções de coerência do MVP — 24/09/2026
 
 > **Situação em 05/10/2026.**
-> - **Requisitos e backlog ([CLAUDE.md](../../CLAUDE.md)):** RNF0007 (auditoria de registros), RNF0010 (falhas de conexão), RNF0011 (segurança da autenticação), RF0013 (Diário) e RF0015 (perfil da ONG, B30).
+> - **Requisitos e backlog ([DOCUMENTACAO.md](../../DOCUMENTACAO.md)):** RNF0007 (auditoria de registros), RNF0010 (falhas de conexão), RNF0011 (segurança da autenticação), RF0013 (Diário) e RF0015 (perfil da ONG, B30).
 > - **Banco:** as correções valem no remoto desde 30/09, instaladas pela
 >   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql).
 >   A migration `20260924210000` fica como histórico; não aplicar no remoto.

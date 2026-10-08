@@ -1,8 +1,8 @@
 # Prioridade 5 — Certificados de participação
 
 > **Situação em 05/10/2026.** Recurso **fora do MVP por enquanto** ([ESCOPO_MVP.md](ESCOPO_MVP.md)).
-> - **Requisitos e backlog ([CLAUDE.md](../../CLAUDE.md)):** complemento do RF0008 (histórico de participação); sem item próprio no backlog. PDF segue fora de escopo.
-> - **App:** oculto por `src/lib/escopoMvp.ts` (`recursosPosMvp.certificados = false`). O indicador
+> - **Requisitos e backlog ([DOCUMENTACAO.md](../../DOCUMENTACAO.md)):** complemento do RF0008 (histórico de participação); sem item próprio no backlog. PDF segue fora de escopo.
+> - **App:** oculto por `src/compartilhado/escopoMvp.ts` (`recursosPosMvp.certificados = false`). O indicador
 >   de horas do Início leva ao histórico de participação. Código e testes preservados.
 > - **Banco:** `certificados` e as RPCs `certificados_*` estão no remoto desde 30/09, pela
 >   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql); continuam lá, sem uso pelo app.

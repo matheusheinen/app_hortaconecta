@@ -11,9 +11,9 @@ O app resolve três problemas da instituição: captação de voluntários (banc
 ## Estado atual (05/10/2026)
 
 - **Branch de trabalho:** `integracao/mvp`, criada a partir de `origin/main` (PRs #1 e #2), com as funcionalidades do redesenho local (27–29/09) portadas por cima. Ainda não enviada ao GitHub. O `main` local com os commits do redesenho continua preservado.
-- **Escopo do MVP:** voluntariado, contribuições por metas (dinheiro e materiais) e Diário. Propostas de oficinas e certificados estão implementados, mas **fora do MVP por enquanto**: ocultos no app por `src/lib/escopoMvp.ts`, com código, testes e banco preservados. Referência: [docs/mvp/ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md).
+- **Escopo do MVP:** voluntariado, contribuições por metas (dinheiro e materiais) e Diário. Propostas de oficinas e certificados estão implementados, mas **fora do MVP por enquanto**: ocultos no app por `src/compartilhado/escopoMvp.ts`, com código, testes e banco preservados. Referência: [docs/mvp/ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md).
 - **Estilo visual:** o atual de `origin/main`. O redesenho é fonte de funcionalidades, não de estilo; posicionamento pode mudar e elementos faltantes podem ser adicionados.
-- **Supabase (`hnawclapixopwjyrpxpq`):** reconciliações 01 e 02 aplicadas em 30/09. A reconciliação `supabase/reconciliacao/20261005150000_contribuicoes_metas_pix.sql` está **pendente**: move o PIX para `configuracao_instituicao`, exige meta aberta para o voluntário contribuir e exclui as tabelas de materiais criadas pela reconciliação 02. Depois de aplicá-la, regenerar `src/lib/database.types.ts` e remover o bloco provisório `ColunasPix` de `src/lib/database.api.types.ts`.
+- **Supabase (`hnawclapixopwjyrpxpq`):** reconciliações 01 e 02 aplicadas em 30/09. A reconciliação `supabase/reconciliacao/20261005150000_contribuicoes_metas_pix.sql` está **pendente**: move o PIX para `configuracao_instituicao`, exige meta aberta para o voluntário contribuir e exclui as tabelas de materiais criadas pela reconciliação 02. Depois de aplicá-la, regenerar `src/servicos/database.types.ts` e remover o bloco provisório `ColunasPix` de `src/servicos/database.api.types.ts`.
 - **Verificação local:** `npx tsc --noEmit` sem erros e `npm test` com 117 testes aprovados.
 - **Documentação:** índice em [docs/INDICE.md](docs/INDICE.md). Os relatórios de `docs/` são registros datados; cada um abre com um bloco "Situação em 05/10/2026". Quando um relatório divergir deste arquivo, este arquivo prevalece.
 
@@ -32,7 +32,7 @@ Homologação do MVP restrita a **Android**, mas a base de código deve permanec
 
 ## Modelo de dados
 
-PostgreSQL no Supabase, mais `auth.users` (gerenciada pelo Supabase Auth). Tabelas transacionais têm `criado_em` e `atualizado_em` (`timestamp with time zone`). O retrato gerado do banco está em `src/lib/database.types.ts`; o cliente usa `DatabaseAplicativo` (`src/lib/database.api.types.ts`).
+PostgreSQL no Supabase, mais `auth.users` (gerenciada pelo Supabase Auth). Tabelas transacionais têm `criado_em` e `atualizado_em` (`timestamp with time zone`). O retrato gerado do banco está em `src/servicos/database.types.ts`; o cliente usa `DatabaseAplicativo` (`src/servicos/database.api.types.ts`).
 
 ### Perfis (herança 1:1)
 
@@ -216,15 +216,56 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | Sprint 3 | 06/10 a 16/11/2026 | Primeiro concluir B16, B17 e B21–B24; depois B28 e B30 (perfil da ONG e parametrização), B25–B27 (diário e compressão), B31–B34 (perfil do usuário, apresentação e históricos), B18 e B29 (WhatsApp e notificações) e B15 (oficina autoral) |
 | Sprint final | 17/11 a 14/12/2026 | Testes com ONG e voluntários, correções, publicação na Google Play, treinamento e handover |
 
+## Estrutura do código
+
+O código fica em `src/`, organizado por funcionalidade. `index.ts` registra `src/app/App.tsx`.
+
+```text
+src/
+  app/                 App, abas principais e abas do convidado
+  funcionalidades/
+    autenticacao/      TelaLogin, useSessao, recuperação de senha
+    modoGestor/        alternância ONG ↔ voluntário
+    voluntariado/      atividades, candidaturas, check-in, áreas e sugestões
+    metas/             metas em dinheiro e de materiais, contribuições
+    diario/            Diário de Transparência
+    perfil/            perfis do voluntário e da gestão
+    inicio/            resumo da tela inicial
+    convidado/         telas do acesso como convidado
+    oficinas/          fora do MVP (ver escopoMvp.ts)
+    certificados/      fora do MVP (ver escopoMvp.ts)
+  compartilhado/
+    componentes/       Ui (Botao, Campo, Aviso, AbasFiltro), TelaFluxo, Icone, CampoData
+    hooks/             useConsulta, useAcao, useConfiguracaoInstituicao
+    utils/             erros, datas, máscaras, validadores, confirmar, whatsapp
+    tema.ts, tipos.ts, escopoMvp.ts
+  servicos/            cliente Supabase e tipos do banco
+```
+
+Dentro de cada funcionalidade:
+
+| Arquivo | Conteúdo |
+| --- | --- |
+| `api.ts` | Acesso ao Supabase (tabelas, RPCs, Storage). Lança o erro em vez de devolvê-lo. As telas não importam `supabase` diretamente. |
+| `regras.ts` | Regras puras, sem imports de React ou Supabase, testáveis no Node. |
+| `tipos.ts` | Tipos do domínio, derivados de `database.types.ts` (`Tables<…>`, `Enums<…>`) sempre que possível. |
+| `Pilha<Fluxo>.tsx` | Navegador em pilha e tipos das rotas. |
+| `telas/` | Uma tela por arquivo (`Tela<Nome>.tsx`). |
+| `componentes/` | Componentes usados só por essa funcionalidade. |
+
+O que é usado por mais de uma funcionalidade vai para `compartilhado/`.
+
 ## Convenções
 
 - Identificadores de banco, tabelas e colunas em **português, snake_case** — manter o padrão já existente.
 - Código TypeScript (componentes, funções, variáveis) em inglês ou português, mas **consistente com os arquivos vizinhos**; textos de interface sempre em português.
-- Tipar as respostas do Supabase; evitar `any`.
+- Tipar as respostas do Supabase; evitar `any`. Enums e linhas de tabela vêm de `database.types.ts`, não são redeclarados à mão.
 - Rotas protegidas por autenticação ficam sob o controle do React Navigation.
-- Organização: acesso a dados em `src/lib/<fluxo>.ts`, regras puras (sem imports, testáveis no Node) em `src/lib/regras<Fluxo>.ts`, telas de um fluxo em `src/telas/Telas<Fluxo>.tsx` e pilhas em `src/navegacao/Pilha<Fluxo>.tsx`.
+- Imports: relativos dentro da mesma funcionalidade (`../api`); entre funcionalidades e para `compartilhado`/`servicos`, pelo alias `@/` (`@/compartilhado/tema`), configurado em `tsconfig.json`.
+- Formatação pelo Prettier (`.prettierrc.json`) e lint pelo ESLint com `eslint-config-expo` (`eslint.config.js`). `npm run format` formata; `npm run lint` verifica.
 - Fim de linha LF em todo o repositório (`.gitattributes`); as pré-condições das reconciliações comparam hashes de funções.
-- Antes de commitar, rodar `npx tsc --noEmit` e `npm test`.
+- Antes de commitar, rodar `npm run typecheck`, `npm run lint` e `npm test`.
+- Os testes (`tests/*.test.cjs`) carregam os módulos de `src/` pelo caminho e injetam as dependências pelo especificador do import (`'@/servicos/supabase'`, `'./regras'`). Ao mover um arquivo ou mudar um import, ajustar os testes correspondentes.
 
 ## Fora de escopo do MVP
 

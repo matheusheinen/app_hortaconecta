@@ -1,15 +1,15 @@
 # Prioridade 3 — Diário de Transparência
 
 > **Situação em 05/10/2026.** Fluxo **dentro do MVP** ([ESCOPO_MVP.md](ESCOPO_MVP.md)).
-> - **Requisitos e backlog ([CLAUDE.md](../../CLAUDE.md)):** RF0013, RNF0003 (imagens de menores), RNF0005 (consumo de dados); B25, B26, B27.
+> - **Requisitos e backlog ([DOCUMENTACAO.md](../../DOCUMENTACAO.md)):** RF0013, RNF0003 (imagens de menores), RNF0005 (consumo de dados); B25, B26, B27.
 > - **Banco:** colunas, RPCs com revisão (`diario_salvar_revisao`/`diario_status_revisao`) e o
 >   bucket privado `diario-imagens` estão no remoto desde 30/09, pela
 >   [reconciliação 02](../../supabase/reconciliacao/20260930141047_reconciliacao_02_fluxos_mvp.sql).
 >   A migration `20260924160000` fica como histórico; não aplicar no remoto.
 > - **Tipos:** o contrato local `DatabaseMateriais` citado abaixo foi substituído por
->   `DatabaseAplicativo` (`src/lib/database.api.types.ts`), derivado dos tipos regenerados.
+>   `DatabaseAplicativo` (`src/servicos/database.api.types.ts`), derivado dos tipos regenerados.
 > - **Lacuna conhecida (RNF0005, B27):** o app ainda não comprime nem redimensiona a imagem com
->   `expo-image-manipulator`, como pede o CLAUDE.md; usa só `quality: 0.8` do seletor.
+>   `expo-image-manipulator`, como pede o DOCUMENTACAO.md; usa só `quality: 0.8` do seletor.
 > - **Legado financeiro:** metas e contribuições em dinheiro voltaram a fazer parte do MVP
 >   ([CONTRIBUICOES.md](CONTRIBUICOES.md)); as menções a "legado financeiro" abaixo são de 24/09.
 > - **Exclusão (05/10):** a gestão pode excluir publicações (botão no detalhe), pela RPC
