@@ -1,0 +1,13 @@
+#!/bin/sh
+# Bloqueia push direto no main: toda mudança entra por Pull Request.
+# O plano gratuito do GitHub não protege branches de repositório privado,
+# então a proteção fica aqui. Em emergência: git push --no-verify.
+
+while read -r _ _ ref_remota _; do
+  if [ "$ref_remota" = "refs/heads/main" ]; then
+    echo "Push direto no main bloqueado. Suba sua branch e abra um Pull Request." >&2
+    exit 1
+  fi
+done
+
+exit 0
