@@ -15,6 +15,10 @@ export function ImagemDiario({ caminho }: { caminho: string }) {
       return urlImagemDiario(caminho);
     }, [caminho]),
   );
+  // O Image do react-native-web recomeça o carregamento quando esses callbacks mudam;
+  // callbacks recriados a cada render causariam um loop de setState.
+  const aoCarregar = useCallback(() => setAbrindo(false), []);
+  const aoFalhar = useCallback(() => setFalhou(true), []);
   function tentar() {
     setFalhou(false);
     setAbrindo(true);
@@ -39,9 +43,8 @@ export function ImagemDiario({ caminho }: { caminho: string }) {
           style={{ height: 220, width: '100%', borderRadius: 10 }}
           resizeMode="cover"
           accessibilityLabel="Imagem da atividade institucional"
-          onLoadStart={() => setAbrindo(true)}
-          onLoadEnd={() => setAbrindo(false)}
-          onError={() => setFalhou(true)}
+          onLoadEnd={aoCarregar}
+          onError={aoFalhar}
         />
       ) : null}
     </View>
