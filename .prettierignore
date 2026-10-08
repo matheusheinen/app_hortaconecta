@@ -1,0 +1,10 @@
+# Gerados ou registros datados: não reformatar.
+node_modules/
+.expo/
+dist/
+package-lock.json
+src/servicos/database.types.ts
+src/lib/database.types.ts
+docs/
+supabase/
+*.md
