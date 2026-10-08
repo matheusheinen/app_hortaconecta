@@ -35,7 +35,7 @@ function carregar(respostas = {}) {
     },
   };
   const dependencias = {
-    './supabase': {
+    '@/servicos/supabase': {
       supabase: {
         async rpc() {
           return respostas.elegibilidade ?? { data: true, error: null };
@@ -47,9 +47,9 @@ function carregar(respostas = {}) {
         },
       },
     },
-    './voluntariado': { carregarMinhasInscricoes: async () => [] },
-    './metas': { listarMetas: async () => [] },
-    './diario': { listarDiario: async () => [] },
+    '@/funcionalidades/voluntariado/api': { carregarMinhasInscricoes: async () => [] },
+    '@/funcionalidades/metas/api': { listarMetas: async () => [] },
+    '@/funcionalidades/diario/api': { listarDiario: async () => [] },
   };
   const modulo = new Module('resumoInicio');
   modulo.require = nome => {
@@ -57,7 +57,7 @@ function carregar(respostas = {}) {
     return dependencias[nome];
   };
   modulo._compile(
-    ts.transpileModule(fs.readFileSync('src/lib/resumoInicio.ts', 'utf8'), {
+    ts.transpileModule(fs.readFileSync('src/funcionalidades/inicio/resumo.ts', 'utf8'), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     }).outputText,
     'resumoInicio.cjs',

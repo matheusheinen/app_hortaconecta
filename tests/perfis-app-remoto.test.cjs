@@ -24,11 +24,11 @@ function carregar(arquivo, dependencias = {}) {
   return modulo.exports;
 }
 
-const validadores = carregar('src/lib/validadores.ts');
-const mascaras = carregar('src/lib/mascaras.ts', { './validadores': validadores });
-const regrasVoluntariado = carregar('src/lib/regrasVoluntariado.ts');
-const regrasPerfil = carregar('src/lib/regrasPerfil.ts');
-const tipos = carregar('src/lib/tipos.ts');
+const validadores = carregar('src/compartilhado/utils/validadores.ts');
+const mascaras = carregar('src/compartilhado/utils/mascaras.ts', { './validadores': validadores });
+const regrasVoluntariado = carregar('src/funcionalidades/voluntariado/regras.ts');
+const regrasPerfil = carregar('src/funcionalidades/perfil/regras.ts');
+const tipos = carregar('src/compartilhado/tipos.ts');
 
 const dados = () => ({
   usuarios: {
@@ -115,21 +115,21 @@ function supabaseFalso({ falhaTabela = null, base = dados() } = {}) {
 }
 
 function libVoluntario(falso) {
-  return carregar('src/lib/perfilVoluntario.ts', {
-    './supabase': { supabase: falso.supabase },
-    './tipos': tipos,
-    './regrasVoluntariado': regrasVoluntariado,
-    './regrasPerfil': regrasPerfil,
+  return carregar('src/funcionalidades/perfil/apiVoluntario.ts', {
+    '@/servicos/supabase': { supabase: falso.supabase },
+    '@/compartilhado/tipos': tipos,
+    '@/funcionalidades/voluntariado/regras': regrasVoluntariado,
+    './regras': regrasPerfil,
   });
 }
 
 function libOng(falso) {
-  const perfilGestao = carregar('src/lib/perfilGestao.ts', {
-    './supabase': { supabase: falso.supabase },
+  const perfilGestao = carregar('src/funcionalidades/perfil/apiGestao.ts', {
+    '@/servicos/supabase': { supabase: falso.supabase },
   });
-  return carregar('src/lib/perfilOng.ts', {
-    './supabase': { supabase: falso.supabase },
-    './perfilGestao': perfilGestao,
+  return carregar('src/funcionalidades/perfil/apiOng.ts', {
+    '@/servicos/supabase': { supabase: falso.supabase },
+    './apiGestao': perfilGestao,
   });
 }
 
@@ -179,36 +179,36 @@ const secoes = {
 
 function telasVoluntario(contexto, buscarCep = async () => null) {
   const { react, reiniciar } = reactFalso(contexto);
-  const telas = carregar('src/telas/TelasPerfilVoluntario.tsx', {
+  const telas = carregar('src/funcionalidades/perfil/telas/TelasPerfilVoluntario.tsx', {
     react,
     'react-native': rn,
-    '../lib/tema': { cores: {}, espaco: {} },
-    '../lib/tipos': tipos,
-    '../lib/validadores': validadores,
-    '../lib/mascaras': mascaras,
-    '../componentes/Ui': { Campo: 'Campo' },
-    '../componentes/CampoData': { CampoData: 'CampoData' },
+    '@/compartilhado/tema': { cores: {}, espaco: {} },
+    '@/compartilhado/tipos': tipos,
+    '@/compartilhado/utils/validadores': validadores,
+    '@/compartilhado/utils/mascaras': mascaras,
+    '@/compartilhado/componentes/Ui': { Campo: 'Campo' },
+    '@/compartilhado/componentes/CampoData': { CampoData: 'CampoData' },
     '../componentes/PerfilSecoes': secoes,
-    '../lib/perfilVoluntario': { buscarCep },
-    '../lib/regrasPerfil': regrasPerfil,
+    '../apiVoluntario': { buscarCep },
+    '../regras': regrasPerfil,
   });
   return { telas, reiniciar };
 }
 
 function telasOng(contexto) {
   const { react, reiniciar } = reactFalso(contexto);
-  const telas = carregar('src/telas/TelasPerfilOng.tsx', {
+  const telas = carregar('src/funcionalidades/perfil/telas/TelasPerfilOng.tsx', {
     react,
     'react-native': rn,
-    '../lib/validadores': validadores,
-    '../lib/mascaras': mascaras,
-    '../componentes/Ui': { Campo: 'Campo' },
-    '../componentes/CampoData': { CampoData: 'CampoData' },
+    '@/compartilhado/utils/validadores': validadores,
+    '@/compartilhado/utils/mascaras': mascaras,
+    '@/compartilhado/componentes/Ui': { Campo: 'Campo' },
+    '@/compartilhado/componentes/CampoData': { CampoData: 'CampoData' },
     '../componentes/PerfilSecoes': secoes,
-    '../lib/regrasPerfil': regrasPerfil,
-    '../lib/perfilOng': carregar('src/lib/perfilOng.ts', {
-      './supabase': {},
-      './perfilGestao': {},
+    '../regras': regrasPerfil,
+    '../apiOng': carregar('src/funcionalidades/perfil/apiOng.ts', {
+      '@/servicos/supabase': {},
+      './apiGestao': {},
     }),
   });
   return { telas, reiniciar };
@@ -466,7 +466,9 @@ test('Perfil gestão: WhatsApp vai para a configuração da instituição, não 
 });
 
 test('WhatsApp: link com código do país e números inválidos recusados', () => {
-  const { linkWhatsApp } = carregar('src/lib/whatsapp.ts', { 'react-native': { Linking: {} } });
+  const { linkWhatsApp } = carregar('src/compartilhado/utils/whatsapp.ts', {
+    'react-native': { Linking: {} },
+  });
   assert.equal(
     linkWhatsApp('(51) 98888-7777', 'Olá & até'),
     'https://wa.me/5551988887777?text=Ol%C3%A1%20%26%20at%C3%A9',

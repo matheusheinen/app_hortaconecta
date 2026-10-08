@@ -5,7 +5,7 @@ const { test } = require('node:test'),
   ts = require('typescript');
 const m = new Module('oficinas');
 m._compile(
-  ts.transpileModule(fs.readFileSync('src/lib/regrasOficinas.ts', 'utf8'), {
+  ts.transpileModule(fs.readFileSync('src/funcionalidades/oficinas/regras.ts', 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText,
   'oficinas.cjs',

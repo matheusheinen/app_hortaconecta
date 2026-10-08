@@ -4,7 +4,6 @@ node_modules/
 dist/
 package-lock.json
 src/servicos/database.types.ts
-src/lib/database.types.ts
 docs/
 supabase/
 *.md

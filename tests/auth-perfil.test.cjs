@@ -18,7 +18,7 @@ function carregar(arquivo, dependencias = {}) {
   );
   return m.exports;
 }
-const { executarAuth, erroAuth } = carregar('src/lib/operacaoAuth.ts');
+const { executarAuth, erroAuth } = carregar('src/funcionalidades/autenticacao/operacaoAuth.ts');
 test('Autenticação: login/logout sucesso e falhas sempre encerram loading', async () => {
   for (const acao of [
     async () => ({ error: null }),
@@ -52,8 +52,8 @@ test('Autenticação: conexão sem resposta encerra loading por timeout', async 
 test('Perfil gestão: carga falhou impede RPC; falhas e falta de confirmação são propagadas', async () => {
   let chamadas = 0,
     resposta = { data: true, error: null };
-  const { salvarPerfilGestao } = carregar('src/lib/perfilGestao.ts', {
-    './supabase': {
+  const { salvarPerfilGestao } = carregar('src/funcionalidades/perfil/apiGestao.ts', {
+    '@/servicos/supabase': {
       supabase: {
         rpc: async () => {
           chamadas++;
@@ -135,12 +135,12 @@ test('Sessão: erro inicial, troca de conta, resposta antiga e falha/sucesso de 
       }),
     }),
   };
-  const { useSessao } = carregar('src/lib/useSessao.ts', {
+  const { useSessao } = carregar('src/funcionalidades/autenticacao/useSessao.ts', {
     react: react,
     'react-native': { Alert: { alert: (...a) => alertas.push(a) } },
-    './supabase': { supabase },
+    '@/servicos/supabase': { supabase },
     './operacaoAuth': { executarAuth, erroAuth },
-    './modoGestor': {
+    '@/funcionalidades/modoGestor/api': {
       alternarModoGestor: async () => {},
       gestorPodeAlternarModo: async () => false,
     },

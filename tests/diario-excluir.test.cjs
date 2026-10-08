@@ -159,14 +159,14 @@ test('Diário: excluirDiario chama a RPC e remove a imagem pela API Storage', as
       }),
     },
   };
-  const modulo = new Module('src/lib/diario.ts');
+  const modulo = new Module('src/funcionalidades/diario/api.ts');
   modulo.require = nome => {
-    if (nome === './supabase') return { supabase };
-    if (nome === './regrasDiario') return {};
+    if (nome === '@/servicos/supabase') return { supabase };
+    if (nome === './regras') return {};
     throw new Error('Import inesperado: ' + nome);
   };
   modulo._compile(
-    ts.transpileModule(fs.readFileSync('src/lib/diario.ts', 'utf8'), {
+    ts.transpileModule(fs.readFileSync('src/funcionalidades/diario/api.ts', 'utf8'), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     }).outputText,
     'diario.cjs',

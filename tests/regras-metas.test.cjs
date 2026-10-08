@@ -19,7 +19,7 @@ function carregar(arquivo, dependencias = {}) {
   return modulo.exports;
 }
 
-const regras = carregar('src/lib/regrasMetas.ts');
+const regras = carregar('src/funcionalidades/metas/regras.ts');
 const nbsp = texto => texto.replace(/ /g, ' ');
 
 test('Metas: valores aceitam vírgula/ponto com até 2 casas e recusam milhar, zero e lixo', () => {
@@ -90,7 +90,9 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
       },
     }),
   };
-  const metas = carregar('src/lib/metas.ts', { './supabase': { supabase } });
+  const metas = carregar('src/funcionalidades/metas/api.ts', {
+    '@/servicos/supabase': { supabase },
+  });
   await metas.declararContribuicao(7, 'v', 25.5);
   assert.deepEqual(chamadas.at(-1).valores, {
     meta_id: 7,

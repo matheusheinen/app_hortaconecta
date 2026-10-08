@@ -5,7 +5,7 @@ const fs = require('node:fs'),
   ts = require('typescript');
 const m = new Module('diario');
 m._compile(
-  ts.transpileModule(fs.readFileSync('src/lib/regrasDiario.ts', 'utf8'), {
+  ts.transpileModule(fs.readFileSync('src/funcionalidades/diario/regras.ts', 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText,
   'diario.cjs',
@@ -110,12 +110,12 @@ test('Diário: adaptador envia JPEG sem sobrescrever, solicita URL por 60s e pro
   };
   const api = new Module('diario-api');
   api.require = id => {
-    if (id === './supabase') return { supabase: cliente };
-    if (id === './regrasDiario') return m.exports;
+    if (id === '@/servicos/supabase') return { supabase: cliente };
+    if (id === './regras') return m.exports;
     throw new Error('Importação inesperada: ' + id);
   };
   api._compile(
-    ts.transpileModule(fs.readFileSync('src/lib/diario.ts', 'utf8'), {
+    ts.transpileModule(fs.readFileSync('src/funcionalidades/diario/api.ts', 'utf8'), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     }).outputText,
     'diario-api.cjs',

@@ -20,7 +20,7 @@ function carregar(arquivo, dependencias = {}) {
 }
 
 const { periodoDoHorario, cabeNaDisponibilidade, selecionarSugestoes } = carregar(
-  'src/lib/regrasSugestoes.ts',
+  'src/funcionalidades/voluntariado/regrasSugestoes.ts',
 );
 
 // Datas locais: 2026-10-12 é segunda-feira.
@@ -122,12 +122,12 @@ test('Áreas da atividade: grava só a diferença entre seleção anterior e nov
       },
     }),
   };
-  const { salvarAreasAtividade } = carregar('src/lib/areasAtividade.ts', {
-    './supabase': { supabase },
-    './voluntariado': {},
-    './regrasVoluntariado': {},
+  const { salvarAreasAtividade } = carregar('src/funcionalidades/voluntariado/areasAtividade.ts', {
+    '@/servicos/supabase': { supabase },
+    './api': {},
+    './regras': {},
     './regrasSugestoes': {},
-    './resumoInicio': {},
+    '@/funcionalidades/inicio/resumo': {},
   });
   await salvarAreasAtividade(7, [1, 2], [2, 3]);
   assert.deepEqual(chamadas, [

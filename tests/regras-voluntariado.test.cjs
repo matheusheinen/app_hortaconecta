@@ -6,7 +6,7 @@ const ts = require('typescript');
 // Executa as funções reais do app, sem carregar React Native no Node.
 const modulo = new Module('regras');
 modulo._compile(
-  ts.transpileModule(fs.readFileSync('src/lib/regrasVoluntariado.ts', 'utf8'), {
+  ts.transpileModule(fs.readFileSync('src/funcionalidades/voluntariado/regras.ts', 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText,
   'regras.cjs',

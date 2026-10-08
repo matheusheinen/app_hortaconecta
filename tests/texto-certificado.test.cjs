@@ -5,7 +5,7 @@ const { test } = require('node:test'),
   ts = require('typescript');
 const m = new Module('certificado');
 m._compile(
-  ts.transpileModule(fs.readFileSync('src/lib/textoCertificado.ts', 'utf8'), {
+  ts.transpileModule(fs.readFileSync('src/funcionalidades/certificados/texto.ts', 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS },
   }).outputText,
   'certificado.cjs',
