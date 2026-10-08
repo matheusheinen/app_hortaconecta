@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { supabase } from '@/servicos/supabase';
+import { listarHabilidades, salvarAtividade } from '../api';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import type { Atividade } from '../tipos';
 import type { Habilidade } from '@/compartilhado/tipos';
@@ -47,12 +47,11 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
     void (async () => {
       try {
         const [lista, marcadas] = await Promise.all([
-          supabase.from('habilidades').select('*').order('categoria').order('nome_habilidade'),
+          listarHabilidades(),
           atividade ? carregarAreasAtividade(atividade.id) : Promise.resolve([]),
         ]);
-        if (lista.error) throw lista.error;
         if (!ativo) return;
-        setCatalogo(lista.data ?? []);
+        setCatalogo(lista);
         setAreas(marcadas);
         setAreasOriginais(marcadas);
       } catch (falha) {
@@ -102,30 +101,10 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
         carga_horaria: nCarga,
       };
 
-      // O status não vem do formulário: tarefa da ONG nasce ABERTA, e a
-      // política de RLS confere autor_id contra o usuário autenticado.
-      const { error, data: gravada } = editando
-        ? await supabase
-            .from('atividades')
-            .update(campos)
-            .eq('id', atividade.id)
-            .select('id')
-            .single()
-        : await supabase
-            .from('atividades')
-            .insert({
-              ...campos,
-              tipo: 'TAREFA_ONG',
-              status: 'ABERTA',
-              autor_id: autorId,
-            })
-            .select('id')
-            .single();
-      if (error) throw error;
-      if (!gravada) throw new Error('A atividade não foi salva. Recarregue e tente novamente.');
+      const id = await salvarAtividade(editando ? atividade.id : null, campos, autorId);
       if (!avisoAreas) {
         try {
-          await salvarAreasAtividade(gravada.id, areasOriginais, areas);
+          await salvarAreasAtividade(id, areasOriginais, areas);
         } catch (falha) {
           Alert.alert(
             'Tarefa salva',

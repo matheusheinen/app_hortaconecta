@@ -5,8 +5,7 @@ import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
 import { DIAS_SEMANA, PERIODOS_DIA } from '@/compartilhado/tipos';
 import { disponibilidadeValida } from '../regras';
-import { supabase } from '@/servicos/supabase';
-import { carregarCandidatos, carregarDetalhe } from '../api';
+import { carregarCandidatos, carregarDetalhe, decidirCandidatura } from '../api';
 import { mensagemErro } from '@/compartilhado/utils/erros';
 import { type Candidato, rotuloInscricao } from '../tipos';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
@@ -35,12 +34,7 @@ export function TelaCandidatosAtividade({
     setOcupado(true);
     setErroAcao(null);
     try {
-      const { error } = await supabase.rpc('voluntariado_decidir', {
-        p_inscricao: id,
-        p_decisao: decisao,
-        p_motivo: motivo,
-      });
-      if (error) throw error;
+      await decidirCandidatura(id, decisao, motivo);
       await carregar();
     } catch (falha) {
       setErroAcao(mensagemErro(falha));

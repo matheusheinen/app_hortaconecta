@@ -6,8 +6,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
-import { supabase } from '@/servicos/supabase';
-import { gerarCheckin } from '../api';
+import { confirmarCheckin, gerarCheckin } from '../api';
 import { mensagemErro } from '@/compartilhado/utils/erros';
 import { lerQrCheckin } from '../regras';
 import type { TokenCheckin } from '../tipos';
@@ -120,11 +119,7 @@ export function TelaCheckin({ atividadeId, voltar }: { atividadeId: number; volt
     setErro(null);
     try {
       const token = lerQrCheckin(texto, atividadeId);
-      const { error } = await supabase.rpc('voluntariado_checkin', {
-        p_atividade: atividadeId,
-        p_token: token,
-      });
-      if (error) throw error;
+      await confirmarCheckin(atividadeId, token);
       setConfirmado(true);
     } catch (falha) {
       setErro(mensagemErro(falha));

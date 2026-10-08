@@ -4,8 +4,7 @@ import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
 import { rotuloInscricao, rotuloStatusAtividade } from '../tipos';
-import { supabase } from '@/servicos/supabase';
-import { carregarDetalhe } from '../api';
+import { alterarStatusAtividade, cancelarCandidatura, candidatar, carregarDetalhe } from '../api';
 import { mensagemErro } from '@/compartilhado/utils/erros';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
@@ -38,13 +37,12 @@ export function TelaDetalheAtividade({
   const { dados, erro, carregando, carregar } = useConsulta(consulta);
   const [erroAcao, setErroAcao] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  async function executar(acao: () => PromiseLike<{ error: unknown }>) {
+  async function executar(acao: () => Promise<void>) {
     if (ocupado) return;
     setOcupado(true);
     setErroAcao(null);
     try {
-      const resposta = await acao();
-      if (resposta.error) throw resposta.error;
+      await acao();
       await carregar();
     } catch (falha) {
       setErroAcao(mensagemErro(falha));
@@ -123,12 +121,7 @@ export function TelaDetalheAtividade({
                           variante="contorno"
                           carregando={ocupado}
                           onPress={() =>
-                            executar(() =>
-                              supabase.rpc('voluntariado_status_atividade', {
-                                p_atividade: atividadeId,
-                                p_status: 'ENCERRADA',
-                              }),
-                            )
+                            executar(() => alterarStatusAtividade(atividadeId, 'ENCERRADA'))
                           }
                         />
                       ) : null}
@@ -137,12 +130,7 @@ export function TelaDetalheAtividade({
                         variante="contorno"
                         desabilitado={ocupado}
                         onPress={() =>
-                          executar(() =>
-                            supabase.rpc('voluntariado_status_atividade', {
-                              p_atividade: atividadeId,
-                              p_status: 'REALIZADA',
-                            }),
-                          )
+                          executar(() => alterarStatusAtividade(atividadeId, 'REALIZADA'))
                         }
                       />
                       <Botao
@@ -159,12 +147,7 @@ export function TelaDetalheAtividade({
                                 text: 'Cancelar atividade',
                                 style: 'destructive',
                                 onPress: () =>
-                                  executar(() =>
-                                    supabase.rpc('voluntariado_status_atividade', {
-                                      p_atividade: atividadeId,
-                                      p_status: 'CANCELADA',
-                                    }),
-                                  ),
+                                  executar(() => alterarStatusAtividade(atividadeId, 'CANCELADA')),
                               },
                             ],
                           )
@@ -235,10 +218,7 @@ export function TelaDetalheAtividade({
                             {
                               text: 'Cancelar candidatura',
                               style: 'destructive',
-                              onPress: () =>
-                                executar(() =>
-                                  supabase.rpc('voluntariado_cancelar', { p_inscricao: i.id }),
-                                ),
+                              onPress: () => executar(() => cancelarCandidatura(i.id)),
                             },
                           ],
                         )
@@ -260,11 +240,7 @@ export function TelaDetalheAtividade({
                     titulo="Quero me candidatar"
                     carregando={ocupado}
                     desabilitado={!dados.elegivel || !futura || a.status !== 'ABERTA'}
-                    onPress={() =>
-                      executar(() =>
-                        supabase.rpc('voluntariado_candidatar', { p_atividade: atividadeId }),
-                      )
-                    }
+                    onPress={() => executar(() => candidatar(atividadeId))}
                   />
                   <Text style={tipo.apoio}>
                     A candidatura depende da análise da gestão. O envio não reserva uma vaga.

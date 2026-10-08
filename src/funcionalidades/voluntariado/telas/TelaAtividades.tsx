@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
-import { supabase } from '@/servicos/supabase';
+import { excluirAtividade as excluirAtividadeApi, listarAtividades } from '../api';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { rotuloStatusAtividade, type Atividade } from '../tipos';
 import { AbasFiltro, Botao } from '@/compartilhado/componentes/Ui';
@@ -31,17 +31,7 @@ export function TelaAtividades({
   onHistorico,
   convidado = false,
 }: Props) {
-  const { dados, carregando, erro, carregar } = useConsulta(
-    useCallback(async () => {
-      // A visibilidade da listagem continua dependendo do RLS de atividades.
-      const { data, error } = await supabase
-        .from('atividades')
-        .select('*')
-        .order('data_hora_prevista', { ascending: true });
-      if (error) throw error;
-      return data;
-    }, []),
-  );
+  const { dados, carregando, erro, carregar } = useConsulta(listarAtividades);
   const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');
   const abertas = (dados ?? []).filter(a => !atividadeFinalizada(a.status));
   // Finalizadas: a mais recente primeiro.
@@ -53,14 +43,7 @@ export function TelaAtividades({
 
     const excluir = async () => {
       try {
-        const { error, data } = await supabase
-          .from('atividades')
-          .delete()
-          .eq('id', atividade.id)
-          .select('id')
-          .single();
-        if (error) throw error;
-        if (!data) throw new Error('Nenhuma atividade foi removida. Recarregue a lista.');
+        await excluirAtividadeApi(atividade.id);
         await carregar();
       } catch (falha) {
         avisar('Não foi possível excluir', mensagemErro(falha));
