@@ -4,10 +4,11 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import QRCode from 'react-native-qrcode-svg';
 import { Botao } from '@/compartilhado/componentes/Ui';
-import { TelaFluxoVoluntariado } from '@/compartilhado/componentes/TelaFluxo';
+import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
 import { supabase } from '@/servicos/supabase';
-import { gerarCheckin, mensagemErro } from '../api';
+import { gerarCheckin } from '../api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { lerQrCheckin } from '../regras';
 import type { TokenCheckin } from '../tipos';
 
@@ -57,7 +58,7 @@ export function TelaQrAtividade({
   }
   const valido = token && new Date(token.expira_em).getTime() > agora;
   return (
-    <TelaFluxoVoluntariado titulo="QR Code da atividade" voltar={voltar} erro={erro}>
+    <TelaFluxo titulo="QR Code da atividade" voltar={voltar} erro={erro}>
       <Text style={tipo.corpo}>
         Exiba este código aos participantes no local. Somente voluntários com candidatura aprovada
         podem confirmar presença.
@@ -89,7 +90,7 @@ export function TelaQrAtividade({
         onPress={gerar}
         carregando={ocupado}
       />
-    </TelaFluxoVoluntariado>
+    </TelaFluxo>
   );
 }
 
@@ -132,7 +133,7 @@ export function TelaCheckin({ atividadeId, voltar }: { atividadeId: number; volt
     }
   }
   return (
-    <TelaFluxoVoluntariado titulo="Confirmar presença" voltar={voltar} erro={erro}>
+    <TelaFluxo titulo="Confirmar presença" voltar={voltar} erro={erro}>
       {confirmado ? (
         <>
           <Text style={tipo.secao}>Presença confirmada!</Text>
@@ -184,6 +185,6 @@ export function TelaCheckin({ atividadeId, voltar }: { atividadeId: number; volt
           ) : null}
         </>
       )}
-    </TelaFluxoVoluntariado>
+    </TelaFluxo>
   );
 }

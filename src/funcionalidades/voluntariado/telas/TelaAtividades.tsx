@@ -1,16 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { supabase } from '@/servicos/supabase';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { rotuloStatus, type Atividade } from '@/compartilhado/tipos';
 import { AbasFiltro, Botao } from '@/compartilhado/componentes/Ui';
-import {
-  CartaoFluxo,
-  TelaFluxoVoluntariado as TelaFluxo,
-} from '@/compartilhado/componentes/TelaFluxo';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { atividadeFinalizada } from '../regras';
-import { mensagemErro } from '../api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { confirmarExclusao } from '@/compartilhado/utils/confirmar';
 
 type Props = {
@@ -34,7 +31,7 @@ export function TelaAtividades({
   onHistorico,
   convidado = false,
 }: Props) {
-  const { dados, carregando, erro, carregar } = useDadosVoluntariado(
+  const { dados, carregando, erro, carregar } = useConsulta(
     useCallback(async () => {
       // A visibilidade da listagem continua dependendo do RLS de atividades.
       const { data, error } = await supabase

@@ -2,16 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Image, Text } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Botao, Campo, Aviso } from '@/compartilhado/componentes/Ui';
-import {
-  CartaoFluxo,
-  TelaFluxoVoluntariado as TelaFluxo,
-} from '@/compartilhado/componentes/TelaFluxo';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { ImagemDiario } from '../componentes/ImagemDiario';
 import { detalheDiario, excluirDiario, listarDiario, salvarDiario, statusDiario } from '../api';
 import { confirmarExclusao } from '@/compartilhado/utils/confirmar';
 import { imagemJpeg } from '../regras';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
-import { mensagemErro } from '@/funcionalidades/voluntariado/api';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { tipo } from '@/compartilhado/tema';
 import type { Publicacao } from '../tipos';
 
@@ -34,7 +31,7 @@ export function TelaDiario({
   abrir: (id: number) => void;
   criar: () => void;
 }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(listarDiario);
+  const { dados, erro, carregando, carregar } = useConsulta(listarDiario);
   return (
     <TelaFluxo
       titulo="Diário de Transparência"
@@ -72,7 +69,7 @@ export function TelaDetalheDiario({
   voltar: () => void;
   editar: () => void;
 }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(
+  const { dados, erro, carregando, carregar } = useConsulta(
     useCallback(() => detalheDiario(id), [id]),
   );
   const [erroAcao, setErroAcao] = useState<string | null>(null);
@@ -174,7 +171,7 @@ export function TelaDetalheDiario({
   );
 }
 export function TelaFormDiario({ id, voltar }: { id: number | null; voltar: () => void }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(
+  const { dados, erro, carregando, carregar } = useConsulta(
     useCallback(async () => (id === null ? null : detalheDiario(id)), [id]),
   );
   return (

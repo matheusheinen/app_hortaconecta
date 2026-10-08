@@ -1,12 +1,12 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
-import { CartaoFluxo, TelaFluxoVoluntariado } from '@/compartilhado/componentes/TelaFluxo';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
 import { rotuloStatus } from '@/compartilhado/tipos';
 import { carregarMinhasInscricoes } from '../api';
 import { rotuloInscricao } from '../tipos';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 
 export function TelaMinhasCandidaturas({
   voltar,
@@ -17,10 +17,10 @@ export function TelaMinhasCandidaturas({
   abrir: (id: number) => void;
   historico?: boolean;
 }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(carregarMinhasInscricoes);
+  const { dados, erro, carregando, carregar } = useConsulta(carregarMinhasInscricoes);
   const itens = (dados ?? []).filter(item => !historico || item.inscricao.presenca_confirmada);
   return (
-    <TelaFluxoVoluntariado
+    <TelaFluxo
       titulo={historico ? 'Histórico de participação' : 'Minhas candidaturas'}
       voltar={voltar}
       erro={erro}
@@ -63,6 +63,6 @@ export function TelaMinhasCandidaturas({
           <Botao titulo="Ver atividade" variante="contorno" onPress={() => abrir(a.id)} />
         </CartaoFluxo>
       ))}
-    </TelaFluxoVoluntariado>
+    </TelaFluxo>
   );
 }

@@ -1,14 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { Share, Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
-import {
-  CartaoFluxo,
-  TelaFluxoVoluntariado as TelaFluxo,
-} from '@/compartilhado/componentes/TelaFluxo';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { listarCertificados, detalheCertificado, emitirCertificado } from '../api';
 import { textoCertificado } from '../texto';
-import { mensagemErro } from '@/funcionalidades/voluntariado/api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { tipo } from '@/compartilhado/tema';
 
 export function TelaCertificados({
@@ -20,7 +17,7 @@ export function TelaCertificados({
   voltar: () => void;
   abrir: (id: string) => void;
 }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(listarCertificados);
+  const { dados, erro, carregando, carregar } = useConsulta(listarCertificados);
   const [falha, setFalha] = useState<string | null>(null),
     [ocupado, setOcupado] = useState(false);
   const trava = useRef(false);
@@ -98,7 +95,7 @@ export function TelaCertificados({
   );
 }
 export function TelaCertificado({ id, voltar }: { id: string; voltar: () => void }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(
+  const { dados, erro, carregando, carregar } = useConsulta(
     useCallback(() => detalheCertificado(id), [id]),
   );
   const [falha, setFalha] = useState<string | null>(null),

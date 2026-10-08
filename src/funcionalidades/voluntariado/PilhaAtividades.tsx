@@ -6,8 +6,8 @@ import { TelaDetalheAtividade } from './telas/TelaDetalheAtividade';
 import { TelaMinhasCandidaturas } from './telas/TelaMinhasCandidaturas';
 import { TelaCandidatosAtividade } from './telas/TelaCandidatosAtividade';
 import { TelaCheckin, TelaQrAtividade } from './telas/TelaCheckin';
-import { TelaFluxoVoluntariado } from '@/compartilhado/componentes/TelaFluxo';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { carregarDetalhe } from './api';
 
 export type ParametrosPilhaAtividades = {
@@ -150,10 +150,10 @@ function EditarAtividade({
   voltar: () => void;
 }) {
   const consulta = useCallback(() => carregarDetalhe(atividadeId), [atividadeId]);
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
+  const { dados, erro, carregando, carregar } = useConsulta(consulta);
   if (carregando || !dados)
     return (
-      <TelaFluxoVoluntariado
+      <TelaFluxo
         titulo="Editar atividade"
         voltar={voltar}
         erro={erro}
@@ -161,7 +161,7 @@ function EditarAtividade({
         atualizar={carregar}
       >
         {null}
-      </TelaFluxoVoluntariado>
+      </TelaFluxo>
     );
   return (
     <TelaFormAtividade

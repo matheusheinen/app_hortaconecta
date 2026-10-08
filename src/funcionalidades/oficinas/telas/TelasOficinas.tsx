@@ -1,11 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Text } from 'react-native';
 import { Botao, Campo, Aviso } from '@/compartilhado/componentes/Ui';
-import {
-  CartaoFluxo,
-  TelaFluxoVoluntariado as TelaFluxo,
-} from '@/compartilhado/componentes/TelaFluxo';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import {
   listarOficinas,
   detalheOficina,
@@ -15,7 +12,7 @@ import {
 } from '../api';
 import { rotuloOficina, type CamposOficina } from '../regras';
 import type { PropostaOficina } from '../tipos';
-import { mensagemErro } from '@/funcionalidades/voluntariado/api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { tipo } from '@/compartilhado/tema';
 
 export function TelaOficinas({
@@ -29,7 +26,7 @@ export function TelaOficinas({
   abrir: (id: number) => void;
   criar: () => void;
 }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(listarOficinas);
+  const { dados, erro, carregando, carregar } = useConsulta(listarOficinas);
   return (
     <TelaFluxo
       titulo={gestao ? 'Propostas de oficinas' : 'Minhas oficinas'}
@@ -75,7 +72,7 @@ export function TelaDetalheOficina({
     erro,
     carregando,
     carregar,
-  } = useDadosVoluntariado(useCallback(() => detalheOficina(id), [id]));
+  } = useConsulta(useCallback(() => detalheOficina(id), [id]));
   const [nota, setNota] = useState(''),
     [erroAcao, setErro] = useState<string | null>(null),
     [sucesso, setSucesso] = useState<string | null>(null),
@@ -226,7 +223,7 @@ export function TelaFormOficina({
   pronto: (id: number) => void;
   perfil: () => void;
 }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(
+  const { dados, erro, carregando, carregar } = useConsulta(
     useCallback(async () => (id === null ? null : detalheOficina(id)), [id]),
   );
   return (

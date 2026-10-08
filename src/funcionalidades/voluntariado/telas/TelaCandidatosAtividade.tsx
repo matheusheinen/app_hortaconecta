@@ -1,14 +1,15 @@
 import React, { useCallback, useState } from 'react';
 import { Text } from 'react-native';
 import { Botao, Campo } from '@/compartilhado/componentes/Ui';
-import { CartaoFluxo, TelaFluxoVoluntariado } from '@/compartilhado/componentes/TelaFluxo';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
 import { DIAS_SEMANA, PERIODOS_DIA } from '@/compartilhado/tipos';
 import { disponibilidadeValida } from '../regras';
 import { supabase } from '@/servicos/supabase';
-import { carregarCandidatos, carregarDetalhe, mensagemErro } from '../api';
+import { carregarCandidatos, carregarDetalhe } from '../api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { type Candidato, rotuloInscricao } from '../tipos';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 
 export function TelaCandidatosAtividade({
   atividadeId,
@@ -26,7 +27,7 @@ export function TelaCandidatosAtividade({
     ]);
     return { detalhe, candidatos };
   }, [atividadeId]);
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
+  const { dados, erro, carregando, carregar } = useConsulta(consulta);
   const [ocupado, setOcupado] = useState(false);
   const [erroAcao, setErroAcao] = useState<string | null>(null);
   async function decidir(id: number, decisao: 'APROVADA' | 'RECUSADA', motivo: string) {
@@ -52,7 +53,7 @@ export function TelaCandidatosAtividade({
     ['ABERTA', 'ENCERRADA'].includes(dados.detalhe.atividade.status) &&
     new Date(dados.detalhe.atividade.data_hora_prevista).getTime() > Date.now();
   return (
-    <TelaFluxoVoluntariado
+    <TelaFluxo
       titulo="Candidatos e participantes"
       voltar={voltar}
       erro={erroAcao ?? erro}
@@ -82,7 +83,7 @@ export function TelaCandidatosAtividade({
           ))}
         </>
       ) : null}
-    </TelaFluxoVoluntariado>
+    </TelaFluxo>
   );
 }
 

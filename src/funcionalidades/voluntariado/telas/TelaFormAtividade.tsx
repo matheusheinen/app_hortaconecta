@@ -13,12 +13,9 @@ import { cores, espaco, tipo } from '@/compartilhado/tema';
 import type { Atividade, Habilidade } from '@/compartilhado/tipos';
 import { mascararDataHora } from '@/compartilhado/utils/mascaras';
 import { Botao, Campo } from '@/compartilhado/componentes/Ui';
-import {
-  CartaoFluxo,
-  TelaFluxoVoluntariado as TelaFluxo,
-} from '@/compartilhado/componentes/TelaFluxo';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { interpretarCarga, interpretarDataHora } from '../regras';
-import { mensagemErro } from '../api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { carregarAreasAtividade, salvarAreasAtividade } from '../areasAtividade';
 
 type Props = {

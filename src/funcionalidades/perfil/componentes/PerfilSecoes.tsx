@@ -1,10 +1,10 @@
 import React, { useState, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
-import { mensagemErro } from '@/funcionalidades/voluntariado/api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { Aviso, Botao } from '@/compartilhado/componentes/Ui';
 import { Icone } from '@/compartilhado/componentes/Icone';
-import { TelaFluxoVoluntariado } from '@/compartilhado/componentes/TelaFluxo';
+import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { CartaoModoGestor } from '@/funcionalidades/modoGestor/ModoGestor';
 
 /** Tela inicial do perfil: cabeçalho, resumo de status e lista de seções. */
@@ -146,11 +146,11 @@ export function SecaoPerfil({
     }
   }
   return (
-    <TelaFluxoVoluntariado titulo={titulo} voltar={voltar}>
+    <TelaFluxo titulo={titulo} voltar={voltar}>
       {erro ? <Aviso mensagem={erro} /> : null}
       <View>{children}</View>
       <Botao titulo="Salvar" onPress={aoSalvar} carregando={ocupado} />
-    </TelaFluxoVoluntariado>
+    </TelaFluxo>
   );
 }
 

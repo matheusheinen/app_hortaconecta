@@ -3,7 +3,7 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 import { Aviso, Botao } from './Ui';
 import { cores, espaco, tipo } from '../tema';
 
-export function TelaFluxoVoluntariado({
+export function TelaFluxo({
   titulo,
   voltar,
   erro,

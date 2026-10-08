@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { mensagemErro } from '@/funcionalidades/voluntariado/api';
+import { mensagemErro } from '../utils/erros';
 
-/** Reconsulta ao voltar à tela e ignora respostas de requisições anteriores. */
-export function useDadosVoluntariado<T>(consulta: () => Promise<T>) {
+/** Executa uma consulta ao focar a tela e a repete ao voltar à tela e ignora respostas de requisições anteriores. */
+export function useConsulta<T>(consulta: () => Promise<T>) {
   const [dados, setDados] = useState<T | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);

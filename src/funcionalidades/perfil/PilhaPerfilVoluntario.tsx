@@ -6,7 +6,7 @@ import {
   salvarPerfilVoluntario,
   type PerfilVoluntarioCarregado,
 } from './apiVoluntario';
-import { mensagemErro } from '@/funcionalidades/voluntariado/api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import type { DadosPerfilVoluntario } from './regras';
 import {
   ProvedorPerfilVoluntario,

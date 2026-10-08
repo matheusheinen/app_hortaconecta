@@ -1,13 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
-import { CartaoFluxo, TelaFluxoVoluntariado } from '@/compartilhado/componentes/TelaFluxo';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
 import { rotuloStatus } from '@/compartilhado/tipos';
 import { supabase } from '@/servicos/supabase';
-import { carregarDetalhe, mensagemErro } from '../api';
+import { carregarDetalhe } from '../api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { rotuloInscricao } from '../tipos';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
 import { abrirWhatsApp } from '@/compartilhado/utils/whatsapp';
 import { mascararTelefone } from '@/compartilhado/utils/mascaras';
@@ -35,7 +36,7 @@ export function TelaDetalheAtividade({
   criarConta,
 }: Props) {
   const consulta = useCallback(() => carregarDetalhe(atividadeId), [atividadeId]);
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
+  const { dados, erro, carregando, carregar } = useConsulta(consulta);
   const [erroAcao, setErroAcao] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   async function executar(acao: () => PromiseLike<{ error: unknown }>) {
@@ -69,7 +70,7 @@ export function TelaDetalheAtividade({
   // Apenas conveniência visual; o servidor valida novamente todas as regras.
   const futura = !!a && new Date(a.data_hora_prevista).getTime() > Date.now();
   return (
-    <TelaFluxoVoluntariado
+    <TelaFluxo
       titulo="Detalhes da atividade"
       voltar={voltar}
       erro={erroAcao ?? erro}
@@ -284,6 +285,6 @@ export function TelaDetalheAtividade({
           )}
         </>
       ) : null}
-    </TelaFluxoVoluntariado>
+    </TelaFluxo>
   );
 }

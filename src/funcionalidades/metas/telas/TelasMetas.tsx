@@ -3,13 +3,10 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { AbasFiltro, Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
 import { CampoData } from '@/compartilhado/componentes/CampoData';
-import {
-  CartaoFluxo,
-  TelaFluxoVoluntariado as TelaFluxo,
-} from '@/compartilhado/componentes/TelaFluxo';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
-import { mensagemErro } from '@/funcionalidades/voluntariado/api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import { abrirWhatsApp } from '@/compartilhado/utils/whatsapp';
 import { mascararTelefone } from '@/compartilhado/utils/mascaras';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
@@ -111,7 +108,7 @@ export function TelaMetas({
   minhas: () => void;
   convidado?: boolean;
 }) {
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(listarMetas);
+  const { dados, erro, carregando, carregar } = useConsulta(listarMetas);
   const hoje = hojeIso();
   const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');
   const abertas = (dados ?? []).filter(m => !metaFinalizada(m));
@@ -199,7 +196,7 @@ export function TelaDetalheMeta({
   criarConta?: () => void;
 }) {
   const consulta = useCallback(() => carregarMeta(id), [id]);
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
+  const { dados, erro, carregando, carregar } = useConsulta(consulta);
   const acao = useAcao();
   const meta = dados?.meta;
   const hoje = hojeIso();
@@ -591,7 +588,7 @@ export function TelaFormMeta({ id, voltar }: { id: number | null; voltar: () => 
     async () => (id === null ? null : (await carregarMeta(id)).meta),
     [id],
   );
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
+  const { dados, erro, carregando, carregar } = useConsulta(consulta);
   return (
     <TelaFluxo
       titulo={id === null ? 'Nova meta' : 'Editar meta'}
@@ -728,7 +725,7 @@ export function TelaRegistrarRecebimento({
     const [{ meta }, voluntarios] = await Promise.all([carregarMeta(id), listarVoluntarios()]);
     return { meta, voluntarios };
   }, [id]);
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
+  const { dados, erro, carregando, carregar } = useConsulta(consulta);
   const [busca, setBusca] = useState('');
   const [doador, setDoador] = useState<{ id: string; nome: string } | null>(null);
   const [quantidade, setQuantidade] = useState('');
@@ -861,7 +858,7 @@ export function TelaMinhasContribuicoesMetas({
   abrir: (id: number) => void;
 }) {
   const consulta = useCallback(() => minhasContribuicoesMetas(usuarioId), [usuarioId]);
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(consulta);
+  const { dados, erro, carregando, carregar } = useConsulta(consulta);
   return (
     <TelaFluxo
       titulo="Minhas contribuições"

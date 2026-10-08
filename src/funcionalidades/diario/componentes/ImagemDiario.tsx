@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Image, Text, View } from 'react-native';
-import { useDadosVoluntariado } from '@/compartilhado/hooks/useConsulta';
+import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { urlImagemDiario } from '../api';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { tipo } from '@/compartilhado/tema';
@@ -8,7 +8,7 @@ import { tipo } from '@/compartilhado/tema';
 export function ImagemDiario({ caminho }: { caminho: string }) {
   const [falhou, setFalhou] = useState(false);
   const [abrindo, setAbrindo] = useState(true);
-  const { dados, erro, carregando, carregar } = useDadosVoluntariado(
+  const { dados, erro, carregando, carregar } = useConsulta(
     useCallback(() => {
       setFalhou(false);
       setAbrindo(true);

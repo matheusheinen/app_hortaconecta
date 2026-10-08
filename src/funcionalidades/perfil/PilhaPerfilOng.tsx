@@ -7,7 +7,7 @@ import {
   type DadosPerfilOng,
   type PerfilOngCarregado,
 } from './apiOng';
-import { mensagemErro } from '@/funcionalidades/voluntariado/api';
+import { mensagemErro } from '@/compartilhado/utils/erros';
 import {
   ProvedorPerfilOng,
   TelaHubPerfilOng,
