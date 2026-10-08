@@ -19,7 +19,7 @@ import {
   type ResumoInicio,
 } from '../resumo';
 import { descreverProgresso } from '@/funcionalidades/metas/regras';
-import type { Atividade } from '@/compartilhado/tipos';
+import type { Atividade } from '@/funcionalidades/voluntariado/tipos';
 
 export type AcoesInicio = {
   nome: string;

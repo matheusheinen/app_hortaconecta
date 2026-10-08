@@ -1,5 +1,5 @@
 import { supabase } from '@/servicos/supabase';
-import type { Contribuicao, Meta, MetaFormulario, TipoMeta } from '@/compartilhado/tipos';
+import type { Contribuicao, Meta, MetaFormulario, TipoMeta } from './tipos';
 
 export type ContribuicaoComDoador = Contribuicao & { usuarios: { nome: string } | null };
 export type MinhaContribuicaoMeta = Contribuicao & {

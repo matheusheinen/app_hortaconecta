@@ -3,7 +3,7 @@ import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { supabase } from '@/servicos/supabase';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
-import { rotuloStatus, type Atividade } from '@/compartilhado/tipos';
+import { rotuloStatusAtividade, type Atividade } from '../tipos';
 import { AbasFiltro, Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { atividadeFinalizada } from '../regras';
@@ -124,7 +124,7 @@ export function TelaAtividades({
           <CartaoFluxo>
             <Text style={estilos.etiqueta}>
               {a.tipo === 'OFICINA_AUTORAL' ? 'OFICINA' : 'TAREFA'} ·{' '}
-              {rotuloStatus[a.status].toUpperCase()}
+              {rotuloStatusAtividade[a.status].toUpperCase()}
             </Text>
             <Text style={tipo.secao}>{a.titulo}</Text>
             <Text style={tipo.corpo} numberOfLines={3}>

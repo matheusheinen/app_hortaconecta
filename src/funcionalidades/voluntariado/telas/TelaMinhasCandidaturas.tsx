@@ -3,9 +3,8 @@ import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
-import { rotuloStatus } from '@/compartilhado/tipos';
+import { rotuloInscricao, rotuloStatusAtividade } from '../tipos';
 import { carregarMinhasInscricoes } from '../api';
-import { rotuloInscricao } from '../tipos';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 
 export function TelaMinhasCandidaturas({
@@ -45,7 +44,7 @@ export function TelaMinhasCandidaturas({
           <Text style={tipo.secao}>{a.titulo}</Text>
           <Text style={tipo.corpo}>{new Date(a.data_hora_prevista).toLocaleString('pt-BR')}</Text>
           <Text style={tipo.corpo}>Candidatura: {rotuloInscricao[i.status_inscricao]}</Text>
-          <Text style={tipo.corpo}>Atividade: {rotuloStatus[a.status]}</Text>
+          <Text style={tipo.corpo}>Atividade: {rotuloStatusAtividade[a.status]}</Text>
           <Text style={tipo.corpo}>
             Presença: {i.presenca_confirmada ? 'Confirmada' : 'Não confirmada'}
           </Text>

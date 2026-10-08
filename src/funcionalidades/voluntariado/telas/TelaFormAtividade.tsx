@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { supabase } from '@/servicos/supabase';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
-import type { Atividade, Habilidade } from '@/compartilhado/tipos';
+import type { Atividade } from '../tipos';
+import type { Habilidade } from '@/compartilhado/tipos';
 import { mascararDataHora } from '@/compartilhado/utils/mascaras';
 import { Botao, Campo } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';

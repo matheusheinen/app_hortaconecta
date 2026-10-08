@@ -11,12 +11,7 @@ import { abrirWhatsApp } from '@/compartilhado/utils/whatsapp';
 import { mascararTelefone } from '@/compartilhado/utils/mascaras';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { hojeIso, interpretarData, paraCampoData } from '@/funcionalidades/perfil/regras';
-import {
-  rotuloStatusMeta,
-  rotuloStatusValidacao,
-  type Meta,
-  type TipoMeta,
-} from '@/compartilhado/tipos';
+import { rotuloStatusMeta, rotuloStatusValidacao, type Meta, type TipoMeta } from '../tipos';
 import {
   alterarStatusMeta,
   carregarMeta,

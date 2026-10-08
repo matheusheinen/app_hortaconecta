@@ -3,11 +3,10 @@ import { Alert, Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
-import { rotuloStatus } from '@/compartilhado/tipos';
+import { rotuloInscricao, rotuloStatusAtividade } from '../tipos';
 import { supabase } from '@/servicos/supabase';
 import { carregarDetalhe } from '../api';
 import { mensagemErro } from '@/compartilhado/utils/erros';
-import { rotuloInscricao } from '../tipos';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
 import { abrirWhatsApp } from '@/compartilhado/utils/whatsapp';
@@ -94,7 +93,7 @@ export function TelaDetalheAtividade({
             <Text style={tipo.corpo}>
               Tipo: {a.tipo === 'TAREFA_ONG' ? 'Tarefa da instituição' : 'Oficina autoral'}
             </Text>
-            <Text style={tipo.corpo}>Status: {rotuloStatus[a.status]}</Text>
+            <Text style={tipo.corpo}>Status: {rotuloStatusAtividade[a.status]}</Text>
           </CartaoFluxo>
           {ehGestao ? (
             <>

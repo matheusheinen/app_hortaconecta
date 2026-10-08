@@ -1,4 +1,5 @@
-import type { SlotDisponibilidade, StatusAtividade } from '@/compartilhado/tipos';
+import type { SlotDisponibilidade } from '@/compartilhado/tipos';
+import type { StatusAtividade } from './tipos';
 
 /**
  * Aba da listagem. ENCERRADA só fecha as candidaturas: a atividade ainda

@@ -2,8 +2,8 @@ import { supabase } from '@/servicos/supabase';
 import { carregarMinhasInscricoes } from '@/funcionalidades/voluntariado/api';
 import { listarMetas } from '@/funcionalidades/metas/api';
 import { listarDiario } from '@/funcionalidades/diario/api';
-import type { Atividade, Meta, StatusValidacao } from '@/compartilhado/tipos';
-import type { MinhaInscricao } from '@/funcionalidades/voluntariado/tipos';
+import type { Atividade, MinhaInscricao } from '@/funcionalidades/voluntariado/tipos';
+import type { Meta, StatusValidacao } from '@/funcionalidades/metas/tipos';
 import type { Publicacao } from '@/funcionalidades/diario/tipos';
 
 export type AtividadeInicio = Atividade & { vagas_ocupadas: number };
