@@ -1,12 +1,10 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import {
-  TelaDetalheMeta,
-  TelaFormMeta,
-  TelaMetas,
-  TelaMinhasContribuicoesMetas,
-  TelaRegistrarRecebimento,
-} from './telas/TelasMetas';
+import { TelaMetas } from './telas/TelaMetas';
+import { TelaDetalheMeta } from './telas/TelaDetalheMeta';
+import { TelaFormMeta } from './telas/TelaFormMeta';
+import { TelaRegistrarRecebimento } from './telas/TelaRegistrarRecebimento';
+import { TelaMinhasContribuicoesMetas } from './telas/TelaMinhasContribuicoes';
 
 export type ParametrosMetas = {
   lista: undefined;

@@ -1,6 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { TelaDiario, TelaDetalheDiario, TelaFormDiario } from './telas/TelasDiario';
+import { TelaDiario } from './telas/TelaDiario';
+import { TelaDetalheDiario } from './telas/TelaDetalheDiario';
+import { TelaFormDiario } from './telas/TelaFormDiario';
 type Rotas = { lista: undefined; detalhe: { id: number }; formulario: { id: number | null } };
 const Pilha = createNativeStackNavigator<Rotas>();
 export function PilhaDiario({ gestao, inicio }: { gestao: boolean; inicio: () => void }) {

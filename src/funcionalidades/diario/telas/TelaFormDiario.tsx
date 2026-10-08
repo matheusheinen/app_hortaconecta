@@ -1,175 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Image, Text } from 'react-native';
+import { Image, Text } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Botao, Campo, Aviso } from '@/compartilhado/componentes/Ui';
-import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
-import { ImagemDiario } from '../componentes/ImagemDiario';
-import { detalheDiario, excluirDiario, listarDiario, salvarDiario, statusDiario } from '../api';
-import { confirmarExclusao } from '@/compartilhado/utils/confirmar';
-import { imagemJpeg } from '../regras';
+import { Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
+import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { mensagemErro } from '@/compartilhado/utils/erros';
 import { tipo } from '@/compartilhado/tema';
+import { detalheDiario, salvarDiario } from '../api';
+import { imagemJpeg } from '../regras';
 import type { Publicacao } from '../tipos';
+import { ImagemDiario } from '../componentes/ImagemDiario';
 
-function DataPublicacao({ p }: { p: Publicacao }) {
-  return (
-    <Text style={tipo.apoio}>
-      Gestão da instituição · {new Date(p.data_publicacao).toLocaleDateString('pt-BR')}
-      {p.status === 'OCULTA' ? ' · Oculta' : ''}
-    </Text>
-  );
-}
-export function TelaDiario({
-  gestao,
-  voltar,
-  abrir,
-  criar,
-}: {
-  gestao: boolean;
-  voltar: () => void;
-  abrir: (id: number) => void;
-  criar: () => void;
-}) {
-  const { dados, erro, carregando, carregar } = useConsulta(listarDiario);
-  return (
-    <TelaFluxo
-      titulo="Diário de Transparência"
-      voltar={voltar}
-      erro={erro}
-      carregando={carregando}
-      atualizar={carregar}
-    >
-      {gestao ? <Botao titulo="Criar publicação" onPress={criar} /> : null}
-      {dados?.length === 0 ? (
-        <Text style={tipo.apoio}>Nenhuma publicação disponível no momento.</Text>
-      ) : null}
-      {dados?.map(p => (
-        <CartaoFluxo key={p.id}>
-          {p.imagem_caminho ? <ImagemDiario caminho={p.imagem_caminho} /> : null}
-          <Text style={tipo.secao}>{p.titulo}</Text>
-          <DataPublicacao p={p} />
-          <Text style={tipo.corpo} numberOfLines={3}>
-            {p.texto ?? p.descricao_curta ?? 'Relato não informado.'}
-          </Text>
-          <Botao titulo="Ler publicação" variante="contorno" onPress={() => abrir(p.id)} />
-        </CartaoFluxo>
-      ))}
-    </TelaFluxo>
-  );
-}
-export function TelaDetalheDiario({
-  id,
-  gestao,
-  voltar,
-  editar,
-}: {
-  id: number;
-  gestao: boolean;
-  voltar: () => void;
-  editar: () => void;
-}) {
-  const { dados, erro, carregando, carregar } = useConsulta(
-    useCallback(() => detalheDiario(id), [id]),
-  );
-  const [erroAcao, setErroAcao] = useState<string | null>(null);
-  const [ocupado, setOcupado] = useState(false);
-  const trava = useRef(false);
-  async function mudar() {
-    if (!dados || trava.current) return;
-    trava.current = true;
-    setOcupado(true);
-    setErroAcao(null);
-    try {
-      await statusDiario(id, dados.status === 'PUBLICADA' ? 'OCULTA' : 'PUBLICADA', dados.revisao);
-      await carregar();
-    } catch (f) {
-      setErroAcao(mensagemErro(f));
-    } finally {
-      trava.current = false;
-      setOcupado(false);
-    }
-  }
-  async function excluir() {
-    if (!dados || trava.current) return;
-    trava.current = true;
-    setOcupado(true);
-    setErroAcao(null);
-    try {
-      await excluirDiario(id, dados.revisao);
-      voltar();
-    } catch (f) {
-      setErroAcao(mensagemErro(f));
-    } finally {
-      trava.current = false;
-      setOcupado(false);
-    }
-  }
-  return (
-    <TelaFluxo
-      titulo="Publicação"
-      voltar={voltar}
-      erro={erroAcao ?? erro}
-      carregando={carregando}
-      atualizar={() => {
-        setErroAcao(null);
-        void carregar();
-      }}
-    >
-      {dados ? (
-        <>
-          <Text style={tipo.titulo}>{dados.titulo}</Text>
-          <DataPublicacao p={dados} />
-          {dados.imagem_caminho ? <ImagemDiario caminho={dados.imagem_caminho} /> : null}
-          <Text style={tipo.corpo}>
-            {dados.texto ?? dados.descricao_curta ?? 'Relato não informado.'}
-          </Text>
-          {gestao ? (
-            <>
-              <Botao titulo="Editar publicação" onPress={editar} desabilitado={ocupado} />
-              <Botao
-                titulo={dados.status === 'PUBLICADA' ? 'Ocultar publicação' : 'Publicar novamente'}
-                variante="contorno"
-                carregando={ocupado}
-                onPress={() =>
-                  Alert.alert(
-                    'Alterar visibilidade?',
-                    dados.status === 'PUBLICADA'
-                      ? 'A publicação deixará de aparecer para a comunidade.'
-                      : 'A publicação ficará visível para usuários autenticados.',
-                    [
-                      { text: 'Voltar', style: 'cancel' },
-                      {
-                        text: 'Confirmar',
-                        onPress: () => {
-                          void mudar();
-                        },
-                      },
-                    ],
-                  )
-                }
-              />
-              <Botao
-                titulo="Excluir publicação"
-                variante="destrutivo"
-                desabilitado={ocupado}
-                onPress={() =>
-                  confirmarExclusao(
-                    'Excluir publicação?',
-                    `"${dados.titulo}" será apagada definitivamente${dados.imagem_caminho ? ', com a imagem' : ''}.${dados.status === 'PUBLICADA' ? ' Para só tirar do ar, use "Ocultar publicação".' : ''}`,
-                    () => {
-                      void excluir();
-                    },
-                  )
-                }
-              />
-            </>
-          ) : null}
-        </>
-      ) : null}
-    </TelaFluxo>
-  );
-}
 export function TelaFormDiario({ id, voltar }: { id: number | null; voltar: () => void }) {
   const { dados, erro, carregando, carregar } = useConsulta(
     useCallback(async () => (id === null ? null : detalheDiario(id)), [id]),
@@ -193,6 +34,8 @@ export function TelaFormDiario({ id, voltar }: { id: number | null; voltar: () =
     </TelaFluxo>
   );
 }
+
+// Não usa useAcao: se a tela fechar durante o envio, voltar() não pode rodar.
 function Formulario({
   p,
   voltar,
