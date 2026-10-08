@@ -25,22 +25,40 @@ export type DadosPerfilVoluntario = {
 };
 
 export const SECOES_PERFIL: { chave: SecaoPerfil; titulo: string; resumo: string }[] = [
-  { chave: 'pessoais', titulo: 'Dados pessoais', resumo: 'Nome, telefone, Instagram e uma apresentação.' },
-  { chave: 'cadastro', titulo: 'Cadastro de voluntário', resumo: 'CPF, data de nascimento e profissão.' },
+  {
+    chave: 'pessoais',
+    titulo: 'Dados pessoais',
+    resumo: 'Nome, telefone, Instagram e uma apresentação.',
+  },
+  {
+    chave: 'cadastro',
+    titulo: 'Cadastro de voluntário',
+    resumo: 'CPF, data de nascimento e profissão.',
+  },
   { chave: 'endereco', titulo: 'Endereço', resumo: 'Busque pelo CEP ou preencha à mão.' },
-  { chave: 'disponibilidade', titulo: 'Disponibilidade', resumo: 'Dias e períodos em que você pode ajudar.' },
+  {
+    chave: 'disponibilidade',
+    titulo: 'Disponibilidade',
+    resumo: 'Dias e períodos em que você pode ajudar.',
+  },
   { chave: 'habilidades', titulo: 'Habilidades', resumo: 'Áreas em que você pode contribuir.' },
 ];
 
 const preenchido = (valor: string | null | undefined) => !!valor && valor.trim() !== '';
 
 /** Mesmos campos que `voluntariado_privado.elegivel` exige, agrupados por seção. */
-export function secaoCompleta(secao: SecaoPerfil, dados: DadosPerfilVoluntario, totalHabilidades: number): boolean {
+export function secaoCompleta(
+  secao: SecaoPerfil,
+  dados: DadosPerfilVoluntario,
+  totalHabilidades: number,
+): boolean {
   switch (secao) {
     case 'pessoais':
       return dados.nome.trim().length >= 2;
     case 'cadastro':
-      return preenchido(dados.cpf) && preenchido(dados.data_nascimento) && preenchido(dados.profissao);
+      return (
+        preenchido(dados.cpf) && preenchido(dados.data_nascimento) && preenchido(dados.profissao)
+      );
     case 'endereco':
       return preenchido(dados.logradouro) && preenchido(dados.numero) && preenchido(dados.cidade);
     case 'disponibilidade':
@@ -50,8 +68,11 @@ export function secaoCompleta(secao: SecaoPerfil, dados: DadosPerfilVoluntario, 
   }
 }
 
-export function secoesPendentes(dados: DadosPerfilVoluntario, totalHabilidades: number): SecaoPerfil[] {
-  return SECOES_PERFIL.map((s) => s.chave).filter((s) => !secaoCompleta(s, dados, totalHabilidades));
+export function secoesPendentes(
+  dados: DadosPerfilVoluntario,
+  totalHabilidades: number,
+): SecaoPerfil[] {
+  return SECOES_PERFIL.map(s => s.chave).filter(s => !secaoCompleta(s, dados, totalHabilidades));
 }
 
 export function mascararCep(texto: string): string {
@@ -69,7 +90,12 @@ export function enderecoDoViaCep(resposta: unknown): EnderecoDoCep | null {
     return typeof valor === 'string' ? valor.trim() : '';
   };
   const uf = texto('uf').toUpperCase();
-  const endereco = { logradouro: texto('logradouro'), bairro: texto('bairro'), cidade: texto('localidade'), uf };
+  const endereco = {
+    logradouro: texto('logradouro'),
+    bairro: texto('bairro'),
+    cidade: texto('localidade'),
+    uf,
+  };
   if (!endereco.cidade || !/^[A-Z]{2}$/.test(uf)) return null;
   return endereco;
 }
@@ -80,7 +106,12 @@ export function interpretarData(texto: string): string | null {
   if (!m) return null;
   const [, dia, mes, ano] = m;
   const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
-  if (d.getFullYear() !== Number(ano) || d.getMonth() !== Number(mes) - 1 || d.getDate() !== Number(dia)) return null;
+  if (
+    d.getFullYear() !== Number(ano) ||
+    d.getMonth() !== Number(mes) - 1 ||
+    d.getDate() !== Number(dia)
+  )
+    return null;
   return `${ano}-${mes}-${dia}`;
 }
 

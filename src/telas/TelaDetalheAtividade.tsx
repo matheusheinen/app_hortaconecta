@@ -58,7 +58,10 @@ export function TelaDetalheAtividade({
     if (!whatsapp) return;
     const mensagem = `Olá! Tenho uma dúvida sobre a atividade "${titulo}" (${new Date(quando).toLocaleString('pt-BR')}).`;
     if (!(await abrirWhatsApp(whatsapp, mensagem))) {
-      Alert.alert('Não foi possível abrir o WhatsApp', `Fale com a gestão pelo número ${mascararTelefone(whatsapp)}.`);
+      Alert.alert(
+        'Não foi possível abrir o WhatsApp',
+        `Fale com a gestão pelo número ${mascararTelefone(whatsapp)}.`,
+      );
     }
   }
   const a = dados?.atividade;
@@ -183,7 +186,9 @@ export function TelaDetalheAtividade({
                 <Botao
                   titulo="Falar com a gestão no WhatsApp"
                   variante="contorno"
-                  onPress={() => { void falarComGestao(a.titulo, a.data_hora_prevista); }}
+                  onPress={() => {
+                    void falarComGestao(a.titulo, a.data_hora_prevista);
+                  }}
                 />
               ) : null}
             </>
@@ -270,7 +275,9 @@ export function TelaDetalheAtividade({
                 <Botao
                   titulo="Falar com a gestão no WhatsApp"
                   variante="contorno"
-                  onPress={() => { void falarComGestao(a.titulo, a.data_hora_prevista); }}
+                  onPress={() => {
+                    void falarComGestao(a.titulo, a.data_hora_prevista);
+                  }}
                 />
               ) : null}
             </>

@@ -15,7 +15,15 @@ type Props = {
   aoIrParaOficinas?: () => void;
 };
 
-export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas, aoIrParaDiario, aoIrParaOficinas, aoIrParaCertificados }: Props) {
+export function TelaInicioOng({
+  nome,
+  sair,
+  aoIrParaAtividades,
+  aoIrParaMetas,
+  aoIrParaDiario,
+  aoIrParaOficinas,
+  aoIrParaCertificados,
+}: Props) {
   const { configuracao } = useConfiguracaoInstituicao();
 
   return (
@@ -86,7 +94,12 @@ export function TelaInicioOng({ nome, sair, aoIrParaAtividades, aoIrParaMetas, a
   );
 }
 
-function CartaoGestao({ titulo, resumo, icone, onPress }: {
+function CartaoGestao({
+  titulo,
+  resumo,
+  icone,
+  onPress,
+}: {
   titulo: string;
   resumo: string;
   icone: NomeIcone;
@@ -145,7 +158,13 @@ const estilos = StyleSheet.create({
     marginBottom: espaco.lg,
   },
   chamadaTexto: { flex: 1, color: cores.folha },
-  secao: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5, color: cores.tinta, marginBottom: 12 },
+  secao: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    color: cores.tinta,
+    marginBottom: 12,
+  },
   acoes: { gap: 12 },
   cartao: {
     flexDirection: 'row',

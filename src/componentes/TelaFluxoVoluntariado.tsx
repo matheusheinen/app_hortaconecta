@@ -24,10 +24,19 @@ export function TelaFluxoVoluntariado({
       contentContainerStyle={estilosFluxo.conteudo}
       keyboardShouldPersistTaps="handled"
       refreshControl={
-        atualizar ? <RefreshControl refreshing={carregando} onRefresh={atualizar} tintColor={cores.folha} colors={[cores.folha]} /> : undefined
+        atualizar ? (
+          <RefreshControl
+            refreshing={carregando}
+            onRefresh={atualizar}
+            tintColor={cores.folha}
+            colors={[cores.folha]}
+          />
+        ) : undefined
       }
     >
-      <Text style={tipo.titulo} accessibilityRole="header">{titulo}</Text>
+      <Text style={tipo.titulo} accessibilityRole="header">
+        {titulo}
+      </Text>
       {erro ? <Aviso mensagem={erro} /> : null}
       {erro && atualizar ? <Botao titulo="Tentar novamente" onPress={atualizar} /> : null}
       {carregando ? <Text style={tipo.apoio}>Carregando...</Text> : children}
@@ -39,7 +48,15 @@ export function CartaoFluxo({ children }: { children: ReactNode }) {
   return <View style={estilosFluxo.cartao}>{children}</View>;
 }
 export const estilosFluxo = StyleSheet.create({
-  conteudo: { padding: 20, paddingTop: espaco.lg, paddingBottom: espaco.xl, gap: espaco.md, width: '100%', maxWidth: 560, alignSelf: 'center' },
+  conteudo: {
+    padding: 20,
+    paddingTop: espaco.lg,
+    paddingBottom: espaco.xl,
+    gap: espaco.md,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+  },
   cartao: {
     backgroundColor: cores.fundo,
     borderRadius: 18,

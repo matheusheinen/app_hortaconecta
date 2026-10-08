@@ -21,7 +21,11 @@ import { Aviso } from '../componentes/Ui';
 export const fundoLogin = '#F7F5EF';
 const verde = '#2D6B51';
 
-function CampoAcesso({ rotulo, referencia, ...props }: TextInputProps & {
+function CampoAcesso({
+  rotulo,
+  referencia,
+  ...props
+}: TextInputProps & {
   rotulo: string;
   referencia?: React.Ref<TextInput>;
 }) {
@@ -48,7 +52,12 @@ function SimboloHorta() {
       importantForAccessibility="no-hide-descendants"
     >
       <Svg width={44} height={44} viewBox="0 0 48 48" fill="none">
-        <Path d="M14 40C18 32 25 25 33 9" stroke="#C4DD69" strokeWidth={2.2} strokeLinecap="round" />
+        <Path
+          d="M14 40C18 32 25 25 33 9"
+          stroke="#C4DD69"
+          strokeWidth={2.2}
+          strokeLinecap="round"
+        />
         <Path d="M21 31C13 30 11 25 12 19C18 20 23 25 21 31Z" fill="#B6D557" />
         <Path d="M26 23C19 20 18 15 20 10C26 13 29 18 26 23Z" fill="#D5E77E" />
         <Path d="M31 15C28 10 30 6 35 4C36 10 35 13 31 15Z" fill="#B6D557" />
@@ -59,7 +68,7 @@ function SimboloHorta() {
   );
 }
 
-export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
+export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
   const [modo, setModo] = useState<'entrar' | 'cadastrar' | 'recuperar'>('entrar');
   const [etapa, setEtapa] = useState<'email' | 'codigo'>('email');
   const [codigo, setCodigo] = useState('');
@@ -76,7 +85,13 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
 
   const cadastrando = modo === 'cadastrar';
   const recuperando = modo === 'recuperar';
-  const botaoRotulo = recuperando ? (etapa === 'email' ? 'Enviar código' : 'Redefinir senha') : cadastrando ? 'Criar conta' : 'Entrar';
+  const botaoRotulo = recuperando
+    ? etapa === 'email'
+      ? 'Enviar código'
+      : 'Redefinir senha'
+    : cadastrando
+      ? 'Criar conta'
+      : 'Entrar';
 
   function abrirRecuperacao() {
     setModo('recuperar');
@@ -113,7 +128,9 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
       await executarAuth(() => supabase.auth.resetPasswordForEmail(email.trim()), setOcupado);
       setEtapa('codigo');
       setAviso('Se existir uma conta com este e-mail, enviamos um código de verificação.');
-    } catch (f) { setErro(erroAuth(f)); }
+    } catch (f) {
+      setErro(erroAuth(f));
+    }
   }
 
   async function redefinirSenha() {
@@ -132,7 +149,15 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
     try {
       if (!sessaoAberta) {
         definirRecuperacaoAtiva(true);
-        await executarAuth(() => supabase.auth.verifyOtp({ email: email.trim(), token: codigo.trim(), type: 'recovery' }), setOcupado);
+        await executarAuth(
+          () =>
+            supabase.auth.verifyOtp({
+              email: email.trim(),
+              token: codigo.trim(),
+              type: 'recovery',
+            }),
+          setOcupado,
+        );
         sessaoAberta = true;
         setVerificado(true);
       }
@@ -146,7 +171,7 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
   }
 
   async function enviar() {
-    if(ocupado)return;
+    if (ocupado) return;
     setErro(null);
     setAviso(null);
 
@@ -159,20 +184,36 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
       return;
     }
 
-    try{
-      const resposta=await executarAuth(()=>cadastrando
-        ?supabase.auth.signUp({email:email.trim(),password:senha,options:{data:{nome:nome.trim()}}})
-        :supabase.auth.signInWithPassword({email:email.trim(),password:senha}),setOcupado);
-      if(cadastrando&&!resposta.data.session){setAviso('Conta criada. Confirme seu e-mail antes de entrar.');setModo('entrar');}
-    }catch(f){setErro(erroAuth(f));}
+    try {
+      const resposta = await executarAuth(
+        () =>
+          cadastrando
+            ? supabase.auth.signUp({
+                email: email.trim(),
+                password: senha,
+                options: { data: { nome: nome.trim() } },
+              })
+            : supabase.auth.signInWithPassword({ email: email.trim(), password: senha }),
+        setOcupado,
+      );
+      if (cadastrando && !resposta.data.session) {
+        setAviso('Conta criada. Confirme seu e-mail antes de entrar.');
+        setModo('entrar');
+      }
+    } catch (f) {
+      setErro(erroAuth(f));
+    }
   }
 
   async function entrarConvidado() {
-    if(ocupado)return;
+    if (ocupado) return;
     setErro(null);
     setAviso(null);
-    try{await executarAuth(()=>supabase.auth.signInAnonymously(),setOcupado);}
-    catch(f){setErro(erroAuth(f));}
+    try {
+      await executarAuth(() => supabase.auth.signInAnonymously(), setOcupado);
+    } catch (f) {
+      setErro(erroAuth(f));
+    }
   }
 
   return (
@@ -186,17 +227,32 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
         keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
       >
-        <View style={[estilos.marca, { paddingTop: cadastrando ? 24 : Math.min(96, Math.max(32, height * 0.09)) }]}>
+        <View
+          style={[
+            estilos.marca,
+            { paddingTop: cadastrando ? 24 : Math.min(96, Math.max(32, height * 0.09)) },
+          ]}
+        >
           <SimboloHorta />
-          <Text accessibilityRole="header" style={estilos.marcaTexto}>Horta Conecta</Text>
+          <Text accessibilityRole="header" style={estilos.marcaTexto}>
+            Horta Conecta
+          </Text>
           <Text style={estilos.chamada}>Comunidade, natureza e impacto social</Text>
         </View>
 
         <View style={estilos.formulario}>
           {cadastrando ? <Text style={estilos.tituloCadastro}>Crie sua conta</Text> : null}
           {recuperando ? <Text style={estilos.tituloCadastro}>Recuperar senha</Text> : null}
-          {erro||erroSessao ? <View accessibilityLiveRegion="polite"><Aviso mensagem={erro??erroSessao!} /></View> : null}
-          {aviso ? <View style={estilos.aviso} accessibilityLiveRegion="polite"><Text style={estilos.avisoTexto}>{aviso}</Text></View> : null}
+          {erro || erroSessao ? (
+            <View accessibilityLiveRegion="polite">
+              <Aviso mensagem={erro ?? erroSessao!} />
+            </View>
+          ) : null}
+          {aviso ? (
+            <View style={estilos.aviso} accessibilityLiveRegion="polite">
+              <Text style={estilos.avisoTexto}>{aviso}</Text>
+            </View>
+          ) : null}
 
           {cadastrando ? (
             <CampoAcesso
@@ -225,7 +281,10 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
             textContentType="emailAddress"
             keyboardType="email-address"
             returnKeyType="next"
-            onSubmitEditing={() => { if (recuperando) void enviarCodigo(); else campoSenha.current?.focus(); }}
+            onSubmitEditing={() => {
+              if (recuperando) void enviarCodigo();
+              else campoSenha.current?.focus();
+            }}
             editable={!ocupado && !(recuperando && etapa === 'codigo')}
           />
 
@@ -247,21 +306,31 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
             />
           ) : null}
 
-          {!recuperando || etapa === 'codigo' ? <CampoAcesso
-            rotulo={recuperando ? 'NOVA SENHA' : 'SENHA'}
-            referencia={campoSenha}
-            value={senha}
-            onChangeText={setSenha}
-            placeholder={cadastrando ? 'Crie sua senha' : recuperando ? 'Crie a nova senha' : 'Digite sua senha'}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete={cadastrando || recuperando ? 'new-password' : 'current-password'}
-            textContentType={cadastrando || recuperando ? 'newPassword' : 'password'}
-            returnKeyType="go"
-            onSubmitEditing={() => { void (recuperando ? redefinirSenha() : enviar()); }}
-            editable={!ocupado}
-          /> : null}
+          {!recuperando || etapa === 'codigo' ? (
+            <CampoAcesso
+              rotulo={recuperando ? 'NOVA SENHA' : 'SENHA'}
+              referencia={campoSenha}
+              value={senha}
+              onChangeText={setSenha}
+              placeholder={
+                cadastrando
+                  ? 'Crie sua senha'
+                  : recuperando
+                    ? 'Crie a nova senha'
+                    : 'Digite sua senha'
+              }
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete={cadastrando || recuperando ? 'new-password' : 'current-password'}
+              textContentType={cadastrando || recuperando ? 'newPassword' : 'password'}
+              returnKeyType="go"
+              onSubmitEditing={() => {
+                void (recuperando ? redefinirSenha() : enviar());
+              }}
+              editable={!ocupado}
+            />
+          ) : null}
 
           {modo === 'entrar' ? (
             <Pressable
@@ -276,14 +345,28 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
           ) : null}
 
           <Pressable
-            onPress={() => { void (recuperando ? (etapa === 'email' ? enviarCodigo() : redefinirSenha()) : enviar()); }}
+            onPress={() => {
+              void (recuperando
+                ? etapa === 'email'
+                  ? enviarCodigo()
+                  : redefinirSenha()
+                : enviar());
+            }}
             disabled={ocupado}
             accessibilityRole="button"
             accessibilityLabel={botaoRotulo}
             accessibilityState={{ disabled: ocupado, busy: ocupado }}
-            style={({ pressed }) => [estilos.botao, pressed && estilos.pressionado, ocupado && estilos.inativo]}
+            style={({ pressed }) => [
+              estilos.botao,
+              pressed && estilos.pressionado,
+              ocupado && estilos.inativo,
+            ]}
           >
-            {ocupado ? <ActivityIndicator color="#FFFFFF" /> : <Text style={estilos.botaoTexto}>{botaoRotulo}</Text>}
+            {ocupado ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={estilos.botaoTexto}>{botaoRotulo}</Text>
+            )}
           </Pressable>
         </View>
 
@@ -293,10 +376,14 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
               accessibilityRole="button"
               disabled={ocupado}
               accessibilityState={{ disabled: ocupado }}
-              onPress={() => { void voltarAoLogin(); }}
+              onPress={() => {
+                void voltarAoLogin();
+              }}
               style={({ pressed }) => [estilos.alternar, pressed && estilos.pressionado]}
             >
-              <Text style={estilos.rodapeTexto}><Text style={estilos.link}>Voltar para o login</Text></Text>
+              <Text style={estilos.rodapeTexto}>
+                <Text style={estilos.link}>Voltar para o login</Text>
+              </Text>
             </Pressable>
           ) : null}
           {modo === 'entrar' ? (
@@ -306,7 +393,9 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
               accessibilityHint="Só visualização, sem criar conta"
               disabled={ocupado}
               accessibilityState={{ disabled: ocupado }}
-              onPress={() => { void entrarConvidado(); }}
+              onPress={() => {
+                void entrarConvidado();
+              }}
               style={({ pressed }) => [estilos.alternar, pressed && estilos.pressionado]}
             >
               <Text style={estilos.rodapeTexto}>
@@ -314,22 +403,24 @@ export function TelaLogin({erroSessao}:{erroSessao?:string|null}) {
               </Text>
             </Pressable>
           ) : null}
-          {!recuperando ? <Pressable
-            accessibilityRole="button"
-            disabled={ocupado}
-            accessibilityState={{ disabled: ocupado }}
-            onPress={() => {
-              setModo(cadastrando ? 'entrar' : 'cadastrar');
-              setErro(null);
-              setAviso(null);
-            }}
-            style={({ pressed }) => [estilos.alternar, pressed && estilos.pressionado]}
-          >
-            <Text style={estilos.rodapeTexto}>
-              {cadastrando ? 'Já tem conta? ' : 'Não tem conta? '}
-              <Text style={estilos.link}>{cadastrando ? 'Entrar' : 'Criar conta'}</Text>
-            </Text>
-          </Pressable> : null}
+          {!recuperando ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={ocupado}
+              accessibilityState={{ disabled: ocupado }}
+              onPress={() => {
+                setModo(cadastrando ? 'entrar' : 'cadastrar');
+                setErro(null);
+                setAviso(null);
+              }}
+              style={({ pressed }) => [estilos.alternar, pressed && estilos.pressionado]}
+            >
+              <Text style={estilos.rodapeTexto}>
+                {cadastrando ? 'Já tem conta? ' : 'Não tem conta? '}
+                <Text style={estilos.link}>{cadastrando ? 'Entrar' : 'Criar conta'}</Text>
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -371,7 +462,13 @@ const estilos = StyleSheet.create({
   formulario: { width: '100%', maxWidth: 380 },
   tituloCadastro: { fontSize: 20, fontWeight: '600', color: '#143E37', marginBottom: 22 },
   campo: { marginBottom: 18 },
-  rotulo: { color: '#4D7062', fontSize: 11, fontWeight: '500', letterSpacing: 0.7, marginBottom: 8 },
+  rotulo: {
+    color: '#4D7062',
+    fontSize: 11,
+    fontWeight: '500',
+    letterSpacing: 0.7,
+    marginBottom: 8,
+  },
   entrada: {
     minHeight: 54,
     borderRadius: 22,
@@ -412,6 +509,12 @@ const estilos = StyleSheet.create({
     paddingVertical: 12,
   },
   rodapeTexto: { color: '#718578', fontSize: 14, textAlign: 'center', lineHeight: 22 },
-  esqueci: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center', marginTop: -8, marginBottom: 4 },
+  esqueci: {
+    alignSelf: 'flex-end',
+    minHeight: 44,
+    justifyContent: 'center',
+    marginTop: -8,
+    marginBottom: 4,
+  },
   link: { color: verde, fontWeight: '600' },
 });

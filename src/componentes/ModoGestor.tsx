@@ -17,9 +17,13 @@ export function CartaoModoGestor() {
   async function trocar(gestor: boolean) {
     if (trocando || !modo) return;
     setTrocando(true);
-    try { await modo.alternar(gestor); }
-    catch (falha) { Alert.alert('Não foi possível trocar o modo', mensagemErro(falha)); }
-    finally { setTrocando(false); }
+    try {
+      await modo.alternar(gestor);
+    } catch (falha) {
+      Alert.alert('Não foi possível trocar o modo', mensagemErro(falha));
+    } finally {
+      setTrocando(false);
+    }
   }
   return (
     <View style={estilos.cartao}>
@@ -27,7 +31,9 @@ export function CartaoModoGestor() {
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={estilos.titulo}>Modo gestor</Text>
         <Text style={tipo.apoio}>
-          {modo.ativo ? 'Desative para usar o app como voluntário.' : 'Ative para voltar à gestão da ONG.'}
+          {modo.ativo
+            ? 'Desative para usar o app como voluntário.'
+            : 'Ative para voltar à gestão da ONG.'}
         </Text>
       </View>
       <Switch
@@ -43,8 +49,14 @@ export function CartaoModoGestor() {
 
 const estilos = StyleSheet.create({
   cartao: {
-    flexDirection: 'row', alignItems: 'center', gap: espaco.sm, padding: espaco.md,
-    backgroundColor: cores.fundo, borderRadius: 18, borderWidth: 1, borderColor: cores.linha,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espaco.sm,
+    padding: espaco.md,
+    backgroundColor: cores.fundo,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: cores.linha,
   },
   titulo: { fontSize: 15, fontWeight: '700', color: cores.tinta },
 });

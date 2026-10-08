@@ -13,7 +13,10 @@ import { cores, espaco, tipo } from '../lib/tema';
 import type { Atividade, Habilidade } from '../lib/tipos';
 import { mascararDataHora } from '../lib/mascaras';
 import { Botao, Campo } from '../componentes/Ui';
-import { CartaoFluxo, TelaFluxoVoluntariado as TelaFluxo } from '../componentes/TelaFluxoVoluntariado';
+import {
+  CartaoFluxo,
+  TelaFluxoVoluntariado as TelaFluxo,
+} from '../componentes/TelaFluxoVoluntariado';
 import { interpretarCarga, interpretarDataHora } from '../lib/regrasVoluntariado';
 import { mensagemErro } from '../lib/voluntariado';
 import { carregarAreasAtividade, salvarAreasAtividade } from '../lib/areasAtividade';
@@ -64,7 +67,7 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
   }, [atividade]);
 
   function alternarArea(id: number) {
-    setAreas((atual) => (atual.includes(id) ? atual.filter((a) => a !== id) : [...atual, id]));
+    setAreas(atual => (atual.includes(id) ? atual.filter(a => a !== id) : [...atual, id]));
   }
 
   async function salvar() {
@@ -126,7 +129,10 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
         try {
           await salvarAreasAtividade(gravada.id, areasOriginais, areas);
         } catch (falha) {
-          Alert.alert('Tarefa salva', `As áreas não foram atualizadas: ${mensagemErro(falha)} Edite a tarefa para tentar de novo.`);
+          Alert.alert(
+            'Tarefa salva',
+            `As áreas não foram atualizadas: ${mensagemErro(falha)} Edite a tarefa para tentar de novo.`,
+          );
         }
       }
       onPronto();
@@ -138,9 +144,19 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <TelaFluxo titulo={editando ? 'Editar tarefa' : 'Publicar tarefa'} voltar={onCancelar} erro={erro}>
-        <Text style={tipo.apoio}>Após a primeira candidatura, título, data, horário e carga horária ficam protegidos no servidor. Descrição e vagas continuam editáveis dentro das regras.</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <TelaFluxo
+        titulo={editando ? 'Editar tarefa' : 'Publicar tarefa'}
+        voltar={onCancelar}
+        erro={erro}
+      >
+        <Text style={tipo.apoio}>
+          Após a primeira candidatura, título, data, horário e carga horária ficam protegidos no
+          servidor. Descrição e vagas continuam editáveis dentro das regras.
+        </Text>
         <Campo rotulo="Título" value={titulo} onChangeText={setTitulo} />
 
         <Campo
@@ -155,7 +171,7 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
         <Campo
           rotulo="Data e hora"
           value={quando}
-          onChangeText={(texto) => setQuando(mascararDataHora(texto))}
+          onChangeText={texto => setQuando(mascararDataHora(texto))}
           placeholder="DD/MM/AAAA HH:MM"
           dica="Formato DD/MM/AAAA HH:MM"
           keyboardType="numbers-and-punctuation"
@@ -179,7 +195,7 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
           </Text>
           {avisoAreas ? <Text style={tipo.apoio}>{avisoAreas}</Text> : null}
           <View style={estilos.chips}>
-            {catalogo.map((h) => {
+            {catalogo.map(h => {
               const ativo = areas.includes(h.id);
               return (
                 <Pressable
@@ -190,7 +206,9 @@ export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: 
                   accessibilityLabel={h.nome_habilidade}
                   style={[estilos.chip, ativo && estilos.chipAtivo]}
                 >
-                  <Text style={[estilos.chipTexto, ativo && estilos.chipTextoAtivo]}>{h.nome_habilidade}</Text>
+                  <Text style={[estilos.chipTexto, ativo && estilos.chipTextoAtivo]}>
+                    {h.nome_habilidade}
+                  </Text>
                 </Pressable>
               );
             })}

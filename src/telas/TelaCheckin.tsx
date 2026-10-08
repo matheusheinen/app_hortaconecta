@@ -103,10 +103,10 @@ export function TelaCheckin({ atividadeId, voltar }: { atividadeId: number; volt
   const trava = useRef(false);
   const emFoco = useIsFocused();
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (estado) => {
+    const subscription = AppState.addEventListener('change', estado => {
       setAppAtivo(estado === 'active');
       if (estado === 'active' && emFoco) {
-        void consultarPermissao().catch((falha) => setErro(mensagemErro(falha)));
+        void consultarPermissao().catch(falha => setErro(mensagemErro(falha)));
       }
     });
     return () => subscription.remove();
@@ -152,8 +152,8 @@ export function TelaCheckin({ atividadeId, voltar }: { atividadeId: number; volt
                 permissao.canAskAgain ? 'Permitir acesso à câmera' : 'Abrir configurações da câmera'
               }
               onPress={() => {
-                void (permissao.canAskAgain ? pedirPermissao() : Linking.openSettings()).catch(
-                  (f) => setErro(mensagemErro(f)),
+                void (permissao.canAskAgain ? pedirPermissao() : Linking.openSettings()).catch(f =>
+                  setErro(mensagemErro(f)),
                 );
               }}
             />

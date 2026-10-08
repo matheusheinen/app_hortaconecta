@@ -6,9 +6,12 @@ import { Linking } from 'react-native';
  */
 export function linkWhatsApp(numero: string, mensagem: string): string | null {
   const digitos = numero.replace(/\D/g, '');
-  const completo = digitos.length === 10 || digitos.length === 11 ? `55${digitos}`
-    : digitos.startsWith('55') && (digitos.length === 12 || digitos.length === 13) ? digitos
-      : null;
+  const completo =
+    digitos.length === 10 || digitos.length === 11
+      ? `55${digitos}`
+      : digitos.startsWith('55') && (digitos.length === 12 || digitos.length === 13)
+        ? digitos
+        : null;
   return completo ? `https://wa.me/${completo}?text=${encodeURIComponent(mensagem)}` : null;
 }
 

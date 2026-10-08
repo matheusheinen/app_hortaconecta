@@ -28,7 +28,7 @@ export function CampoData({ rotulo, valorTexto, aoMudarTexto, dica, minimo, maxi
       <Campo
         rotulo={rotulo}
         value={valorTexto}
-        onChangeText={(texto) => aoMudarTexto(mascararData(texto))}
+        onChangeText={texto => aoMudarTexto(mascararData(texto))}
         placeholder="DD/MM/AAAA"
         dica={dica ?? 'Formato DD/MM/AAAA'}
         keyboardType="numbers-and-punctuation"

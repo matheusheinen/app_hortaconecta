@@ -1,7 +1,12 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { carregarPerfilOng, salvarPerfilOng, type DadosPerfilOng, type PerfilOngCarregado } from '../lib/perfilOng';
+import {
+  carregarPerfilOng,
+  salvarPerfilOng,
+  type DadosPerfilOng,
+  type PerfilOngCarregado,
+} from '../lib/perfilOng';
 import { mensagemErro } from '../lib/voluntariado';
 import {
   ProvedorPerfilOng,
@@ -74,12 +79,22 @@ export function PilhaPerfilOng({ usuarioId, nome, sair, recarregarPerfil }: Prop
     <ProvedorPerfilOng valor={valor}>
       <Pilha.Navigator screenOptions={{ headerShown: false }}>
         <Pilha.Screen name="hub">
-          {({ navigation }) => <TelaHubPerfilOng nome={nome} sair={sair} abrir={(secao) => navigation.navigate(secao)} />}
+          {({ navigation }) => (
+            <TelaHubPerfilOng nome={nome} sair={sair} abrir={secao => navigation.navigate(secao)} />
+          )}
         </Pilha.Screen>
-        <Pilha.Screen name="conta">{({ navigation }) => <TelaSecaoContaOng voltar={() => navigation.goBack()} />}</Pilha.Screen>
-        <Pilha.Screen name="institucional">{({ navigation }) => <TelaSecaoInstitucionalOng voltar={() => navigation.goBack()} />}</Pilha.Screen>
-        <Pilha.Screen name="whatsapp">{({ navigation }) => <TelaSecaoWhatsappOng voltar={() => navigation.goBack()} />}</Pilha.Screen>
-        <Pilha.Screen name="recebimento">{({ navigation }) => <TelaSecaoRecebimentoOng voltar={() => navigation.goBack()} />}</Pilha.Screen>
+        <Pilha.Screen name="conta">
+          {({ navigation }) => <TelaSecaoContaOng voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
+        <Pilha.Screen name="institucional">
+          {({ navigation }) => <TelaSecaoInstitucionalOng voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
+        <Pilha.Screen name="whatsapp">
+          {({ navigation }) => <TelaSecaoWhatsappOng voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
+        <Pilha.Screen name="recebimento">
+          {({ navigation }) => <TelaSecaoRecebimentoOng voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
       </Pilha.Navigator>
     </ProvedorPerfilOng>
   );

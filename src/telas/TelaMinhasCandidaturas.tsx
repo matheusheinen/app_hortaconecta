@@ -18,7 +18,7 @@ export function TelaMinhasCandidaturas({
   historico?: boolean;
 }) {
   const { dados, erro, carregando, carregar } = useDadosVoluntariado(carregarMinhasInscricoes);
-  const itens = (dados ?? []).filter((item) => !historico || item.inscricao.presenca_confirmada);
+  const itens = (dados ?? []).filter(item => !historico || item.inscricao.presenca_confirmada);
   return (
     <TelaFluxoVoluntariado
       titulo={historico ? 'Histórico de participação' : 'Minhas candidaturas'}
@@ -29,8 +29,8 @@ export function TelaMinhasCandidaturas({
     >
       {historico ? (
         <Text style={tipo.apoio}>
-          A carga horária abaixo é a prevista na atividade, registrada no check-in. Não mede
-          horas efetivamente realizadas.
+          A carga horária abaixo é a prevista na atividade, registrada no check-in. Não mede horas
+          efetivamente realizadas.
         </Text>
       ) : null}
       {!itens.length ? (

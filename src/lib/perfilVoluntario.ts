@@ -10,16 +10,24 @@ export type PerfilVoluntarioCarregado = {
   elegivel: boolean;
 };
 
-export async function carregarPerfilVoluntario(usuarioId: string): Promise<PerfilVoluntarioCarregado> {
+export async function carregarPerfilVoluntario(
+  usuarioId: string,
+): Promise<PerfilVoluntarioCarregado> {
   const [voluntario, catalogo, selecionadas, usuario, elegibilidade] = await Promise.all([
     supabase
       .from('voluntarios')
-      .select('cpf, data_nascimento, profissao, disponibilidade_horarios, cep, logradouro, numero, complemento, bairro, cidade, uf')
+      .select(
+        'cpf, data_nascimento, profissao, disponibilidade_horarios, cep, logradouro, numero, complemento, bairro, cidade, uf',
+      )
       .eq('usuario_id', usuarioId)
       .single(),
     supabase.from('habilidades').select('*').order('categoria').order('nome_habilidade'),
     supabase.from('usuario_habilidades').select('habilidade_id').eq('usuario_id', usuarioId),
-    supabase.from('usuarios').select('nome, telefone, perfil_instagram, descricao').eq('id', usuarioId).single(),
+    supabase
+      .from('usuarios')
+      .select('nome, telefone, perfil_instagram, descricao')
+      .eq('id', usuarioId)
+      .single(),
     supabase.rpc('voluntariado_elegibilidade'),
   ]);
   if (voluntario.error) throw voluntario.error;
@@ -31,9 +39,13 @@ export async function carregarPerfilVoluntario(usuarioId: string): Promise<Perfi
     throw new Error('A disponibilidade salva está em formato inválido. Solicite suporte à gestão.');
   }
   return {
-    dados: { ...usuario.data, ...voluntario.data, disponibilidade_horarios: voluntario.data.disponibilidade_horarios },
+    dados: {
+      ...usuario.data,
+      ...voluntario.data,
+      disponibilidade_horarios: voluntario.data.disponibilidade_horarios,
+    },
     catalogo: catalogo.data ?? [],
-    habilidades: (selecionadas.data ?? []).map((linha) => linha.habilidade_id),
+    habilidades: (selecionadas.data ?? []).map(linha => linha.habilidade_id),
     elegivel: elegibilidade.data === true,
   };
 }

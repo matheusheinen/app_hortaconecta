@@ -1,7 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { carregarPerfilVoluntario, salvarPerfilVoluntario, type PerfilVoluntarioCarregado } from '../lib/perfilVoluntario';
+import {
+  carregarPerfilVoluntario,
+  salvarPerfilVoluntario,
+  type PerfilVoluntarioCarregado,
+} from '../lib/perfilVoluntario';
 import { mensagemErro } from '../lib/voluntariado';
 import type { DadosPerfilVoluntario } from '../lib/regrasPerfil';
 import {
@@ -67,7 +71,12 @@ export function PilhaPerfilVoluntario({ usuarioId, nome, sair, recarregarPerfil 
       if (!perfil) throw new Error('Perfil ainda não carregado.');
       const escolhidas = habilidades ?? perfil.habilidades;
       const elegivel = await salvarPerfilVoluntario(parcial, escolhidas);
-      setPerfil({ ...perfil, dados: { ...perfil.dados, ...parcial }, habilidades: escolhidas, elegivel });
+      setPerfil({
+        ...perfil,
+        dados: { ...perfil.dados, ...parcial },
+        habilidades: escolhidas,
+        elegivel,
+      });
       // O nome também aparece no Início e nos cabeçalhos, que leem a sessão.
       if ('nome' in parcial) await recarregarPerfil().catch(() => {});
     },
@@ -81,14 +90,28 @@ export function PilhaPerfilVoluntario({ usuarioId, nome, sair, recarregarPerfil 
       <Pilha.Navigator screenOptions={{ headerShown: false }}>
         <Pilha.Screen name="hub">
           {({ navigation }) => (
-            <TelaHubPerfilVoluntario nome={nome} sair={sair} abrir={(secao) => navigation.navigate(secao)} />
+            <TelaHubPerfilVoluntario
+              nome={nome}
+              sair={sair}
+              abrir={secao => navigation.navigate(secao)}
+            />
           )}
         </Pilha.Screen>
-        <Pilha.Screen name="pessoais">{({ navigation }) => <TelaSecaoDadosPessoais voltar={() => navigation.goBack()} />}</Pilha.Screen>
-        <Pilha.Screen name="cadastro">{({ navigation }) => <TelaSecaoCadastro voltar={() => navigation.goBack()} />}</Pilha.Screen>
-        <Pilha.Screen name="endereco">{({ navigation }) => <TelaSecaoEndereco voltar={() => navigation.goBack()} />}</Pilha.Screen>
-        <Pilha.Screen name="disponibilidade">{({ navigation }) => <TelaSecaoDisponibilidade voltar={() => navigation.goBack()} />}</Pilha.Screen>
-        <Pilha.Screen name="habilidades">{({ navigation }) => <TelaSecaoHabilidades voltar={() => navigation.goBack()} />}</Pilha.Screen>
+        <Pilha.Screen name="pessoais">
+          {({ navigation }) => <TelaSecaoDadosPessoais voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
+        <Pilha.Screen name="cadastro">
+          {({ navigation }) => <TelaSecaoCadastro voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
+        <Pilha.Screen name="endereco">
+          {({ navigation }) => <TelaSecaoEndereco voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
+        <Pilha.Screen name="disponibilidade">
+          {({ navigation }) => <TelaSecaoDisponibilidade voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
+        <Pilha.Screen name="habilidades">
+          {({ navigation }) => <TelaSecaoHabilidades voltar={() => navigation.goBack()} />}
+        </Pilha.Screen>
       </Pilha.Navigator>
     </ProvedorPerfilVoluntario>
   );

@@ -11,7 +11,18 @@ import { Aviso, Botao } from './src/componentes/Ui';
 import { ProvedorModoGestor } from './src/componentes/ModoGestor';
 
 export default function App() {
-  const { sessao, perfil, carregando, erroPerfil, ehConvidado, ehGestao, podeAlternarModo, alternarModo, sair, recarregarPerfil } = useSessao();
+  const {
+    sessao,
+    perfil,
+    carregando,
+    erroPerfil,
+    ehConvidado,
+    ehGestao,
+    podeAlternarModo,
+    alternarModo,
+    sair,
+    recarregarPerfil,
+  } = useSessao();
 
   const recuperandoSenha = useRecuperacaoAtiva();
 
@@ -72,7 +83,9 @@ export default function App() {
   return (
     <SafeAreaView style={estilos.raiz}>
       <StatusBar barStyle="dark-content" />
-      <ProvedorModoGestor value={podeAlternarModo ? { ativo: ehGestao, alternar: alternarModo } : null}>
+      <ProvedorModoGestor
+        value={podeAlternarModo ? { ativo: ehGestao, alternar: alternarModo } : null}
+      >
         {/* A chave reinicia as pilhas ao trocar de modo, evitando telas do outro papel. */}
         <NavigationContainer key={perfil.tipo_perfil}>
           <AbasPrincipais

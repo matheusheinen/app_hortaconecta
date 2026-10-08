@@ -7,21 +7,46 @@ const ts = require('typescript');
 function carregar(respostas = {}) {
   const consulta = {
     limite: null,
-    select() { return this; }, eq() { return this; }, gte() { return this; }, order() { return this; },
-    limit(valor) { this.limite = valor; return this; },
+    select() {
+      return this;
+    },
+    eq() {
+      return this;
+    },
+    gte() {
+      return this;
+    },
+    order() {
+      return this;
+    },
+    limit(valor) {
+      this.limite = valor;
+      return this;
+    },
     then(resolver, rejeitar) {
       const resposta = respostas.atividades ?? { data: [], error: null };
       return Promise.resolve({
         ...resposta,
-        data: Array.isArray(resposta.data) && this.limite !== null ? resposta.data.slice(0, this.limite) : resposta.data,
+        data:
+          Array.isArray(resposta.data) && this.limite !== null
+            ? resposta.data.slice(0, this.limite)
+            : resposta.data,
       }).then(resolver, rejeitar);
     },
   };
   const dependencias = {
-    './supabase': { supabase: {
-      async rpc() { return respostas.elegibilidade ?? { data: true, error: null }; },
-      from(tabela) { return tabela === 'contribuicoes' ? { select: async () => ({ data: [], error: null }) } : consulta; },
-    } },
+    './supabase': {
+      supabase: {
+        async rpc() {
+          return respostas.elegibilidade ?? { data: true, error: null };
+        },
+        from(tabela) {
+          return tabela === 'contribuicoes'
+            ? { select: async () => ({ data: [], error: null }) }
+            : consulta;
+        },
+      },
+    },
     './voluntariado': { carregarMinhasInscricoes: async () => [] },
     './metas': { listarMetas: async () => [] },
     './diario': { listarDiario: async () => [] },
@@ -31,27 +56,55 @@ function carregar(respostas = {}) {
     if (!(nome in dependencias)) throw new Error(`Import inesperado: ${nome}`);
     return dependencias[nome];
   };
-  modulo._compile(ts.transpileModule(fs.readFileSync('src/lib/resumoInicio.ts', 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText, 'resumoInicio.cjs');
+  modulo._compile(
+    ts.transpileModule(fs.readFileSync('src/lib/resumoInicio.ts', 'utf8'), {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    }).outputText,
+    'resumoInicio.cjs',
+  );
   return modulo.exports;
 }
 const { montarResumoInicio, formatarHorasInicio, progressoMetaInicio } = carregar();
 const agora = new Date('2026-09-30T12:00:00Z');
 function dados(alteracoes = {}) {
-  return { perfilCompleto: true, inscricoes: [], contribuicoes: [], atividades: [], metas: [], diario: [], ...alteracoes };
+  return {
+    perfilCompleto: true,
+    inscricoes: [],
+    contribuicoes: [],
+    atividades: [],
+    metas: [],
+    diario: [],
+    ...alteracoes,
+  };
 }
 function presenca(carga, confirmada = true, checkin = '2026-09-29T12:00:00Z') {
-  return { atividade: { carga_horaria: 99 }, inscricao: {
-    presenca_confirmada: confirmada, carga_horaria_registrada: carga, checkin_em: checkin,
-  } };
+  return {
+    atividade: { carga_horaria: 99 },
+    inscricao: {
+      presenca_confirmada: confirmada,
+      carga_horaria_registrada: carga,
+      checkin_em: checkin,
+    },
+  };
 }
 
 test('Início: horas usam snapshots do check-in e contribuições contam apenas as aprovadas', () => {
-  const resumo = montarResumoInicio(dados({
-    inscricoes: [presenca(2.5), presenca(1), presenca(null), presenca(5, false), presenca(7, true, null), presenca(8, true, '2026-10-01T12:00:00Z')],
-    contribuicoes: ['APROVADA', 'PENDENTE', 'RECUSADA', 'APROVADA'].map(status_validacao => ({ status_validacao })),
-  }), agora);
+  const resumo = montarResumoInicio(
+    dados({
+      inscricoes: [
+        presenca(2.5),
+        presenca(1),
+        presenca(null),
+        presenca(5, false),
+        presenca(7, true, null),
+        presenca(8, true, '2026-10-01T12:00:00Z'),
+      ],
+      contribuicoes: ['APROVADA', 'PENDENTE', 'RECUSADA', 'APROVADA'].map(status_validacao => ({
+        status_validacao,
+      })),
+    }),
+    agora,
+  );
   assert.equal(resumo.horasRegistradas, 3.5);
   assert.equal(resumo.atividadesParticipadas, 5);
   assert.equal(resumo.contribuicoesConfirmadas, 2);
@@ -60,16 +113,44 @@ test('Início: horas usam snapshots do check-in e contribuições contam apenas 
 
 test('Início: destaca as duas próximas atividades abertas com vagas reais', () => {
   const atividade = (id, dia, status = 'ABERTA', ocupadas = 2) => ({
-    id, data_hora_prevista: `2026-${dia}T13:00:00Z`, status, vagas_totais: 5, vagas_ocupadas: ocupadas,
+    id,
+    data_hora_prevista: `2026-${dia}T13:00:00Z`,
+    status,
+    vagas_totais: 5,
+    vagas_ocupadas: ocupadas,
   });
-  const atividades = [atividade(1, '10-05'), atividade(2, '09-29'), atividade(3, '10-01', 'CANCELADA'), atividade(4, '10-02'), atividade(5, '10-01', 'ABERTA', 5), atividade(6, '10-03')];
+  const atividades = [
+    atividade(1, '10-05'),
+    atividade(2, '09-29'),
+    atividade(3, '10-01', 'CANCELADA'),
+    atividade(4, '10-02'),
+    atividade(5, '10-01', 'ABERTA', 5),
+    atividade(6, '10-03'),
+  ];
   const resumo = montarResumoInicio(dados({ atividades }), agora);
-  assert.deepEqual(resumo.destaques.map(destaque => [destaque.atividade.id, destaque.vagasDisponiveis]), [[4, 3], [6, 3]]);
-  assert.deepEqual(atividades.map(item => item.id), [1, 2, 3, 4, 5, 6]);
+  assert.deepEqual(
+    resumo.destaques.map(destaque => [destaque.atividade.id, destaque.vagasDisponiveis]),
+    [
+      [4, 3],
+      [6, 3],
+    ],
+  );
+  assert.deepEqual(
+    atividades.map(item => item.id),
+    [1, 2, 3, 4, 5, 6],
+  );
 });
 
 test('Início: metas encerradas, atingidas ou vencidas e publicações ocultas não substituem conteúdo ativo', () => {
-  const meta = (id, extra) => ({ id, status: 'ABERTA', criado_em: '2026-09-28', data_limite: null, quantidade_meta: 5, quantidade_arrecadada: 0, ...extra });
+  const meta = (id, extra) => ({
+    id,
+    status: 'ABERTA',
+    criado_em: '2026-09-28',
+    data_limite: null,
+    quantidade_meta: 5,
+    quantidade_arrecadada: 0,
+    ...extra,
+  });
   const metas = [
     meta(1, { status: 'ENCERRADA', criado_em: '2026-09-30' }),
     meta(2, { criado_em: '2026-09-29T10:00:00Z', quantidade_arrecadada: 2 }),
@@ -92,9 +173,18 @@ test('Início: metas encerradas, atingidas ou vencidas e publicações ocultas n
 
 test('Início: falhas e respostas inválidas não se transformam em indicadores zerados', async () => {
   const falha = new Error('Servidor indisponível');
-  await assert.rejects(carregar({ atividades: { data: null, error: falha } }).carregarResumoInicio(), falha);
-  await assert.rejects(carregar({ atividades: { data: null, error: null } }).carregarResumoInicio(), /próximas atividades/);
-  await assert.rejects(carregar({ elegibilidade: { data: null, error: null } }).carregarResumoInicio(), /verificar seu cadastro/);
+  await assert.rejects(
+    carregar({ atividades: { data: null, error: falha } }).carregarResumoInicio(),
+    falha,
+  );
+  await assert.rejects(
+    carregar({ atividades: { data: null, error: null } }).carregarResumoInicio(),
+    /próximas atividades/,
+  );
+  await assert.rejects(
+    carregar({ elegibilidade: { data: null, error: null } }).carregarResumoInicio(),
+    /verificar seu cadastro/,
+  );
   const resumo = await carregar().carregarResumoInicio();
   assert.equal(resumo.perfilCompleto, true);
   assert.equal(resumo.atividadesParticipadas, 0);
@@ -109,6 +199,11 @@ test('Início: atividades lotadas não escondem a próxima oportunidade com vaga
     vagas_totais: 5,
     vagas_ocupadas: indice === 13 ? 3 : 5,
   }));
-  const resumo = await carregar({ atividades: { data: atividades, error: null } }).carregarResumoInicio();
-  assert.deepEqual(resumo.destaques.map(({ atividade, vagasDisponiveis }) => [atividade.id, vagasDisponiveis]), [[14, 2]]);
+  const resumo = await carregar({
+    atividades: { data: atividades, error: null },
+  }).carregarResumoInicio();
+  assert.deepEqual(
+    resumo.destaques.map(({ atividade, vagasDisponiveis }) => [atividade.id, vagasDisponiveis]),
+    [[14, 2]],
+  );
 });

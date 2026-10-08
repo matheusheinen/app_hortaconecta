@@ -8,7 +8,15 @@ import { TelaFluxoVoluntariado } from './TelaFluxoVoluntariado';
 import { CartaoModoGestor } from './ModoGestor';
 
 /** Tela inicial do perfil: cabeçalho, resumo de status e lista de seções. */
-export function HubPerfil({ nome, papel, sair, erro, carregando, carregar, children }: {
+export function HubPerfil({
+  nome,
+  papel,
+  sair,
+  erro,
+  carregando,
+  carregar,
+  children,
+}: {
   nome: string;
   papel: string;
   sair: () => void;
@@ -21,10 +29,19 @@ export function HubPerfil({ nome, papel, sair, erro, carregando, carregar, child
     <ScrollView style={estilos.tela} contentContainerStyle={estilos.conteudo}>
       <View style={estilos.cabecalho}>
         <View style={{ flex: 1 }}>
-          <Text style={tipo.titulo} accessibilityRole="header">Perfil</Text>
-          <Text style={tipo.apoio}>{nome} · {papel}</Text>
+          <Text style={tipo.titulo} accessibilityRole="header">
+            Perfil
+          </Text>
+          <Text style={tipo.apoio}>
+            {nome} · {papel}
+          </Text>
         </View>
-        <Pressable onPress={sair} hitSlop={12} accessibilityRole="button" accessibilityLabel="Sair da conta">
+        <Pressable
+          onPress={sair}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Sair da conta"
+        >
           <Text style={[tipo.apoio, { color: cores.folha, fontWeight: '600' }]}>Sair</Text>
         </Pressable>
       </View>
@@ -37,7 +54,13 @@ export function HubPerfil({ nome, papel, sair, erro, carregando, carregar, child
   );
 }
 
-export function StatusPerfil({ ok, titulo, texto, feitas, total }: {
+export function StatusPerfil({
+  ok,
+  titulo,
+  texto,
+  feitas,
+  total,
+}: {
   ok: boolean;
   titulo: string;
   texto: string;
@@ -48,14 +71,23 @@ export function StatusPerfil({ ok, titulo, texto, feitas, total }: {
     <View style={[estilos.status, ok ? estilos.statusOk : estilos.statusPendente]}>
       <Text style={estilos.statusTitulo}>{titulo}</Text>
       <Text style={tipo.apoio}>{texto}</Text>
-      <View style={estilos.barra} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: total, now: feitas }}>
+      <View
+        style={estilos.barra}
+        accessibilityRole="progressbar"
+        accessibilityValue={{ min: 0, max: total, now: feitas }}
+      >
         <View style={[estilos.barraPreenchida, { width: `${(feitas / total) * 100}%` }]} />
       </View>
     </View>
   );
 }
 
-export function CartaoSecao({ titulo, resumo, completa, onPress }: {
+export function CartaoSecao({
+  titulo,
+  resumo,
+  completa,
+  onPress,
+}: {
   titulo: string;
   resumo: string;
   completa: boolean;
@@ -86,7 +118,12 @@ export function CartaoSecao({ titulo, resumo, completa, onPress }: {
  * Moldura de uma seção editável. `salvar` devolve a mensagem de validação,
  * ou null quando gravou; nesse caso a tela volta ao hub.
  */
-export function SecaoPerfil({ titulo, voltar, salvar, children }: {
+export function SecaoPerfil({
+  titulo,
+  voltar,
+  salvar,
+  children,
+}: {
   titulo: string;
   voltar: () => void;
   salvar: () => Promise<string | null>;
@@ -125,7 +162,15 @@ export const estilosPerfil = StyleSheet.create({
 
 const estilos = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.superficie },
-  conteudo: { padding: 20, paddingTop: espaco.xl, paddingBottom: espaco.xl, gap: espaco.md, width: '100%', maxWidth: 560, alignSelf: 'center' },
+  conteudo: {
+    padding: 20,
+    paddingTop: espaco.xl,
+    paddingBottom: espaco.xl,
+    gap: espaco.md,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+  },
   cabecalho: { flexDirection: 'row', alignItems: 'flex-start', gap: espaco.md },
   status: { borderRadius: 18, padding: espaco.md, gap: espaco.sm, borderWidth: 1 },
   statusOk: { backgroundColor: cores.folhaClara, borderColor: '#CFE5D7' },

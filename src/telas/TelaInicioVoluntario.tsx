@@ -9,6 +9,17 @@ export function TelaInicioVoluntario({ usuarioId, ...props }: AcoesInicio & { us
   // Sugestões são complementares: uma falha só esconde a seção, sem erro no Início.
   const consultaSugestoes = useCallback(() => carregarSugestoes(usuarioId), [usuarioId]);
   const sugestoes = useDadosVoluntariado(consultaSugestoes);
-  return <PainelInicioVoluntario {...props} resumo={dados} sugestoes={sugestoes.dados ?? []} erro={erro} carregando={carregando}
-    atualizar={() => { void carregar(); void sugestoes.carregar(); }} />;
+  return (
+    <PainelInicioVoluntario
+      {...props}
+      resumo={dados}
+      sugestoes={sugestoes.dados ?? []}
+      erro={erro}
+      carregando={carregando}
+      atualizar={() => {
+        void carregar();
+        void sugestoes.carregar();
+      }}
+    />
+  );
 }

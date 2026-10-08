@@ -29,7 +29,14 @@ type Props = {
   aoCriarConta?: () => void;
 };
 
-export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil, convidado = false, aoCriarConta }: Props) {
+export function PilhaAtividades({
+  ehGestao,
+  autorId,
+  inicio,
+  aoPerfil,
+  convidado = false,
+  aoCriarConta,
+}: Props) {
   return (
     <Pilha.Navigator screenOptions={{ headerShown: false }}>
       <Pilha.Screen name="lista">
@@ -38,10 +45,8 @@ export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil, convidado
             ehGestao={ehGestao}
             voltar={inicio}
             onNova={() => navigation.navigate('formulario', { atividadeId: null })}
-            onEditar={(atividade) =>
-              navigation.navigate('formulario', { atividadeId: atividade.id })
-            }
-            onDetalhe={(atividadeId) => navigation.navigate('detalhe', { atividadeId })}
+            onEditar={atividade => navigation.navigate('formulario', { atividadeId: atividade.id })}
+            onDetalhe={atividadeId => navigation.navigate('detalhe', { atividadeId })}
             onMinhas={() => navigation.navigate('minhas')}
             onHistorico={() => navigation.navigate('historico')}
             convidado={convidado}
@@ -101,7 +106,7 @@ export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil, convidado
             {({ navigation }) => (
               <TelaMinhasCandidaturas
                 voltar={() => navigation.goBack()}
-                abrir={(atividadeId) => navigation.navigate('detalhe', { atividadeId })}
+                abrir={atividadeId => navigation.navigate('detalhe', { atividadeId })}
               />
             )}
           </Pilha.Screen>
@@ -110,7 +115,7 @@ export function PilhaAtividades({ ehGestao, autorId, inicio, aoPerfil, convidado
               <TelaMinhasCandidaturas
                 historico
                 voltar={() => navigation.goBack()}
-                abrir={(atividadeId) => navigation.navigate('detalhe', { atividadeId })}
+                abrir={atividadeId => navigation.navigate('detalhe', { atividadeId })}
               />
             )}
           </Pilha.Screen>

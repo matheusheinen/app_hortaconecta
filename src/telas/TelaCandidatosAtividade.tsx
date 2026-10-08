@@ -69,7 +69,7 @@ export function TelaCandidatosAtividade({
           {!dados.candidatos.length ? (
             <Text style={tipo.apoio}>Nenhuma candidatura recebida.</Text>
           ) : null}
-          {dados.candidatos.map((c) => (
+          {dados.candidatos.map(c => (
             <CartaoCandidato
               key={c.id}
               candidato={c}
@@ -118,8 +118,8 @@ function CartaoCandidato({
         Disponibilidade:{' '}
         {disponibilidade
           .map(
-            (s) =>
-              `${DIAS_SEMANA.find((d) => d.codigo === s.dia)?.rotulo} ${PERIODOS_DIA.find((p) => p.codigo === s.periodo)?.rotulo}`,
+            s =>
+              `${DIAS_SEMANA.find(d => d.codigo === s.dia)?.rotulo} ${PERIODOS_DIA.find(p => p.codigo === s.periodo)?.rotulo}`,
           )
           .join(', ') || 'Não informada'}
       </Text>

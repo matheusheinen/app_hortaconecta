@@ -5,12 +5,7 @@ export type TipoPerfil = 'VOLUNTARIO' | 'ONG';
 export type TipoAtividade = 'TAREFA_ONG' | 'OFICINA_AUTORAL';
 
 export type StatusAtividade =
-  | 'PENDENTE_APROVACAO'
-  | 'ABERTA'
-  | 'ENCERRADA'
-  | 'REALIZADA'
-  | 'CANCELADA'
-  | 'RECUSADA';
+  'PENDENTE_APROVACAO' | 'ABERTA' | 'ENCERRADA' | 'REALIZADA' | 'CANCELADA' | 'RECUSADA';
 
 export type Usuario = Tables<'usuarios'>;
 

@@ -39,10 +39,15 @@ export function montarResumoInicio(dados: DadosInicio, agora = new Date()): Resu
       : total;
   }, 0);
   const destaques = dados.atividades
-    .filter(atividade => atividade.status === 'ABERTA'
-      && Date.parse(atividade.data_hora_prevista) >= agora.getTime()
-      && atividade.vagas_totais > atividade.vagas_ocupadas)
-    .sort((a, b) => Date.parse(a.data_hora_prevista) - Date.parse(b.data_hora_prevista) || a.id - b.id)
+    .filter(
+      atividade =>
+        atividade.status === 'ABERTA' &&
+        Date.parse(atividade.data_hora_prevista) >= agora.getTime() &&
+        atividade.vagas_totais > atividade.vagas_ocupadas,
+    )
+    .sort(
+      (a, b) => Date.parse(a.data_hora_prevista) - Date.parse(b.data_hora_prevista) || a.id - b.id,
+    )
     .slice(0, 2)
     .map(atividade => ({
       atividade,
@@ -51,19 +56,27 @@ export function montarResumoInicio(dados: DadosInicio, agora = new Date()): Resu
     }));
   const p = (n: number) => String(n).padStart(2, '0');
   const hoje = `${agora.getFullYear()}-${p(agora.getMonth() + 1)}-${p(agora.getDate())}`;
-  const meta = dados.metas
-    .filter(item => item.status === 'ABERTA'
-      && item.quantidade_meta > item.quantidade_arrecadada
-      && (item.data_limite === null || item.data_limite >= hoje))
-    .sort((a, b) => Date.parse(b.criado_em) - Date.parse(a.criado_em) || b.id - a.id)[0] ?? null;
-  const publicacao = dados.diario
-    .filter(item => item.status === 'PUBLICADA')
-    .sort((a, b) => Date.parse(b.data_publicacao) - Date.parse(a.data_publicacao) || b.id - a.id)[0] ?? null;
+  const meta =
+    dados.metas
+      .filter(
+        item =>
+          item.status === 'ABERTA' &&
+          item.quantidade_meta > item.quantidade_arrecadada &&
+          (item.data_limite === null || item.data_limite >= hoje),
+      )
+      .sort((a, b) => Date.parse(b.criado_em) - Date.parse(a.criado_em) || b.id - a.id)[0] ?? null;
+  const publicacao =
+    dados.diario
+      .filter(item => item.status === 'PUBLICADA')
+      .sort(
+        (a, b) => Date.parse(b.data_publicacao) - Date.parse(a.data_publicacao) || b.id - a.id,
+      )[0] ?? null;
   return {
     perfilCompleto: dados.perfilCompleto,
     horasRegistradas,
     atividadesParticipadas: presencas.length,
-    contribuicoesConfirmadas: dados.contribuicoes.filter(c => c.status_validacao === 'APROVADA').length,
+    contribuicoesConfirmadas: dados.contribuicoes.filter(c => c.status_validacao === 'APROVADA')
+      .length,
     destaques,
     meta,
     publicacao,
@@ -81,7 +94,10 @@ export async function carregarResumoInicio(): Promise<ResumoInicio> {
     listarMetas(),
     listarDiario(),
   ]);
-  return montarResumoInicio({ perfilCompleto, inscricoes, contribuicoes, atividades, metas, diario }, agora);
+  return montarResumoInicio(
+    { perfilCompleto, inscricoes, contribuicoes, atividades, metas, diario },
+    agora,
+  );
 }
 
 async function carregarElegibilidade(): Promise<boolean> {
@@ -100,7 +116,9 @@ async function carregarMinhasContribuicoes(): Promise<{ status_validacao: Status
 }
 
 async function carregarProximasAtividades(agora: Date): Promise<AtividadeInicio[]> {
-  const { data, error } = await supabase.from('atividades').select('*')
+  const { data, error } = await supabase
+    .from('atividades')
+    .select('*')
     .eq('status', 'ABERTA')
     .gte('data_hora_prevista', agora.toISOString())
     .order('data_hora_prevista', { ascending: true });
@@ -113,7 +131,12 @@ export function formatarHorasInicio(horas: number): string {
   return `${horas.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}h`;
 }
 
-export function progressoMetaInicio(meta: Pick<Meta, 'quantidade_meta' | 'quantidade_arrecadada'>): number {
+export function progressoMetaInicio(
+  meta: Pick<Meta, 'quantidade_meta' | 'quantidade_arrecadada'>,
+): number {
   if (!(meta.quantidade_meta > 0)) return 0;
-  return Math.min(100, Math.max(0, Math.round(meta.quantidade_arrecadada / meta.quantidade_meta * 100)));
+  return Math.min(
+    100,
+    Math.max(0, Math.round((meta.quantidade_arrecadada / meta.quantidade_meta) * 100)),
+  );
 }

@@ -45,7 +45,13 @@ export function Botao({
     >
       {carregando ? (
         <ActivityIndicator
-          color={variante === 'primario' ? cores.fundo : variante === 'destrutivo' ? cores.beterraba : cores.folha}
+          color={
+            variante === 'primario'
+              ? cores.fundo
+              : variante === 'destrutivo'
+                ? cores.beterraba
+                : cores.folha
+          }
         />
       ) : (
         <Text
@@ -95,16 +101,21 @@ export function Aviso({ mensagem }: { mensagem: string }) {
 type OpcaoAba<T extends string> = { valor: T; rotulo: string; quantidade?: number };
 
 /** Abas de filtro de uma listagem (ex.: abertas / finalizadas). */
-export function AbasFiltro<T extends string>({ opcoes, valor, aoMudar }: {
+export function AbasFiltro<T extends string>({
+  opcoes,
+  valor,
+  aoMudar,
+}: {
   opcoes: OpcaoAba<T>[];
   valor: T;
   aoMudar: (valor: T) => void;
 }) {
   return (
     <View style={estilos.abas} accessibilityRole="tablist">
-      {opcoes.map((opcao) => {
+      {opcoes.map(opcao => {
         const ativa = opcao.valor === valor;
-        const rotulo = opcao.quantidade === undefined ? opcao.rotulo : `${opcao.rotulo} (${opcao.quantidade})`;
+        const rotulo =
+          opcao.quantidade === undefined ? opcao.rotulo : `${opcao.rotulo} (${opcao.quantidade})`;
         return (
           <Pressable
             key={opcao.valor}

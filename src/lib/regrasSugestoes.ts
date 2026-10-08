@@ -23,7 +23,7 @@ export function cabeNaDisponibilidade(dataHora: string, disponibilidade: Slot[])
   const data = new Date(dataHora);
   const dia = DIAS[data.getDay()];
   const periodo = periodoDoHorario(data);
-  return disponibilidade.some((slot) => slot.dia === dia && slot.periodo === periodo);
+  return disponibilidade.some(slot => slot.dia === dia && slot.periodo === periodo);
 }
 
 export type CandidataSugestao = {
@@ -48,17 +48,30 @@ export function selecionarSugestoes<T extends CandidataSugestao>(params: {
   agora?: Date;
   limite?: number;
 }): T[] {
-  const { atividades, disponibilidade, areasDoVoluntario, areasPorAtividade, jaPedidas, agora = new Date(), limite = 3 } = params;
+  const {
+    atividades,
+    disponibilidade,
+    areasDoVoluntario,
+    areasPorAtividade,
+    jaPedidas,
+    agora = new Date(),
+    limite = 3,
+  } = params;
   return atividades
-    .filter((a) => a.status === 'ABERTA'
-      && Date.parse(a.data_hora_prevista) > agora.getTime()
-      && a.vagas_totais > a.vagas_ocupadas
-      && !jaPedidas.has(a.id)
-      && cabeNaDisponibilidade(a.data_hora_prevista, disponibilidade))
-    .filter((a) => {
+    .filter(
+      a =>
+        a.status === 'ABERTA' &&
+        Date.parse(a.data_hora_prevista) > agora.getTime() &&
+        a.vagas_totais > a.vagas_ocupadas &&
+        !jaPedidas.has(a.id) &&
+        cabeNaDisponibilidade(a.data_hora_prevista, disponibilidade),
+    )
+    .filter(a => {
       const areas = areasPorAtividade.get(a.id) ?? [];
-      return areas.length === 0 || areas.some((area) => areasDoVoluntario.includes(area));
+      return areas.length === 0 || areas.some(area => areasDoVoluntario.includes(area));
     })
-    .sort((a, b) => Date.parse(a.data_hora_prevista) - Date.parse(b.data_hora_prevista) || a.id - b.id)
+    .sort(
+      (a, b) => Date.parse(a.data_hora_prevista) - Date.parse(b.data_hora_prevista) || a.id - b.id,
+    )
     .slice(0, limite);
 }

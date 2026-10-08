@@ -30,10 +30,26 @@ export type PerfilOngCarregado = DadosPerfilOng & {
 export type SecaoPerfilOng = 'conta' | 'institucional' | 'whatsapp' | 'recebimento';
 
 export const SECOES_PERFIL_ONG: { chave: SecaoPerfilOng; titulo: string; resumo: string }[] = [
-  { chave: 'conta', titulo: 'Conta e apresentação', resumo: 'Nome de exibição, telefone, Instagram e sobre a horta.' },
-  { chave: 'institucional', titulo: 'Dados institucionais', resumo: 'CNPJ, razão social, fundação e responsável legal.' },
-  { chave: 'whatsapp', titulo: 'WhatsApp para voluntários', resumo: 'Número usado no botão de contato das atividades e metas.' },
-  { chave: 'recebimento', titulo: 'Recebimento de doações (PIX)', resumo: 'Chave PIX mostrada nas metas em dinheiro.' },
+  {
+    chave: 'conta',
+    titulo: 'Conta e apresentação',
+    resumo: 'Nome de exibição, telefone, Instagram e sobre a horta.',
+  },
+  {
+    chave: 'institucional',
+    titulo: 'Dados institucionais',
+    resumo: 'CNPJ, razão social, fundação e responsável legal.',
+  },
+  {
+    chave: 'whatsapp',
+    titulo: 'WhatsApp para voluntários',
+    resumo: 'Número usado no botão de contato das atividades e metas.',
+  },
+  {
+    chave: 'recebimento',
+    titulo: 'Recebimento de doações (PIX)',
+    resumo: 'Chave PIX mostrada nas metas em dinheiro.',
+  },
 ];
 
 const preenchido = (valor: string | null) => !!valor && valor.trim() !== '';
@@ -48,10 +64,21 @@ export function secaoOngCompleta(secao: SecaoPerfilOng, dados: DadosPerfilOng): 
 
 export async function carregarPerfilOng(usuarioId: string): Promise<PerfilOngCarregado> {
   const [usuario, ong, instituicao, pix] = await Promise.all([
-    supabase.from('usuarios').select('nome, telefone, perfil_instagram, descricao').eq('id', usuarioId).single(),
-    supabase.from('ongs').select('cnpj, razao_social, data_criacao, responsavel_legal').eq('usuario_id', usuarioId).maybeSingle(),
+    supabase
+      .from('usuarios')
+      .select('nome, telefone, perfil_instagram, descricao')
+      .eq('id', usuarioId)
+      .single(),
+    supabase
+      .from('ongs')
+      .select('cnpj, razao_social, data_criacao, responsavel_legal')
+      .eq('usuario_id', usuarioId)
+      .maybeSingle(),
     supabase.from('configuracao_instituicao').select('whatsapp').maybeSingle(),
-    supabase.from('configuracao_instituicao').select('chave_pix, nome_beneficiario_pix').maybeSingle(),
+    supabase
+      .from('configuracao_instituicao')
+      .select('chave_pix, nome_beneficiario_pix')
+      .maybeSingle(),
   ]);
   if (usuario.error) throw usuario.error;
   if (ong.error) throw ong.error;
@@ -67,8 +94,8 @@ export async function carregarPerfilOng(usuarioId: string): Promise<PerfilOngCar
     data_criacao: ong.data?.data_criacao ?? null,
     responsavel_legal: ong.data?.responsavel_legal ?? null,
     whatsapp: instituicao.data?.whatsapp ?? null,
-    chave_pix: pixDisponivel ? pix.data?.chave_pix ?? null : null,
-    nome_beneficiario_pix: pixDisponivel ? pix.data?.nome_beneficiario_pix ?? null : null,
+    chave_pix: pixDisponivel ? (pix.data?.chave_pix ?? null) : null,
+    nome_beneficiario_pix: pixDisponivel ? (pix.data?.nome_beneficiario_pix ?? null) : null,
     pixDisponivel,
   };
 }
@@ -81,14 +108,22 @@ export async function salvarPerfilOng(parcial: Partial<DadosPerfilOng>): Promise
   const instituicao: Partial<Pick<DadosPerfilOng, (typeof CAMPOS_INSTITUICAO)[number]>> = {};
   const perfil: Record<string, unknown> = {};
   for (const [chave, valor] of Object.entries(parcial)) {
-    if ((CAMPOS_INSTITUICAO as readonly string[]).includes(chave)) Object.assign(instituicao, { [chave]: valor ?? null });
+    if ((CAMPOS_INSTITUICAO as readonly string[]).includes(chave))
+      Object.assign(instituicao, { [chave]: valor ?? null });
     else perfil[chave] = valor;
   }
   if (Object.keys(instituicao).length) {
-    const { data, error } = await supabase.from('configuracao_instituicao').update(instituicao).eq('id', 1).select('id');
+    const { data, error } = await supabase
+      .from('configuracao_instituicao')
+      .update(instituicao)
+      .eq('id', 1)
+      .select('id');
     if (error) throw error;
     // RLS sem permissão não gera erro: devolve zero linhas atualizadas.
-    if (!data?.length) throw new Error('Os contatos da instituição não foram atualizados. Confira se a configuração existe.');
+    if (!data?.length)
+      throw new Error(
+        'Os contatos da instituição não foram atualizados. Confira se a configuração existe.',
+      );
   }
   if (Object.keys(perfil).length) await salvarPerfilGestao(true, perfil as Json);
 }
