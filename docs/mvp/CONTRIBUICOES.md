@@ -6,7 +6,7 @@ de dois tipos, **em dinheiro (PIX)** ou **de materiais**, e **contribuições**
 foi evoluído no redesenho (27–29/09). As tabelas de solicitações de materiais
 criadas em 24/09 duplicavam esse papel e são removidas (ver Histórico, abaixo).
 
-**Requisitos e backlog ([CLAUDE.md](../../CLAUDE.md)):** RF0010 (B19, B20), RF0011
+**Requisitos e backlog ([DOCUMENTACAO.md](../../DOCUMENTACAO.md)):** RF0010 (B19, B20), RF0011
 (B21, B22, B34), RF0012 (B23, B24), RF0015 (PIX no perfil da gestão, B30) e RNF0004.
 Na branch `integracao/mvp` falta o upload de comprovante (B22); o restante aguarda a
 reconciliação pendente e homologação.
@@ -59,15 +59,15 @@ Reconciliação `supabase/reconciliacao/20261005150000_contribuicoes_metas_pix.s
 
 Aplicar pelo SQL Editor (ou MCP), depois das reconciliações 01 e 02. Não usar
 `db push` sobre o histórico. A migration aborta se já tiver sido aplicada.
-Depois, regenerar `src/lib/database.types.ts` e remover o bloco `ColunasPix` de
-`src/lib/database.api.types.ts`. Até lá, a seção de PIX do perfil da gestão fica
+Depois, regenerar `src/servicos/database.types.ts` e remover o bloco `ColunasPix` de
+`src/servicos/database.api.types.ts`. Até lá, a seção de PIX do perfil da gestão fica
 indisponível e as metas em dinheiro avisam que a chave não foi cadastrada.
 
 ## App
 
-- Aba **Contribuir** (voluntário) / **Doações** (gestão): `src/navegacao/PilhaMetas.tsx`,
-  telas em `src/telas/TelasMetas.tsx`, acesso a dados em `src/lib/metas.ts` e
-  regras puras em `src/lib/regrasMetas.ts`.
+- Aba **Contribuir** (voluntário) / **Doações** (gestão): `src/funcionalidades/metas/PilhaMetas.tsx`,
+  telas em `src/funcionalidades/metas/telas/`, acesso a dados em `src/funcionalidades/metas/api.ts` e
+  regras puras em `src/funcionalidades/metas/regras.ts`.
 - Perfil da gestão: seção **Recebimento de doações (PIX)**.
 - Início do voluntário: "Precisamos de" mostra a meta aberta mais recente, ainda
   não atingida e dentro do prazo. O indicador de contribuições conta as APROVADA

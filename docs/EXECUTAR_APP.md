@@ -8,7 +8,7 @@ Abra o PowerShell na pasta do repositório clonado (o caminho varia em cada máq
 
 ```powershell
 Set-Location -LiteralPath '<pasta do projeto>\app_hortaconecta'
-git switch integracao/mvp      # branch de trabalho em 05/10/2026; ver CLAUDE.md
+git switch integracao/mvp      # branch de trabalho em 05/10/2026; ver DOCUMENTACAO.md
 npm.cmd ci
 Copy-Item .env.example .env
 ```
@@ -19,10 +19,11 @@ Antes de commitar:
 
 ```powershell
 npm.cmd run typecheck
+npm.cmd run lint
 npm.cmd test
 ```
 
-`npm test` roda a suíte em sequência (bancos PGlite em memória); leva cerca de 40 segundos.
+`npm run format` corrige a formatação apontada pelo lint. `npm test` roda a suíte em sequência (bancos PGlite em memória); leva cerca de 40 segundos.
 
 ## Iniciar o app
 

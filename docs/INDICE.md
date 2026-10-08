@@ -1,11 +1,11 @@
 # Documentação — HortaConecta
 
 Visão do projeto, requisitos (RF0001–RF0016, RNF0001–RNF0011), backlog (B01–B34),
-cronograma e convenções ficam no [CLAUDE.md](../CLAUDE.md), que é a referência
+cronograma e convenções ficam no [DOCUMENTACAO.md](../DOCUMENTACAO.md), que é a referência
 principal. Esta pasta reúne o guia de execução, o escopo do MVP e os relatórios
 de cada etapa. Os relatórios são **registros datados**: cada um abre com um bloco
 "Situação em 05/10/2026" que diz o que mudou depois de escrito. Quando um
-relatório divergir do CLAUDE.md, vale o CLAUDE.md.
+relatório divergir do DOCUMENTACAO.md, vale o DOCUMENTACAO.md.
 
 ## Estado atual (05/10/2026)
 
@@ -35,7 +35,7 @@ relatório divergir do CLAUDE.md, vale o CLAUDE.md.
 
 ## Implementado, fora do MVP por enquanto
 
-Ocultos no app por `src/lib/escopoMvp.ts`; código, testes e banco preservados.
+Ocultos no app por `src/compartilhado/escopoMvp.ts`; código, testes e banco preservados.
 
 | Documento | Requisitos | Backlog |
 | --- | --- | --- |

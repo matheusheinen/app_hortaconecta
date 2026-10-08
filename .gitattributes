@@ -5,4 +5,4 @@
 
 # Gerados: não contam como código escrito à mão nas estatísticas do GitHub.
 package-lock.json linguist-generated=true
-src/lib/database.types.ts linguist-generated=true
+src/servicos/database.types.ts linguist-generated=true
