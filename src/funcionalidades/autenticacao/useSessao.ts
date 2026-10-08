@@ -7,17 +7,20 @@ import { executarAuth, erroAuth } from './operacaoAuth';
 import { alternarModoGestor, gestorPodeAlternarModo } from '@/funcionalidades/modoGestor/api';
 
 export function useSessao() {
-  const [sessao, setSessao] = useState<Session | null>(null),
-    [perfil, setPerfil] = useState<Usuario | null>(null);
-  const [carregando, setCarregando] = useState(true),
-    [erroPerfil, setErroPerfil] = useState<string | null>(null);
+  const [sessao, setSessao] = useState<Session | null>(null);
+  const [perfil, setPerfil] = useState<Usuario | null>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erroPerfil, setErroPerfil] = useState<string | null>(null);
   const [podeAlternarModo, setPodeAlternarModo] = useState(false);
-  const usuarioAtual = useRef<string | null>(null),
-    saindo = useRef(false),
-    revisaoSessao = useRef(0);
+  // Respostas de uma sessão anterior (troca de usuário, logout) são descartadas
+  // comparando o usuário e a revisão do momento da chamada com os atuais.
+  const usuarioAtual = useRef<string | null>(null);
+  const revisaoSessao = useRef(0);
+  const saindo = useRef(false);
+
   useEffect(() => {
-    let ativo = true,
-      recebeuEvento = false;
+    let ativo = true;
+    let recebeuEvento = false;
     const aplicar = (s: Session | null) => {
       if (!ativo) return;
       const id = s?.user.id ?? null;
@@ -77,6 +80,8 @@ export function useSessao() {
   useEffect(() => {
     if (!sessao?.user) return;
     let ativo = true;
+    // Reset intencional: a tela de carregamento cobre a troca de usuário.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCarregando(true);
     void carregarPerfil(sessao.user.id)
       .catch(() => {})
@@ -90,6 +95,8 @@ export function useSessao() {
   // O servidor decide quem é da gestão; vale também quando já está em modo voluntário.
   useEffect(() => {
     if (!perfil || sessao?.user.is_anonymous) {
+      // Reset intencional: sem perfil (ou convidado) não há modo gestor.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPodeAlternarModo(false);
       return;
     }

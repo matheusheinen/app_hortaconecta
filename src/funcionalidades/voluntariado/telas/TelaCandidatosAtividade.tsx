@@ -45,7 +45,7 @@ export function TelaCandidatosAtividade({
   const aberta =
     !!dados &&
     ['ABERTA', 'ENCERRADA'].includes(dados.detalhe.atividade.status) &&
-    new Date(dados.detalhe.atividade.data_hora_prevista).getTime() > Date.now();
+    new Date(dados.detalhe.atividade.data_hora_prevista) > new Date(dados.detalhe.agora);
   return (
     <TelaFluxo
       titulo="Candidatos e participantes"

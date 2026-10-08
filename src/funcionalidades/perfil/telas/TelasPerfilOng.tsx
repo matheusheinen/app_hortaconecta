@@ -226,8 +226,8 @@ export function TelaSecaoWhatsappOng({ voltar }: { voltar: () => void }) {
       }}
     >
       <Text style={estilosPerfil.explicacao}>
-        Este número aparece no botão "Falar com a gestão" das atividades. Use um número que a equipe
-        acompanhe.
+        Este número aparece no botão {'"Falar com a gestão"'} das atividades. Use um número que a
+        equipe acompanhe.
       </Text>
       <Campo
         rotulo="WhatsApp"

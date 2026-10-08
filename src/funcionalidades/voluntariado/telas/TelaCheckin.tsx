@@ -21,7 +21,7 @@ export function TelaQrAtividade({
   const [token, setToken] = useState<TokenCheckin | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  const [agora, setAgora] = useState(Date.now());
+  const [agora, setAgora] = useState(() => Date.now());
   const geracao = useRef(0);
   const emFoco = useIsFocused();
   useFocusEffect(

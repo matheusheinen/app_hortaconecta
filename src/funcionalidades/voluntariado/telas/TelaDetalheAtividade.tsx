@@ -65,7 +65,8 @@ export function TelaDetalheAtividade({
   const a = dados?.atividade;
   const i = dados?.inscricao;
   // Apenas conveniência visual; o servidor valida novamente todas as regras.
-  const futura = !!a && new Date(a.data_hora_prevista).getTime() > Date.now();
+  // Compara com a hora do servidor na última consulta, a mesma que ele usa ao validar.
+  const futura = !!a && new Date(a.data_hora_prevista) > new Date(dados.agora);
   return (
     <TelaFluxo
       titulo="Detalhes da atividade"
