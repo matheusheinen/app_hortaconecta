@@ -98,13 +98,14 @@ export function TelaAtividades({
         </Text>
       ) : null}
       {visiveis.map(a => (
-        <Pressable
-          key={a.id}
-          onPress={() => onDetalhe(a.id)}
-          accessibilityRole="button"
-          accessibilityLabel={`Ver detalhes de ${a.titulo}`}
-        >
-          <CartaoFluxo>
+        <CartaoFluxo key={a.id}>
+          {/* Os botões de gestão ficam fora do Pressable: na web, botão dentro de botão é HTML inválido. */}
+          <Pressable
+            onPress={() => onDetalhe(a.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`Ver detalhes de ${a.titulo}`}
+            style={estilos.detalhe}
+          >
             <Text style={estilos.etiqueta}>
               {a.tipo === 'OFICINA_AUTORAL' ? 'OFICINA' : 'TAREFA'} ·{' '}
               {rotuloStatusAtividade[a.status].toUpperCase()}
@@ -117,22 +118,18 @@ export function TelaAtividades({
               {formatarData(a.data_hora_prevista)} · {a.vagas_totais}{' '}
               {a.vagas_totais === 1 ? 'vaga' : 'vagas'} · {a.carga_horaria}h
             </Text>
-            {ehGestao ? (
-              <View style={estilos.acoes}>
-                <View style={{ flex: 1 }}>
-                  <Botao titulo="Editar" variante="contorno" onPress={() => onEditar(a)} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Botao
-                    titulo="Excluir"
-                    variante="destrutivo"
-                    onPress={() => excluirAtividade(a)}
-                  />
-                </View>
+          </Pressable>
+          {ehGestao ? (
+            <View style={estilos.acoes}>
+              <View style={{ flex: 1 }}>
+                <Botao titulo="Editar" variante="contorno" onPress={() => onEditar(a)} />
               </View>
-            ) : null}
-          </CartaoFluxo>
-        </Pressable>
+              <View style={{ flex: 1 }}>
+                <Botao titulo="Excluir" variante="destrutivo" onPress={() => excluirAtividade(a)} />
+              </View>
+            </View>
+          ) : null}
+        </CartaoFluxo>
       ))}
     </TelaFluxo>
   );
@@ -160,5 +157,6 @@ function formatarData(iso: string) {
 
 const estilos = StyleSheet.create({
   etiqueta: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, color: cores.tintaSuave },
+  detalhe: { gap: espaco.sm },
   acoes: { flexDirection: 'row', gap: espaco.sm, marginTop: espaco.xs },
 });
