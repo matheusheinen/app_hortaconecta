@@ -5,6 +5,7 @@ import type {
 } from '@/funcionalidades/voluntariado/tipos';
 import type { Meta, StatusValidacao } from '@/funcionalidades/metas/tipos';
 import type { Publicacao } from '@/funcionalidades/diario/tipos';
+import { hojeIso } from '@/compartilhado/utils/datas';
 
 export type ResumoInicio = {
   perfilCompleto: boolean;
@@ -53,8 +54,7 @@ export function montarResumoInicio(dados: DadosInicio, agora = new Date()): Resu
       // O banco mantém vagas_ocupadas como o total de candidaturas aprovadas.
       vagasDisponiveis: Math.max(0, atividade.vagas_totais - atividade.vagas_ocupadas),
     }));
-  const p = (n: number) => String(n).padStart(2, '0');
-  const hoje = `${agora.getFullYear()}-${p(agora.getMonth() + 1)}-${p(agora.getDate())}`;
+  const hoje = hojeIso(agora);
   const meta =
     dados.metas
       .filter(

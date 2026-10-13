@@ -11,7 +11,7 @@ import {
   StatusPerfil,
   estilosPerfil,
 } from '../componentes/PerfilSecoes';
-import { hojeIso, interpretarData, paraCampoData } from '../regras';
+import { hojeIso, interpretarData, paraCampoData } from '@/compartilhado/utils/datas';
 import {
   SECOES_PERFIL_ONG,
   secaoOngCompleta,

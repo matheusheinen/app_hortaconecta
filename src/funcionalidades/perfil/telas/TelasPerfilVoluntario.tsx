@@ -19,13 +19,11 @@ import {
   StatusPerfil,
   estilosPerfil,
 } from '../componentes/PerfilSecoes';
+import { hojeIso, interpretarData, paraCampoData } from '@/compartilhado/utils/datas';
 import { buscarCep, type PerfilVoluntarioCarregado } from '../apiVoluntario';
 import {
   SECOES_PERFIL,
-  hojeIso,
-  interpretarData,
   mascararCep,
-  paraCampoData,
   secaoCompleta,
   secoesPendentes,
   type DadosPerfilVoluntario,

@@ -28,6 +28,7 @@ const validadores = carregar('src/compartilhado/utils/validadores.ts');
 const mascaras = carregar('src/compartilhado/utils/mascaras.ts', { './validadores': validadores });
 const regrasVoluntariado = carregar('src/funcionalidades/voluntariado/regras.ts');
 const regrasPerfil = carregar('src/funcionalidades/perfil/regras.ts');
+const datas = carregar('src/compartilhado/utils/datas.ts');
 const tipos = carregar('src/compartilhado/tipos.ts');
 
 const dados = () => ({
@@ -191,6 +192,7 @@ function telasVoluntario(contexto, buscarCep = async () => null) {
     '../componentes/PerfilSecoes': secoes,
     '../apiVoluntario': { buscarCep },
     '../regras': regrasPerfil,
+    '@/compartilhado/utils/datas': datas,
   });
   return { telas, reiniciar };
 }
@@ -206,6 +208,7 @@ function telasOng(contexto) {
     '@/compartilhado/componentes/CampoData': { CampoData: 'CampoData' },
     '../componentes/PerfilSecoes': secoes,
     '../regras': regrasPerfil,
+    '@/compartilhado/utils/datas': datas,
     '../apiOng': carregar('src/funcionalidades/perfil/apiOng.ts', {
       '@/servicos/supabase': {},
       './apiGestao': {},

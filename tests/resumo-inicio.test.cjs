@@ -19,7 +19,9 @@ function compilar(arquivo, dependencias = {}) {
   return modulo.exports;
 }
 
-const regras = compilar('src/funcionalidades/inicio/regras.ts');
+const regras = compilar('src/funcionalidades/inicio/regras.ts', {
+  '@/compartilhado/utils/datas': compilar('src/compartilhado/utils/datas.ts'),
+});
 
 function carregar(respostas = {}) {
   const consulta = {

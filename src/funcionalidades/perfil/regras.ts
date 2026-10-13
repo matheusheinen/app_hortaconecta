@@ -99,30 +99,3 @@ export function enderecoDoViaCep(resposta: unknown): EnderecoDoCep | null {
   if (!endereco.cidade || !/^[A-Z]{2}$/.test(uf)) return null;
   return endereco;
 }
-
-/** DD/MM/AAAA → AAAA-MM-DD, rejeitando datas inexistentes. */
-export function interpretarData(texto: string): string | null {
-  const m = texto.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!m) return null;
-  const [, dia, mes, ano] = m;
-  const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
-  if (
-    d.getFullYear() !== Number(ano) ||
-    d.getMonth() !== Number(mes) - 1 ||
-    d.getDate() !== Number(dia)
-  )
-    return null;
-  return `${ano}-${mes}-${dia}`;
-}
-
-export function paraCampoData(iso: string | null): string {
-  if (!iso) return '';
-  const [ano, mes, dia] = iso.split('-');
-  return `${dia}/${mes}/${ano}`;
-}
-
-export function hojeIso(): string {
-  const d = new Date();
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}

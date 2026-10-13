@@ -6,7 +6,7 @@ import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
-import { hojeIso, interpretarData, paraCampoData } from '@/funcionalidades/perfil/regras';
+import { hojeIso, interpretarData, paraCampoData } from '@/compartilhado/utils/datas';
 import type { Meta, TipoMeta } from '../tipos';
 import { carregarMeta, rotuloTipoMeta, salvarMeta } from '../api';
 import { interpretarQuantidade } from '../regras';

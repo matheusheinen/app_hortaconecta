@@ -4,9 +4,8 @@ import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
-import { formatarDataCurta } from '@/compartilhado/utils/datas';
+import { formatarDataCurta, hojeIso } from '@/compartilhado/utils/datas';
 import { tipo } from '@/compartilhado/tema';
-import { hojeIso } from '@/funcionalidades/perfil/regras';
 import type { Meta } from '../tipos';
 import {
   alterarStatusMeta,
