@@ -235,7 +235,7 @@ src/
     oficinas/          fora do MVP (ver escopoMvp.ts)
     certificados/      fora do MVP (ver escopoMvp.ts)
   compartilhado/
-    componentes/       Ui (Botao, Campo, Aviso, AbasFiltro), TelaFluxo, Icone, CampoData
+    componentes/       Ui (Botao, Campo, Aviso, AbasFiltro), TelaFluxo, Icone, CampoData, LimiteErro, memoTela
     hooks/             useConsulta, useAcao, useConfiguracaoInstituicao
     utils/             erros, datas, máscaras, validadores, confirmar, whatsapp
     api.ts             consultas usadas por várias funcionalidades (configuração da instituição)
