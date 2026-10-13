@@ -30,6 +30,8 @@ export function TelaQrAtividade({
       return () => {
         geracao.current++;
       };
+      // atividadeId não é lido aqui, mas trocar de atividade precisa descartar o QR anterior.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [atividadeId]),
   );
   useEffect(() => {

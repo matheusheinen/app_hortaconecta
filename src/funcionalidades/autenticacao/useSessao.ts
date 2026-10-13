@@ -53,6 +53,8 @@ export function useSessao() {
       });
     return () => {
       ativo = false;
+      // De propósito: invalida a revisão atual (não é ref de elemento), descartando respostas pendentes.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       revisaoSessao.current++;
       pararEscuta();
     };
@@ -74,13 +76,14 @@ export function useSessao() {
       throw f;
     }
   }, []);
+  const usuarioId = sessao?.user?.id;
   useEffect(() => {
-    if (!sessao?.user) return;
+    if (!usuarioId) return;
     let ativo = true;
     // Reset intencional: a tela de carregamento cobre a troca de usuário.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCarregando(true);
-    void carregarPerfil(sessao.user.id)
+    void carregarPerfil(usuarioId)
       .catch(() => {})
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -88,10 +91,14 @@ export function useSessao() {
     return () => {
       ativo = false;
     };
-  }, [sessao?.user?.id, carregarPerfil]);
+  }, [usuarioId, carregarPerfil]);
   // O servidor decide quem é da gestão; vale também quando já está em modo voluntário.
+  // Repete ao trocar de perfil ou de modo (tipo_perfil), não a cada novo objeto de perfil.
+  const perfilId = perfil?.id;
+  const tipoPerfil = perfil?.tipo_perfil;
+  const convidado = !!sessao?.user.is_anonymous;
   useEffect(() => {
-    if (!perfil || sessao?.user.is_anonymous) {
+    if (!perfilId || !tipoPerfil || convidado) {
       // Reset intencional: sem perfil (ou convidado) não há modo gestor.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPodeAlternarModo(false);
@@ -108,7 +115,7 @@ export function useSessao() {
     return () => {
       ativo = false;
     };
-  }, [perfil?.id, perfil?.tipo_perfil, sessao?.user.is_anonymous]);
+  }, [perfilId, tipoPerfil, convidado]);
   async function alternarModo(gestor: boolean) {
     const id = sessao?.user?.id;
     if (!id) return;
