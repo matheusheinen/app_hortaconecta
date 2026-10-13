@@ -19,7 +19,9 @@ function carregar(arquivo, dependencias = {}) {
   return modulo.exports;
 }
 
-const regras = carregar('src/funcionalidades/metas/regras.ts');
+const regras = carregar('src/funcionalidades/metas/regras.ts', {
+  '@/compartilhado/utils/datas': carregar('src/compartilhado/utils/datas.ts'),
+});
 const nbsp = texto => texto.replace(/ /g, ' ');
 
 test('Metas: valores aceitam vírgula/ponto com até 2 casas e recusam milhar, zero e lixo', () => {
@@ -125,4 +127,40 @@ test('Metas: só ABERTA fica na aba de abertas', () => {
   assert.equal(regras.metaFinalizada({ status: 'ABERTA' }), false);
   assert.equal(regras.metaFinalizada({ status: 'ENCERRADA' }), true);
   assert.equal(regras.metaFinalizada({ status: 'CANCELADA' }), true);
+});
+
+test('Metas: o formulário valida os campos e devolve os dados prontos para salvar', () => {
+  const entrada = {
+    tipo: 'MATERIAL',
+    titulo: '  Sementes  ',
+    descricao: ' Para o canteiro ',
+    unidade: ' kg ',
+    quantidade: '2,5',
+    prazo: '10/10/2026',
+  };
+  assert.deepEqual(regras.validarMeta(entrada, true, '2026-10-05'), {
+    titulo: 'Sementes',
+    descricao: 'Para o canteiro',
+    tipo: 'MATERIAL',
+    unidade_medida: 'kg',
+    quantidade_meta: 2.5,
+    data_limite: '2026-10-10',
+  });
+  assert.equal(
+    regras.validarMeta({ ...entrada, tipo: 'FINANCEIRA', prazo: '' }, true, '2026-10-05')
+      .unidade_medida,
+    null,
+  );
+  const erro =
+    (mudanca, nova = true) =>
+    () =>
+      regras.validarMeta({ ...entrada, ...mudanca }, nova, '2026-10-20');
+  assert.throws(erro({ titulo: 'ab' }), /ao menos 3/);
+  assert.throws(erro({ descricao: ' ' }), /Descreva/);
+  assert.throws(erro({ unidade: '' }), /unidade de medida/);
+  assert.throws(erro({ quantidade: '0' }), /quantidade da meta/);
+  assert.throws(erro({ prazo: '31/02/2026' }), /DD\/MM\/AAAA/);
+  assert.throws(erro({}), /hoje ou uma data futura/);
+  // Ao editar, o prazo já vencido continua aceito.
+  assert.equal(regras.validarMeta(entrada, false, '2026-10-20').data_limite, '2026-10-10');
 });

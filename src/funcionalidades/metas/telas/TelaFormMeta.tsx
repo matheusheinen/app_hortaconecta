@@ -6,10 +6,10 @@ import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
-import { hojeIso, interpretarData, paraCampoData } from '@/compartilhado/utils/datas';
+import { paraCampoData } from '@/compartilhado/utils/datas';
 import type { Meta, TipoMeta } from '../tipos';
 import { carregarMeta, rotuloTipoMeta, salvarMeta } from '../api';
-import { interpretarQuantidade } from '../regras';
+import { validarMeta } from '../regras';
 
 export function TelaFormMeta({ id, voltar }: { id: number | null; voltar: () => void }) {
   const consulta = useCallback(
@@ -110,28 +110,11 @@ function FormularioMeta({ meta, voltar }: { meta: Meta | null; voltar: () => voi
         carregando={acao.ocupado}
         onPress={() => {
           void acao.executar(async () => {
-            const valor = interpretarQuantidade(quantidade);
-            const prazoIso = prazo.trim() ? interpretarData(prazo) : null;
-            if (titulo.trim().length < 3)
-              throw new Error('O título precisa de ao menos 3 caracteres.');
-            if (!descricao.trim()) throw new Error('Descreva a meta.');
-            if (tipoMeta === 'MATERIAL' && !unidade.trim())
-              throw new Error('Informe a unidade de medida (ex.: kg, unidades).');
-            if (valor === null)
-              throw new Error(
-                'Informe a quantidade da meta: número positivo, com até duas casas decimais.',
-              );
-            if (prazo.trim() && !prazoIso) throw new Error('Use o formato DD/MM/AAAA no prazo.');
-            if (!meta && prazoIso && prazoIso < hojeIso())
-              throw new Error('O prazo precisa ser hoje ou uma data futura.');
-            await salvarMeta(meta?.id ?? null, {
-              titulo: titulo.trim(),
-              descricao: descricao.trim(),
-              tipo: tipoMeta,
-              unidade_medida: tipoMeta === 'MATERIAL' ? unidade.trim() : null,
-              quantidade_meta: valor,
-              data_limite: prazoIso,
-            });
+            const campos = validarMeta(
+              { tipo: tipoMeta, titulo, descricao, unidade, quantidade, prazo },
+              !meta,
+            );
+            await salvarMeta(meta?.id ?? null, campos);
             voltar();
           });
         }}
