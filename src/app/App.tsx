@@ -1,5 +1,7 @@
 import React from 'react';
-import { ActivityIndicator, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { useSessao } from '@/funcionalidades/autenticacao/useSessao';
 import { useRecuperacaoAtiva } from '@/funcionalidades/autenticacao/recuperacaoSenha';
@@ -10,7 +12,19 @@ import { cores } from '@/compartilhado/tema';
 import { Aviso, Botao } from '@/compartilhado/componentes/Ui';
 import { ProvedorModoGestor } from '@/funcionalidades/modoGestor/ModoGestor';
 
+// A barra de abas já aplica a margem inferior; repetir aqui dobraria o espaço.
+const bordasComAbas: Edge[] = ['top', 'left', 'right'];
+
 export default function App() {
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="dark" />
+      <Conteudo />
+    </SafeAreaProvider>
+  );
+}
+
+function Conteudo() {
   const {
     sessao,
     perfil,
@@ -29,7 +43,6 @@ export default function App() {
   if (recuperandoSenha) {
     return (
       <SafeAreaView style={[estilos.raiz, { backgroundColor: fundoLogin }]}>
-        <StatusBar barStyle="dark-content" />
         <TelaLogin erroSessao={erroPerfil} />
       </SafeAreaView>
     );
@@ -63,7 +76,6 @@ export default function App() {
   if (!sessao || !perfil) {
     return (
       <SafeAreaView style={[estilos.raiz, { backgroundColor: fundoLogin }]}>
-        <StatusBar barStyle="dark-content" />
         <TelaLogin erroSessao={erroPerfil} />
       </SafeAreaView>
     );
@@ -71,8 +83,7 @@ export default function App() {
 
   if (ehConvidado) {
     return (
-      <SafeAreaView style={estilos.raiz}>
-        <StatusBar barStyle="dark-content" />
+      <SafeAreaView style={estilos.raiz} edges={bordasComAbas}>
         <NavigationContainer>
           <AbasConvidado usuarioId={perfil.id} sair={sair} />
         </NavigationContainer>
@@ -81,8 +92,7 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={estilos.raiz}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={estilos.raiz} edges={bordasComAbas}>
       <ProvedorModoGestor
         value={podeAlternarModo ? { ativo: ehGestao, alternar: alternarModo } : null}
       >
