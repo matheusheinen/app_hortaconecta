@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { excluirAtividade as excluirAtividadeApi, listarAtividades } from '../api';
@@ -21,7 +22,7 @@ type Props = {
   convidado?: boolean;
 };
 
-export function TelaAtividades({
+export const TelaAtividades = memoTela(function TelaAtividades({
   ehGestao,
   voltar,
   onNova,
@@ -133,7 +134,7 @@ export function TelaAtividades({
       ))}
     </TelaFluxo>
   );
-}
+});
 
 /** O react-native-web não implementa Alert; no navegador usa o do browser. */
 function avisar(titulo: string, mensagem: string) {

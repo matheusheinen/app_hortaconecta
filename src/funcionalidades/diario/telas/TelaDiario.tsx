@@ -1,4 +1,5 @@
 import React from 'react';
+import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -8,7 +9,7 @@ import { listarDiario } from '../api';
 import { DataPublicacao } from '../componentes/DataPublicacao';
 import { ImagemDiario } from '../componentes/ImagemDiario';
 
-export function TelaDiario({
+export const TelaDiario = memoTela(function TelaDiario({
   gestao,
   voltar,
   abrir,
@@ -45,4 +46,4 @@ export function TelaDiario({
       ))}
     </TelaFluxo>
   );
-}
+});

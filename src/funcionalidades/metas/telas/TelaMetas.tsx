@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Pressable, Text } from 'react-native';
 import { AbasFiltro, Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -9,7 +10,7 @@ import { listarMetas } from '../api';
 import { descreverProgresso, metaFinalizada, prazoVencido } from '../regras';
 import { EtiquetaMeta, ProgressoMeta } from '../componentes/IndicadoresMeta';
 
-export function TelaMetas({
+export const TelaMetas = memoTela(function TelaMetas({
   ehGestao,
   voltar,
   abrir,
@@ -88,4 +89,4 @@ export function TelaMetas({
       ))}
     </TelaFluxo>
   );
-}
+});

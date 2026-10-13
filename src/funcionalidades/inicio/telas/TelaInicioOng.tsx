@@ -1,4 +1,5 @@
 import React from 'react';
+import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { Icone, type NomeIcone } from '@/compartilhado/componentes/Icone';
@@ -10,12 +11,12 @@ type Props = {
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
-  /** Ausente quando o recurso está fora do MVP (ver lib/escopoMvp). */
+  /** Ausente quando o recurso está fora do MVP (ver compartilhado/escopoMvp.ts). */
   aoIrParaCertificados?: () => void;
   aoIrParaOficinas?: () => void;
 };
 
-export function TelaInicioOng({
+export const TelaInicioOng = memoTela(function TelaInicioOng({
   nome,
   sair,
   aoIrParaAtividades,
@@ -92,7 +93,7 @@ export function TelaInicioOng({
       </View>
     </ScrollView>
   );
-}
+});
 
 function CartaoGestao({
   titulo,
