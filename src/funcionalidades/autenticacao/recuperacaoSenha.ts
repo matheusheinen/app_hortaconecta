@@ -20,8 +20,3 @@ export function useRecuperacaoAtiva() {
     () => ativa,
   );
 }
-
-/** Código numérico enviado por e-mail (o Supabase aceita de 6 a 10 dígitos). */
-export function codigoRecuperacaoValido(codigo: string) {
-  return /^\d{6,10}$/.test(codigo.trim());
-}

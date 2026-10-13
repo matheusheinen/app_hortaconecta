@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { useSessao } from '@/funcionalidades/autenticacao/useSessao';
 import { useRecuperacaoAtiva } from '@/funcionalidades/autenticacao/recuperacaoSenha';
-import { fundoLogin, TelaLogin } from '@/funcionalidades/autenticacao/TelaLogin';
+import { fundoLogin, TelaLogin } from '@/funcionalidades/autenticacao/telas/TelaLogin';
 import { AbasPrincipais } from './AbasPrincipais';
 import { AbasConvidado } from './AbasConvidado';
 import { cores } from '@/compartilhado/tema';
