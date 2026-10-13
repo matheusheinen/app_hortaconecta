@@ -25,9 +25,10 @@ import {
 } from './api';
 import { codigoRecuperacaoValido, definirRecuperacaoAtiva } from './recuperacaoSenha';
 import { Aviso } from '@/compartilhado/componentes/Ui';
+import { cores } from '@/compartilhado/tema';
 
-export const fundoLogin = '#F7F5EF';
-const verde = '#2D6B51';
+export const fundoLogin = cores.superficie;
+const verde = cores.folha;
 
 function CampoAcesso({
   rotulo,
@@ -43,7 +44,7 @@ function CampoAcesso({
       <TextInput
         ref={referencia}
         accessibilityLabel={rotulo}
-        placeholderTextColor="#7A9386"
+        placeholderTextColor={cores.placeholder}
         selectionColor={verde}
         {...props}
         style={estilos.entrada}
@@ -362,7 +363,7 @@ export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
             ]}
           >
             {ocupado ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={cores.fundo} />
             ) : (
               <Text style={estilos.botaoTexto}>{botaoRotulo}</Text>
             )}
@@ -453,16 +454,22 @@ const estilos = StyleSheet.create({
   marcaTexto: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#143E37',
+    color: cores.tinta,
     letterSpacing: -0.3,
     textAlign: 'center',
   },
-  chamada: { color: '#718578', fontSize: 14, lineHeight: 21, textAlign: 'center', marginTop: 6 },
+  chamada: {
+    color: cores.tintaClara,
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: 'center',
+    marginTop: 6,
+  },
   formulario: { width: '100%', maxWidth: 380 },
-  tituloCadastro: { fontSize: 20, fontWeight: '600', color: '#143E37', marginBottom: 22 },
+  tituloCadastro: { fontSize: 20, fontWeight: '600', color: cores.tinta, marginBottom: 22 },
   campo: { marginBottom: 18 },
   rotulo: {
-    color: '#4D7062',
+    color: cores.tintaMedia,
     fontSize: 11,
     fontWeight: '500',
     letterSpacing: 0.7,
@@ -472,9 +479,9 @@ const estilos = StyleSheet.create({
     minHeight: 54,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: '#DCE9E0',
-    backgroundColor: '#EFF7F2',
-    color: '#143E37',
+    borderColor: cores.campoLinha,
+    backgroundColor: cores.mint,
+    color: cores.tinta,
     fontSize: 15,
     paddingHorizontal: 18,
     paddingVertical: 14,
@@ -490,10 +497,10 @@ const estilos = StyleSheet.create({
     backgroundColor: verde,
     boxShadow: '0px 3px 5px rgba(28, 67, 48, 0.16)',
   },
-  botaoTexto: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  botaoTexto: { color: cores.fundo, fontSize: 16, fontWeight: '700' },
   pressionado: { opacity: 0.8 },
   inativo: { opacity: 0.6 },
-  aviso: { padding: 16, marginBottom: 20, borderRadius: 16, backgroundColor: '#E5EFE5' },
+  aviso: { padding: 16, marginBottom: 20, borderRadius: 16, backgroundColor: cores.avisoFundo },
   avisoTexto: { color: verde, fontSize: 14, lineHeight: 21 },
   rodape: {
     flexGrow: 1,
@@ -507,7 +514,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
   },
-  rodapeTexto: { color: '#718578', fontSize: 14, textAlign: 'center', lineHeight: 22 },
+  rodapeTexto: { color: cores.tintaClara, fontSize: 14, textAlign: 'center', lineHeight: 22 },
   esqueci: {
     alignSelf: 'flex-end',
     minHeight: 44,

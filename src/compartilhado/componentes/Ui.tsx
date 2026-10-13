@@ -165,7 +165,11 @@ const estilos = StyleSheet.create({
     boxShadow: '0px 3px 5px rgba(28, 67, 48, 0.12)',
   },
   botaoContorno: { borderWidth: 1, borderColor: cores.linha, backgroundColor: cores.fundo },
-  botaoDestrutivo: { borderWidth: 1, borderColor: '#EACCD4', backgroundColor: '#FBEFF2' },
+  botaoDestrutivo: {
+    borderWidth: 1,
+    borderColor: cores.beterrabaLinha,
+    backgroundColor: cores.beterrabaClara,
+  },
   botaoPressionado: { opacity: 0.8 },
   botaoInativo: { opacity: 0.45 },
   botaoTexto: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
@@ -187,7 +191,7 @@ const estilos = StyleSheet.create({
     minHeight: 54,
   },
   aviso: {
-    backgroundColor: '#FBEFF2',
+    backgroundColor: cores.beterrabaClara,
     borderRadius: 16,
     padding: espaco.md,
     marginBottom: espaco.md,

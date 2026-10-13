@@ -67,7 +67,7 @@ function CartaoAtividade({
       <View style={[estilos.atividadeIcone, destaque && estilos.iconeAzul]}>
         <Icone
           nome={oficina ? 'oficina' : 'folha'}
-          cor={destaque ? '#397CD1' : '#2D9165'}
+          cor={destaque ? cores.azul : cores.folhaViva}
           tamanho={26}
         />
       </View>
@@ -242,7 +242,7 @@ export function PainelInicioVoluntario({
             icone="relogio"
             valor={resumo ? formatarHorasInicio(resumo.horasRegistradas) : '—'}
             titulo="Horas previstas"
-            cor="#628B9C"
+            cor={cores.indicadorHoras}
             onPress={aoIrParaCertificados ?? minhasAtividades}
             descricao={`Carga prevista registrada no check-in das presenças confirmadas. ${aoIrParaCertificados ? 'Ver certificados.' : 'Ver histórico de participação.'}`}
           />
@@ -250,7 +250,7 @@ export function PainelInicioVoluntario({
             icone="check"
             valor={numero(resumo?.atividadesParticipadas)}
             titulo="Atividades"
-            cor="#45B78A"
+            cor={cores.indicadorAtividades}
             onPress={minhasAtividades}
             descricao="Presenças confirmadas. Ver histórico de participação."
           />
@@ -258,7 +258,7 @@ export function PainelInicioVoluntario({
             icone="presente"
             valor={numero(resumo?.contribuicoesConfirmadas)}
             titulo="Contribuições"
-            cor="#D49A4A"
+            cor={cores.indicadorContribuicoes}
             onPress={minhasContribuicoes}
             descricao="Entregas confirmadas. Ver minhas contribuições."
           />
@@ -523,11 +523,11 @@ const estilos = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: '#E0F5E8',
+    backgroundColor: cores.folhaFundo,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconeAzul: { backgroundColor: '#E6F0FF' },
+  iconeAzul: { backgroundColor: cores.azulClaro },
   etiquetas: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -536,14 +536,14 @@ const estilos = StyleSheet.create({
     marginBottom: 5,
   },
   etiqueta: {
-    backgroundColor: '#E0F5E8',
+    backgroundColor: cores.folhaFundo,
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  etiquetaTexto: { color: '#247B53', fontSize: 10, fontWeight: '600' },
-  etiquetaAzul: { backgroundColor: '#E6F0FF' },
-  textoAzul: { color: '#397CD1' },
+  etiquetaTexto: { color: cores.folhaEscura, fontSize: 10, fontWeight: '600' },
+  etiquetaAzul: { backgroundColor: cores.azulClaro },
+  textoAzul: { color: cores.azul },
   vagas: { fontSize: 10, color: cores.tintaSuave },
   cartaoTitulo: { fontSize: 15, fontWeight: '600', color: cores.tinta, lineHeight: 20 },
   data: { fontSize: 11, lineHeight: 16, color: cores.tintaSuave, marginTop: 3 },
@@ -636,7 +636,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#EEF2DF',
+    backgroundColor: cores.oliva,
     padding: 16,
     borderRadius: 16,
     marginTop: 18,

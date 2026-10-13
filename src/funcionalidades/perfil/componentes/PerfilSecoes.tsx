@@ -173,8 +173,8 @@ const estilos = StyleSheet.create({
   },
   cabecalho: { flexDirection: 'row', alignItems: 'flex-start', gap: espaco.md },
   status: { borderRadius: 18, padding: espaco.md, gap: espaco.sm, borderWidth: 1 },
-  statusOk: { backgroundColor: cores.folhaClara, borderColor: '#CFE5D7' },
-  statusPendente: { backgroundColor: '#FBF4EA', borderColor: '#EEDDC5' },
+  statusOk: { backgroundColor: cores.folhaClara, borderColor: cores.folhaLinha },
+  statusPendente: { backgroundColor: cores.areia, borderColor: cores.areiaLinha },
   statusTitulo: { fontSize: 16, fontWeight: '700', color: cores.tinta },
   barra: { height: 8, borderRadius: 4, backgroundColor: cores.fundo, overflow: 'hidden' },
   barraPreenchida: { height: 8, borderRadius: 4, backgroundColor: cores.folha },
@@ -191,6 +191,6 @@ const estilos = StyleSheet.create({
   secaoTitulo: { fontSize: 15, fontWeight: '700', color: cores.tinta },
   chip: { borderRadius: 12, paddingHorizontal: espaco.sm, paddingVertical: 3 },
   chipOk: { backgroundColor: cores.folhaClara },
-  chipPendente: { backgroundColor: '#FBF4EA' },
+  chipPendente: { backgroundColor: cores.areia },
   chipTexto: { fontSize: 12, fontWeight: '700' },
 });

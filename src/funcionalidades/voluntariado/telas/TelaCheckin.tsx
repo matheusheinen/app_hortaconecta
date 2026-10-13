@@ -67,6 +67,7 @@ export function TelaQrAtividade({
         anterior.
       </Text>
       {valido && emFoco ? (
+        // Branco fixo, fora do tema: o leitor precisa de contraste com o QR.
         <View style={{ alignItems: 'center', gap: 16, backgroundColor: '#FFFFFF', padding: 16 }}>
           <QRCode
             value={JSON.stringify({
