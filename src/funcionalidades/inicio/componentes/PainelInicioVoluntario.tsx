@@ -12,14 +12,9 @@ import { Aviso, Botao } from '@/compartilhado/componentes/Ui';
 import { Icone, type NomeIcone } from '@/compartilhado/componentes/Icone';
 import { ImagemDiario } from '@/funcionalidades/diario/componentes/ImagemDiario';
 import { cores } from '@/compartilhado/tema';
-import {
-  formatarHorasInicio,
-  progressoMetaInicio,
-  type AtividadeInicio,
-  type ResumoInicio,
-} from '../resumo';
+import { formatarHorasInicio, progressoMetaInicio, type ResumoInicio } from '../regras';
 import { descreverProgresso } from '@/funcionalidades/metas/regras';
-import type { Atividade } from '@/funcionalidades/voluntariado/tipos';
+import type { Atividade, AtividadeComVagas } from '@/funcionalidades/voluntariado/tipos';
 
 export type AcoesInicio = {
   nome: string;
@@ -27,7 +22,7 @@ export type AcoesInicio = {
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
-  /** Ausente quando o recurso está fora do MVP (ver lib/escopoMvp). */
+  /** Ausente quando o recurso está fora do MVP (ver compartilhado/escopoMvp.ts). */
   aoIrParaCertificados?: () => void;
   aoIrParaOficinas?: () => void;
   aoPerfil: () => void;
@@ -41,7 +36,7 @@ export type AcoesInicio = {
 type PropsPainel = AcoesInicio & {
   resumo: ResumoInicio | null;
   /** Tarefas que combinam com disponibilidade e áreas; vazio esconde a seção. */
-  sugestoes?: AtividadeInicio[];
+  sugestoes?: AtividadeComVagas[];
   erro: string | null;
   carregando: boolean;
   atualizar: () => void;

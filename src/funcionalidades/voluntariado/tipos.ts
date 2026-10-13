@@ -8,6 +8,9 @@ export type StatusAtividade = Enums<'status_atividade'>;
 /** Colunas de `atividades` que o app lê. */
 export type Atividade = Omit<Tables<'atividades'>, 'atualizado_em' | 'vagas_ocupadas'>;
 
+/** Atividade lida com `vagas_ocupadas` (total de candidaturas aprovadas). */
+export type AtividadeComVagas = Atividade & { vagas_ocupadas: number };
+
 /** Campos que o formulário edita. O resto o banco preenche. */
 export type AtividadeFormulario = Pick<
   Atividade,

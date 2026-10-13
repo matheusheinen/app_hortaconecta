@@ -224,13 +224,13 @@ O código fica em `src/`, organizado por funcionalidade. `index.ts` registra `sr
 src/
   app/                 App, abas principais e abas do convidado
   funcionalidades/
-    autenticacao/      TelaLogin, useSessao, recuperação de senha
+    autenticacao/      TelaLogin, useSessao, recuperação de senha, api de auth
     modoGestor/        alternância ONG ↔ voluntário
     voluntariado/      atividades, candidaturas, check-in, áreas e sugestões
     metas/             metas em dinheiro e de materiais, contribuições
     diario/            Diário de Transparência
     perfil/            perfis do voluntário e da gestão
-    inicio/            resumo da tela inicial
+    inicio/            resumo da tela inicial (api.ts consulta, regras.ts monta)
     convidado/         telas do acesso como convidado
     oficinas/          fora do MVP (ver escopoMvp.ts)
     certificados/      fora do MVP (ver escopoMvp.ts)
@@ -238,6 +238,7 @@ src/
     componentes/       Ui (Botao, Campo, Aviso, AbasFiltro), TelaFluxo, Icone, CampoData
     hooks/             useConsulta, useAcao, useConfiguracaoInstituicao
     utils/             erros, datas, máscaras, validadores, confirmar, whatsapp
+    api.ts             consultas usadas por várias funcionalidades (configuração da instituição)
     tema.ts, tipos.ts, escopoMvp.ts
   servicos/            cliente Supabase e tipos do banco
 ```

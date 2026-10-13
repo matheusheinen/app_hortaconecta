@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { PainelInicioVoluntario, type AcoesInicio } from '../componentes/PainelInicioVoluntario';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
-import { carregarResumoInicio } from '../resumo';
+import { carregarResumoInicio } from '../api';
 import { carregarSugestoes } from '@/funcionalidades/voluntariado/areasAtividade';
 
 export function TelaInicioVoluntario({ usuarioId, ...props }: AcoesInicio & { usuarioId: string }) {

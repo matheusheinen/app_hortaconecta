@@ -14,7 +14,15 @@ import {
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { executarAuth, erroAuth } from './operacaoAuth';
-import { supabase } from '@/servicos/supabase';
+import {
+  criarConta,
+  definirNovaSenha,
+  encerrarSessao,
+  entrarComoConvidado,
+  entrarComSenha,
+  enviarCodigoRecuperacao,
+  verificarCodigoRecuperacao,
+} from './api';
 import { codigoRecuperacaoValido, definirRecuperacaoAtiva } from './recuperacaoSenha';
 import { Aviso } from '@/compartilhado/componentes/Ui';
 
@@ -106,7 +114,7 @@ export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
   async function voltarAoLogin() {
     if (ocupado) return;
     // Com o código já validado há sessão aberta; sem fechá-la o app entraria sem a nova senha.
-    if (verificado) await supabase.auth.signOut().catch(() => {});
+    if (verificado) await encerrarSessao().catch(() => {});
     definirRecuperacaoAtiva(false);
     setModo('entrar');
     setVerificado(false);
@@ -125,7 +133,7 @@ export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
       return;
     }
     try {
-      await executarAuth(() => supabase.auth.resetPasswordForEmail(email.trim()), setOcupado);
+      await executarAuth(() => enviarCodigoRecuperacao(email.trim()), setOcupado);
       setEtapa('codigo');
       setAviso('Se existir uma conta com este e-mail, enviamos um código de verificação.');
     } catch (f) {
@@ -150,18 +158,13 @@ export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
       if (!sessaoAberta) {
         definirRecuperacaoAtiva(true);
         await executarAuth(
-          () =>
-            supabase.auth.verifyOtp({
-              email: email.trim(),
-              token: codigo.trim(),
-              type: 'recovery',
-            }),
+          () => verificarCodigoRecuperacao(email.trim(), codigo.trim()),
           setOcupado,
         );
         sessaoAberta = true;
         setVerificado(true);
       }
-      await executarAuth(() => supabase.auth.updateUser({ password: senha }), setOcupado);
+      await executarAuth(() => definirNovaSenha(senha), setOcupado);
       // Senha trocada: libera o App, que já encontra a sessão aberta.
       definirRecuperacaoAtiva(false);
     } catch (f) {
@@ -188,12 +191,8 @@ export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
       const resposta = await executarAuth(
         () =>
           cadastrando
-            ? supabase.auth.signUp({
-                email: email.trim(),
-                password: senha,
-                options: { data: { nome: nome.trim() } },
-              })
-            : supabase.auth.signInWithPassword({ email: email.trim(), password: senha }),
+            ? criarConta(nome.trim(), email.trim(), senha)
+            : entrarComSenha(email.trim(), senha),
         setOcupado,
       );
       if (cadastrando && !resposta.data.session) {
@@ -210,7 +209,7 @@ export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
     setErro(null);
     setAviso(null);
     try {
-      await executarAuth(() => supabase.auth.signInAnonymously(), setOcupado);
+      await executarAuth(entrarComoConvidado, setOcupado);
     } catch (f) {
       setErro(erroAuth(f));
     }

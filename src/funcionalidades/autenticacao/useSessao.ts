@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from '@/servicos/supabase';
 import type { Usuario } from '@/compartilhado/tipos';
+import { carregarUsuario, encerrarSessao, observarSessao, obterSessao } from './api';
 import { executarAuth, erroAuth } from './operacaoAuth';
 import { alternarModoGestor, gestorPodeAlternarModo } from '@/funcionalidades/modoGestor/api';
 
@@ -37,14 +37,11 @@ export function useSessao() {
         setCarregando(false);
       }
     };
-    const { data: escuta } = supabase.auth.onAuthStateChange((_evento, s) => {
+    const pararEscuta = observarSessao(s => {
       recebeuEvento = true;
       aplicar(s);
     });
-    void executarAuth(
-      () => supabase.auth.getSession(),
-      () => {},
-    )
+    void executarAuth(obterSessao, () => {})
       .then(({ data }) => {
         if (!recebeuEvento) aplicar(data.session);
       })
@@ -57,14 +54,14 @@ export function useSessao() {
     return () => {
       ativo = false;
       revisaoSessao.current++;
-      escuta.subscription.unsubscribe();
+      pararEscuta();
     };
   }, []);
   const carregarPerfil = useCallback(async (userId: string) => {
     const versao = revisaoSessao.current;
     try {
       const { data } = await executarAuth(
-        () => supabase.from('usuarios').select('*').eq('id', userId).single(),
+        () => carregarUsuario(userId),
         () => {},
       );
       if (usuarioAtual.current !== userId || versao !== revisaoSessao.current) return;
@@ -122,12 +119,9 @@ export function useSessao() {
     if (saindo.current) return;
     const versao = revisaoSessao.current;
     try {
-      await executarAuth(
-        () => supabase.auth.signOut(),
-        v => {
-          saindo.current = v;
-        },
-      );
+      await executarAuth(encerrarSessao, v => {
+        saindo.current = v;
+      });
     } catch (f) {
       if (versao === revisaoSessao.current) Alert.alert('Não foi possível sair', erroAuth(f));
     }

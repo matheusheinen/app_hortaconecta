@@ -2,7 +2,7 @@ import { supabase } from '@/servicos/supabase';
 import { carregarMinhasInscricoes } from './api';
 import { disponibilidadeValida } from './regras';
 import { selecionarSugestoes } from './regrasSugestoes';
-import type { AtividadeInicio } from '@/funcionalidades/inicio/resumo';
+import type { AtividadeComVagas } from './tipos';
 
 /** Habilidades marcadas como área da tarefa (`atividade_habilidades`). */
 export async function carregarAreasAtividade(atividadeId: number): Promise<number[]> {
@@ -43,7 +43,7 @@ export async function salvarAreasAtividade(
 }
 
 /** Tarefas abertas que cabem na disponibilidade e nas áreas do voluntário. */
-export async function carregarSugestoes(usuarioId: string): Promise<AtividadeInicio[]> {
+export async function carregarSugestoes(usuarioId: string): Promise<AtividadeComVagas[]> {
   const agora = new Date();
   const [atividades, voluntario, habilidades, inscricoes] = await Promise.all([
     supabase
@@ -67,7 +67,7 @@ export async function carregarSugestoes(usuarioId: string): Promise<AtividadeIni
   if (atividades.error) throw atividades.error;
   if (voluntario.error) throw voluntario.error;
   if (habilidades.error) throw habilidades.error;
-  const lista = (atividades.data ?? []) as AtividadeInicio[];
+  const lista = (atividades.data ?? []) as AtividadeComVagas[];
   if (!lista.length) return [];
 
   const disponibilidade = disponibilidadeValida(voluntario.data?.disponibilidade_horarios)
