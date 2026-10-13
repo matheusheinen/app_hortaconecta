@@ -1,8 +1,15 @@
 /**
- * Regras puras do perfil em seções. Sem imports para rodar nos testes Node.
+ * Regras puras do perfil em seções, sem React nem Supabase.
  * A elegibilidade oficial continua sendo `voluntariado_elegibilidade` no banco;
  * estas funções só orientam o voluntário sobre o que falta em cada seção.
  */
+import {
+  apenasDigitos,
+  validarCnpj,
+  validarCpf,
+  validarTelefone,
+} from '@/compartilhado/utils/validadores';
+import { hojeIso, interpretarData } from '@/compartilhado/utils/datas';
 
 export type SecaoPerfil = 'pessoais' | 'cadastro' | 'endereco' | 'disponibilidade' | 'habilidades';
 
@@ -98,4 +105,134 @@ export function enderecoDoViaCep(resposta: unknown): EnderecoDoCep | null {
   };
   if (!endereco.cidade || !/^[A-Z]{2}$/.test(uf)) return null;
   return endereco;
+}
+
+// Validação das seções. Cada função devolve a primeira mensagem de erro para o
+// usuário ou os campos já normalizados, prontos para salvar.
+
+export type Validacao<T> = { erro: string } | { dados: T };
+
+/** Nome, telefone, Instagram e apresentação: iguais no voluntário e na gestão. */
+export function validarConta(
+  campos: { nome: string; telefone: string; instagram: string; descricao: string },
+  /** Como a tela chama o texto livre: "A apresentação" ou "A descrição". */
+  rotuloDescricao: string,
+): Validacao<{
+  nome: string;
+  telefone: string | null;
+  perfil_instagram: string | null;
+  descricao: string | null;
+}> {
+  const nome = campos.nome.trim();
+  const telefone = campos.telefone.trim();
+  const instagram = campos.instagram.trim().replace(/^@/, '');
+  const descricao = campos.descricao.trim();
+  if (nome.length < 2 || nome.length > 120)
+    return { erro: 'O nome precisa ter entre 2 e 120 caracteres.' };
+  if (telefone && !validarTelefone(telefone))
+    return { erro: 'Telefone inválido. Informe DDD + número (10 ou 11 dígitos).' };
+  if (instagram && !/^[A-Za-z0-9._]{1,30}$/.test(instagram))
+    return { erro: 'Instagram inválido. Use só letras, números, ponto e underline.' };
+  if (descricao.length > 500)
+    return { erro: `${rotuloDescricao} pode ter no máximo 500 caracteres.` };
+  return {
+    dados: {
+      nome,
+      telefone: telefone ? apenasDigitos(telefone) : null,
+      perfil_instagram: instagram || null,
+      descricao: descricao || null,
+    },
+  };
+}
+
+export function validarCadastroVoluntario(
+  campos: { cpf: string; nascimento: string; profissao: string },
+  hoje = hojeIso(),
+): Validacao<Pick<DadosPerfilVoluntario, 'cpf' | 'data_nascimento' | 'profissao'>> {
+  const cpf = campos.cpf.trim();
+  const nascimento = campos.nascimento.trim();
+  if (cpf && !validarCpf(cpf)) return { erro: 'CPF inválido.' };
+  const iso = nascimento ? interpretarData(nascimento) : null;
+  if (nascimento && !iso) return { erro: 'Use o formato DD/MM/AAAA na data de nascimento.' };
+  if (iso && iso <= '1900-01-01')
+    return { erro: 'A data de nascimento precisa ser posterior a 01/01/1900.' };
+  if (iso && iso >= hoje) return { erro: 'A data de nascimento precisa ser no passado.' };
+  return {
+    dados: {
+      cpf: cpf ? apenasDigitos(cpf) : null,
+      data_nascimento: iso,
+      profissao: campos.profissao.trim() || null,
+    },
+  };
+}
+
+type CamposEndereco = Pick<
+  DadosPerfilVoluntario,
+  'cep' | 'logradouro' | 'numero' | 'complemento' | 'bairro' | 'cidade' | 'uf'
+>;
+
+export function validarEndereco(campos: {
+  [campo in keyof CamposEndereco]: string;
+}): Validacao<CamposEndereco> {
+  const cep = campos.cep.trim();
+  const uf = campos.uf.trim().toUpperCase();
+  if (cep && apenasDigitos(cep).length !== 8)
+    return { erro: 'CEP inválido. Informe os 8 dígitos.' };
+  if (uf && !/^[A-Z]{2}$/.test(uf))
+    return { erro: 'UF inválida. Informe a sigla com duas letras, como RS.' };
+  return {
+    dados: {
+      cep: cep ? apenasDigitos(cep) : null,
+      logradouro: campos.logradouro.trim() || null,
+      numero: campos.numero.trim() || null,
+      complemento: campos.complemento.trim() || null,
+      bairro: campos.bairro.trim() || null,
+      cidade: campos.cidade.trim() || null,
+      uf: uf || null,
+    },
+  };
+}
+
+export function validarInstitucional(
+  campos: { cnpj: string; razaoSocial: string; fundacao: string; responsavel: string },
+  hoje = hojeIso(),
+): Validacao<{
+  cnpj: string | null;
+  razao_social: string | null;
+  data_criacao: string | null;
+  responsavel_legal: string | null;
+}> {
+  const cnpj = campos.cnpj.trim();
+  const fundacao = campos.fundacao.trim();
+  if (cnpj && !validarCnpj(cnpj)) return { erro: 'CNPJ inválido.' };
+  const iso = fundacao ? interpretarData(fundacao) : null;
+  if (fundacao && !iso) return { erro: 'Use o formato DD/MM/AAAA na data de fundação.' };
+  if (iso && iso > hoje) return { erro: 'A data de fundação não pode ser no futuro.' };
+  return {
+    dados: {
+      cnpj: cnpj ? apenasDigitos(cnpj) : null,
+      razao_social: campos.razaoSocial.trim() || null,
+      data_criacao: iso,
+      responsavel_legal: campos.responsavel.trim() || null,
+    },
+  };
+}
+
+export function validarWhatsapp(texto: string): Validacao<{ whatsapp: string | null }> {
+  const whatsapp = texto.trim();
+  if (whatsapp && !validarTelefone(whatsapp))
+    return { erro: 'WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos).' };
+  return { dados: { whatsapp: whatsapp ? apenasDigitos(whatsapp) : null } };
+}
+
+export function validarRecebimento(campos: {
+  chave: string;
+  beneficiario: string;
+}): Validacao<{ chave_pix: string | null; nome_beneficiario_pix: string | null }> {
+  const chave = campos.chave.trim();
+  const beneficiario = campos.beneficiario.trim();
+  if (chave.length > 140) return { erro: 'A chave PIX pode ter no máximo 140 caracteres.' };
+  if (beneficiario && (beneficiario.length < 2 || beneficiario.length > 120))
+    return { erro: 'O nome do beneficiário precisa ter entre 2 e 120 caracteres.' };
+  return { dados: { chave_pix: chave || null, nome_beneficiario_pix: beneficiario || null } };
 }

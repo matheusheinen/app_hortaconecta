@@ -8,15 +8,13 @@ import {
 } from './apiVoluntario';
 import { mensagemErro } from '@/compartilhado/utils/erros';
 import type { DadosPerfilVoluntario } from './regras';
-import {
-  ProvedorPerfilVoluntario,
-  TelaHubPerfilVoluntario,
-  TelaSecaoCadastro,
-  TelaSecaoDadosPessoais,
-  TelaSecaoDisponibilidade,
-  TelaSecaoEndereco,
-  TelaSecaoHabilidades,
-} from './telas/TelasPerfilVoluntario';
+import { ProvedorPerfilVoluntario } from './ContextoPerfilVoluntario';
+import { TelaHubPerfilVoluntario } from './telas/TelaHubPerfilVoluntario';
+import { TelaSecaoCadastro } from './telas/TelaSecaoCadastro';
+import { TelaSecaoDadosPessoais } from './telas/TelaSecaoDadosPessoais';
+import { TelaSecaoDisponibilidade } from './telas/TelaSecaoDisponibilidade';
+import { TelaSecaoEndereco } from './telas/TelaSecaoEndereco';
+import { TelaSecaoHabilidades } from './telas/TelaSecaoHabilidades';
 
 export type ParametrosPerfilVoluntario = {
   hub: undefined;

@@ -8,14 +8,12 @@ import {
   type PerfilOngCarregado,
 } from './apiOng';
 import { mensagemErro } from '@/compartilhado/utils/erros';
-import {
-  ProvedorPerfilOng,
-  TelaHubPerfilOng,
-  TelaSecaoContaOng,
-  TelaSecaoInstitucionalOng,
-  TelaSecaoRecebimentoOng,
-  TelaSecaoWhatsappOng,
-} from './telas/TelasPerfilOng';
+import { ProvedorPerfilOng } from './ContextoPerfilOng';
+import { TelaHubPerfilOng } from './telas/TelaHubPerfilOng';
+import { TelaSecaoContaOng } from './telas/TelaSecaoContaOng';
+import { TelaSecaoInstitucionalOng } from './telas/TelaSecaoInstitucionalOng';
+import { TelaSecaoRecebimentoOng } from './telas/TelaSecaoRecebimentoOng';
+import { TelaSecaoWhatsappOng } from './telas/TelaSecaoWhatsappOng';
 
 export type ParametrosPerfilOng = {
   hub: undefined;
