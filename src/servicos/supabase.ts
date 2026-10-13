@@ -1,4 +1,5 @@
 import 'react-native-url-polyfill/auto';
+import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import type { DatabaseAplicativo } from './database.api.types';
@@ -22,3 +23,13 @@ export const supabase = createClient<DatabaseAplicativo>(url, chave, {
     detectSessionInUrl: false,
   },
 });
+
+// Fora do navegador a renovação do token rodaria sem parar em segundo plano;
+// a documentação do Supabase manda ligá-la só com o app em primeiro plano.
+// No web o próprio cliente já acompanha a visibilidade da aba.
+if (Platform.OS !== 'web') {
+  AppState.addEventListener('change', estado => {
+    if (estado === 'active') void supabase.auth.startAutoRefresh();
+    else void supabase.auth.stopAutoRefresh();
+  });
+}
