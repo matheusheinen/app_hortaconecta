@@ -17,9 +17,8 @@ export function TelaSecaoDadosPessoais({ voltar }: { voltar: () => void }) {
       titulo="Dados pessoais"
       voltar={voltar}
       salvar={async () => {
-        const validacao = validarConta({ nome, telefone, instagram, descricao }, 'A apresentação');
-        if ('erro' in validacao) return validacao.erro;
-        await salvar(validacao.dados);
+        const valores = validarConta({ nome, telefone, instagram, descricao }, 'A apresentação');
+        await salvar(valores);
         return null;
       }}
     >

@@ -358,8 +358,8 @@ test('Perfil voluntário: CEP preenchido pelo ViaCEP e CEP/UF inválidos barram 
       return telas.TelaSecaoEndereco({ voltar() {} });
     };
     await encontrar(render(), 'Campo', 'rotulo', rotulo).props.onChangeText(valor);
-    assert.match(
-      await encontrar(render(), 'SecaoPerfil').props.salvar(),
+    await assert.rejects(
+      encontrar(render(), 'SecaoPerfil').props.salvar(),
       new RegExp(rotulo + ' inválid'),
     );
     assert.equal(salvou, false);
@@ -463,7 +463,7 @@ test('Perfil gestão: seção de WhatsApp valida e envia só os dígitos', async
     return telas.TelaSecaoWhatsappOng({ voltar() {} });
   };
   encontrar(render(), 'Campo', 'rotulo', 'WhatsApp').props.onChangeText('5199');
-  assert.match(await encontrar(render(), 'SecaoPerfil').props.salvar(), /WhatsApp inválido/);
+  await assert.rejects(encontrar(render(), 'SecaoPerfil').props.salvar(), /WhatsApp inválido/);
   encontrar(render(), 'Campo', 'rotulo', 'WhatsApp').props.onChangeText('(51) 98888-7777');
   assert.equal(await encontrar(render(), 'SecaoPerfil').props.salvar(), null);
   assert.deepEqual(enviados, [{ whatsapp: '51988887777' }]);
@@ -552,43 +552,51 @@ test('Perfil gestão: PIX lido e gravado na configuração; sem a coluna, a seç
   assert.equal(antigo.whatsapp, '51999999999');
 });
 
-test('Perfil: validações das seções devolvem a mensagem ou os campos normalizados', () => {
+test('Perfil: validações das seções lançam a mensagem ou devolvem os campos normalizados', () => {
   const conta = { nome: ' Ana ', telefone: '(51) 98888-7777', instagram: '@ana.h', descricao: '' };
   assert.deepEqual(regrasPerfil.validarConta(conta, 'A apresentação'), {
-    dados: { nome: 'Ana', telefone: '51988887777', perfil_instagram: 'ana.h', descricao: null },
+    nome: 'Ana',
+    telefone: '51988887777',
+    perfil_instagram: 'ana.h',
+    descricao: null,
   });
-  assert.match(regrasPerfil.validarConta({ ...conta, nome: 'A' }, 'X').erro, /nome/);
-  assert.match(regrasPerfil.validarConta({ ...conta, telefone: '123' }, 'X').erro, /Telefone/);
-  assert.match(regrasPerfil.validarConta({ ...conta, instagram: 'a b' }, 'X').erro, /Instagram/);
-  assert.equal(
-    regrasPerfil.validarConta({ ...conta, descricao: 'x'.repeat(501) }, 'A descrição').erro,
-    'A descrição pode ter no máximo 500 caracteres.',
+  assert.throws(() => regrasPerfil.validarConta({ ...conta, nome: 'A' }, 'X'), /nome/);
+  assert.throws(() => regrasPerfil.validarConta({ ...conta, telefone: '123' }, 'X'), /Telefone/);
+  assert.throws(() => regrasPerfil.validarConta({ ...conta, instagram: 'a b' }, 'X'), /Instagram/);
+  assert.throws(
+    () => regrasPerfil.validarConta({ ...conta, descricao: 'x'.repeat(501) }, 'A descrição'),
+    { message: 'A descrição pode ter no máximo 500 caracteres.' },
   );
 
   const cadastro = { cpf: '', nascimento: '10/05/1990', profissao: ' Agrônoma ' };
   assert.deepEqual(regrasPerfil.validarCadastroVoluntario(cadastro, '2026-10-13'), {
-    dados: { cpf: null, data_nascimento: '1990-05-10', profissao: 'Agrônoma' },
+    cpf: null,
+    data_nascimento: '1990-05-10',
+    profissao: 'Agrônoma',
   });
-  assert.match(
-    regrasPerfil.validarCadastroVoluntario({ ...cadastro, cpf: '111.111.111-11' }).erro,
+  assert.throws(
+    () => regrasPerfil.validarCadastroVoluntario({ ...cadastro, cpf: '111.111.111-11' }),
     /CPF/,
   );
-  assert.match(
-    regrasPerfil.validarCadastroVoluntario({ ...cadastro, nascimento: '13/10/2026' }, '2026-10-13')
-      .erro,
+  assert.throws(
+    () =>
+      regrasPerfil.validarCadastroVoluntario(
+        { ...cadastro, nascimento: '13/10/2026' },
+        '2026-10-13',
+      ),
     /no passado/,
   );
-
-  assert.match(
-    regrasPerfil.validarInstitucional(
-      { cnpj: '', razaoSocial: '', fundacao: '01/01/2030', responsavel: '' },
-      '2026-10-13',
-    ).erro,
+  assert.throws(
+    () =>
+      regrasPerfil.validarInstitucional(
+        { cnpj: '', razaoSocial: '', fundacao: '01/01/2030', responsavel: '' },
+        '2026-10-13',
+      ),
     /futuro/,
   );
-  assert.deepEqual(regrasPerfil.validarWhatsapp(''), { dados: { whatsapp: null } });
-  assert.match(
-    regrasPerfil.validarRecebimento({ chave: 'x', beneficiario: 'A' }).erro,
+  assert.deepEqual(regrasPerfil.validarWhatsapp(''), { whatsapp: null });
+  assert.throws(
+    () => regrasPerfil.validarRecebimento({ chave: 'x', beneficiario: 'A' }),
     /beneficiário/,
   );
 });

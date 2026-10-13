@@ -14,9 +14,8 @@ export function TelaSecaoWhatsappOng({ voltar }: { voltar: () => void }) {
       titulo="WhatsApp para voluntários"
       voltar={voltar}
       salvar={async () => {
-        const validacao = validarWhatsapp(whatsapp);
-        if ('erro' in validacao) return validacao.erro;
-        await salvar(validacao.dados);
+        const valores = validarWhatsapp(whatsapp);
+        await salvar(valores);
         return null;
       }}
     >

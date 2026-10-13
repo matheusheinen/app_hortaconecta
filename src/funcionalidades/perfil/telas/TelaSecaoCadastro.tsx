@@ -19,9 +19,8 @@ export function TelaSecaoCadastro({ voltar }: { voltar: () => void }) {
       titulo="Cadastro de voluntário"
       voltar={voltar}
       salvar={async () => {
-        const validacao = validarCadastroVoluntario({ cpf, nascimento, profissao });
-        if ('erro' in validacao) return validacao.erro;
-        await salvar(validacao.dados);
+        const valores = validarCadastroVoluntario({ cpf, nascimento, profissao });
+        await salvar(valores);
         return null;
       }}
     >

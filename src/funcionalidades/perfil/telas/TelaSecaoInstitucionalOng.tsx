@@ -18,9 +18,8 @@ export function TelaSecaoInstitucionalOng({ voltar }: { voltar: () => void }) {
       titulo="Dados institucionais"
       voltar={voltar}
       salvar={async () => {
-        const validacao = validarInstitucional({ cnpj, razaoSocial, fundacao, responsavel });
-        if ('erro' in validacao) return validacao.erro;
-        await salvar(validacao.dados);
+        const valores = validarInstitucional({ cnpj, razaoSocial, fundacao, responsavel });
+        await salvar(valores);
         return null;
       }}
     >

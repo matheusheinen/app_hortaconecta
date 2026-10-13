@@ -17,9 +17,8 @@ export function TelaSecaoRecebimentoOng({ voltar }: { voltar: () => void }) {
       salvar={async () => {
         if (!disponivel)
           return 'O servidor ainda não tem o campo de PIX da instituição. Avise quem administra o Supabase.';
-        const validacao = validarRecebimento({ chave, beneficiario });
-        if ('erro' in validacao) return validacao.erro;
-        await salvar(validacao.dados);
+        const valores = validarRecebimento({ chave, beneficiario });
+        await salvar(valores);
         return null;
       }}
     >

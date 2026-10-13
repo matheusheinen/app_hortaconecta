@@ -16,9 +16,8 @@ export function TelaSecaoContaOng({ voltar }: { voltar: () => void }) {
       titulo="Conta e apresentação"
       voltar={voltar}
       salvar={async () => {
-        const validacao = validarConta({ nome, telefone, instagram, descricao }, 'A descrição');
-        if ('erro' in validacao) return validacao.erro;
-        await salvar(validacao.dados);
+        const valores = validarConta({ nome, telefone, instagram, descricao }, 'A descrição');
+        await salvar(valores);
         return null;
       }}
     >

@@ -107,62 +107,57 @@ export function enderecoDoViaCep(resposta: unknown): EnderecoDoCep | null {
   return endereco;
 }
 
-// Validação das seções. Cada função devolve a primeira mensagem de erro para o
-// usuário ou os campos já normalizados, prontos para salvar.
-
-export type Validacao<T> = { erro: string } | { dados: T };
+// Validação das seções. Cada função devolve os campos já normalizados, prontos
+// para salvar, ou lança a primeira mensagem de erro para o usuário — o mesmo
+// padrão de validarMeta e validarPublicacao. SecaoPerfil mostra a mensagem.
 
 /** Nome, telefone, Instagram e apresentação: iguais no voluntário e na gestão. */
 export function validarConta(
   campos: { nome: string; telefone: string; instagram: string; descricao: string },
   /** Como a tela chama o texto livre: "A apresentação" ou "A descrição". */
   rotuloDescricao: string,
-): Validacao<{
+): {
   nome: string;
   telefone: string | null;
   perfil_instagram: string | null;
   descricao: string | null;
-}> {
+} {
   const nome = campos.nome.trim();
   const telefone = campos.telefone.trim();
   const instagram = campos.instagram.trim().replace(/^@/, '');
   const descricao = campos.descricao.trim();
   if (nome.length < 2 || nome.length > 120)
-    return { erro: 'O nome precisa ter entre 2 e 120 caracteres.' };
+    throw new Error('O nome precisa ter entre 2 e 120 caracteres.');
   if (telefone && !validarTelefone(telefone))
-    return { erro: 'Telefone inválido. Informe DDD + número (10 ou 11 dígitos).' };
+    throw new Error('Telefone inválido. Informe DDD + número (10 ou 11 dígitos).');
   if (instagram && !/^[A-Za-z0-9._]{1,30}$/.test(instagram))
-    return { erro: 'Instagram inválido. Use só letras, números, ponto e underline.' };
+    throw new Error('Instagram inválido. Use só letras, números, ponto e underline.');
   if (descricao.length > 500)
-    return { erro: `${rotuloDescricao} pode ter no máximo 500 caracteres.` };
+    throw new Error(`${rotuloDescricao} pode ter no máximo 500 caracteres.`);
   return {
-    dados: {
-      nome,
-      telefone: telefone ? apenasDigitos(telefone) : null,
-      perfil_instagram: instagram || null,
-      descricao: descricao || null,
-    },
+    nome,
+    telefone: telefone ? apenasDigitos(telefone) : null,
+    perfil_instagram: instagram || null,
+    descricao: descricao || null,
   };
 }
 
 export function validarCadastroVoluntario(
   campos: { cpf: string; nascimento: string; profissao: string },
   hoje = hojeIso(),
-): Validacao<Pick<DadosPerfilVoluntario, 'cpf' | 'data_nascimento' | 'profissao'>> {
+): Pick<DadosPerfilVoluntario, 'cpf' | 'data_nascimento' | 'profissao'> {
   const cpf = campos.cpf.trim();
   const nascimento = campos.nascimento.trim();
-  if (cpf && !validarCpf(cpf)) return { erro: 'CPF inválido.' };
+  if (cpf && !validarCpf(cpf)) throw new Error('CPF inválido.');
   const iso = nascimento ? interpretarData(nascimento) : null;
-  if (nascimento && !iso) return { erro: 'Use o formato DD/MM/AAAA na data de nascimento.' };
+  if (nascimento && !iso) throw new Error('Use o formato DD/MM/AAAA na data de nascimento.');
   if (iso && iso <= '1900-01-01')
-    return { erro: 'A data de nascimento precisa ser posterior a 01/01/1900.' };
-  if (iso && iso >= hoje) return { erro: 'A data de nascimento precisa ser no passado.' };
+    throw new Error('A data de nascimento precisa ser posterior a 01/01/1900.');
+  if (iso && iso >= hoje) throw new Error('A data de nascimento precisa ser no passado.');
   return {
-    dados: {
-      cpf: cpf ? apenasDigitos(cpf) : null,
-      data_nascimento: iso,
-      profissao: campos.profissao.trim() || null,
-    },
+    cpf: cpf ? apenasDigitos(cpf) : null,
+    data_nascimento: iso,
+    profissao: campos.profissao.trim() || null,
   };
 }
 
@@ -173,66 +168,62 @@ type CamposEndereco = Pick<
 
 export function validarEndereco(campos: {
   [campo in keyof CamposEndereco]: string;
-}): Validacao<CamposEndereco> {
+}): CamposEndereco {
   const cep = campos.cep.trim();
   const uf = campos.uf.trim().toUpperCase();
   if (cep && apenasDigitos(cep).length !== 8)
-    return { erro: 'CEP inválido. Informe os 8 dígitos.' };
+    throw new Error('CEP inválido. Informe os 8 dígitos.');
   if (uf && !/^[A-Z]{2}$/.test(uf))
-    return { erro: 'UF inválida. Informe a sigla com duas letras, como RS.' };
+    throw new Error('UF inválida. Informe a sigla com duas letras, como RS.');
   return {
-    dados: {
-      cep: cep ? apenasDigitos(cep) : null,
-      logradouro: campos.logradouro.trim() || null,
-      numero: campos.numero.trim() || null,
-      complemento: campos.complemento.trim() || null,
-      bairro: campos.bairro.trim() || null,
-      cidade: campos.cidade.trim() || null,
-      uf: uf || null,
-    },
+    cep: cep ? apenasDigitos(cep) : null,
+    logradouro: campos.logradouro.trim() || null,
+    numero: campos.numero.trim() || null,
+    complemento: campos.complemento.trim() || null,
+    bairro: campos.bairro.trim() || null,
+    cidade: campos.cidade.trim() || null,
+    uf: uf || null,
   };
 }
 
 export function validarInstitucional(
   campos: { cnpj: string; razaoSocial: string; fundacao: string; responsavel: string },
   hoje = hojeIso(),
-): Validacao<{
+): {
   cnpj: string | null;
   razao_social: string | null;
   data_criacao: string | null;
   responsavel_legal: string | null;
-}> {
+} {
   const cnpj = campos.cnpj.trim();
   const fundacao = campos.fundacao.trim();
-  if (cnpj && !validarCnpj(cnpj)) return { erro: 'CNPJ inválido.' };
+  if (cnpj && !validarCnpj(cnpj)) throw new Error('CNPJ inválido.');
   const iso = fundacao ? interpretarData(fundacao) : null;
-  if (fundacao && !iso) return { erro: 'Use o formato DD/MM/AAAA na data de fundação.' };
-  if (iso && iso > hoje) return { erro: 'A data de fundação não pode ser no futuro.' };
+  if (fundacao && !iso) throw new Error('Use o formato DD/MM/AAAA na data de fundação.');
+  if (iso && iso > hoje) throw new Error('A data de fundação não pode ser no futuro.');
   return {
-    dados: {
-      cnpj: cnpj ? apenasDigitos(cnpj) : null,
-      razao_social: campos.razaoSocial.trim() || null,
-      data_criacao: iso,
-      responsavel_legal: campos.responsavel.trim() || null,
-    },
+    cnpj: cnpj ? apenasDigitos(cnpj) : null,
+    razao_social: campos.razaoSocial.trim() || null,
+    data_criacao: iso,
+    responsavel_legal: campos.responsavel.trim() || null,
   };
 }
 
-export function validarWhatsapp(texto: string): Validacao<{ whatsapp: string | null }> {
+export function validarWhatsapp(texto: string): { whatsapp: string | null } {
   const whatsapp = texto.trim();
   if (whatsapp && !validarTelefone(whatsapp))
-    return { erro: 'WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos).' };
-  return { dados: { whatsapp: whatsapp ? apenasDigitos(whatsapp) : null } };
+    throw new Error('WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos).');
+  return { whatsapp: whatsapp ? apenasDigitos(whatsapp) : null };
 }
 
-export function validarRecebimento(campos: {
-  chave: string;
-  beneficiario: string;
-}): Validacao<{ chave_pix: string | null; nome_beneficiario_pix: string | null }> {
+export function validarRecebimento(campos: { chave: string; beneficiario: string }): {
+  chave_pix: string | null;
+  nome_beneficiario_pix: string | null;
+} {
   const chave = campos.chave.trim();
   const beneficiario = campos.beneficiario.trim();
-  if (chave.length > 140) return { erro: 'A chave PIX pode ter no máximo 140 caracteres.' };
+  if (chave.length > 140) throw new Error('A chave PIX pode ter no máximo 140 caracteres.');
   if (beneficiario && (beneficiario.length < 2 || beneficiario.length > 120))
-    return { erro: 'O nome do beneficiário precisa ter entre 2 e 120 caracteres.' };
-  return { dados: { chave_pix: chave || null, nome_beneficiario_pix: beneficiario || null } };
+    throw new Error('O nome do beneficiário precisa ter entre 2 e 120 caracteres.');
+  return { chave_pix: chave || null, nome_beneficiario_pix: beneficiario || null };
 }

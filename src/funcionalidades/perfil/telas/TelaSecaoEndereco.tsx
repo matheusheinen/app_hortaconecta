@@ -44,7 +44,7 @@ export function TelaSecaoEndereco({ voltar }: { voltar: () => void }) {
       titulo="Endereço"
       voltar={voltar}
       salvar={async () => {
-        const validacao = validarEndereco({
+        const valores = validarEndereco({
           cep,
           logradouro,
           numero,
@@ -53,8 +53,7 @@ export function TelaSecaoEndereco({ voltar }: { voltar: () => void }) {
           cidade,
           uf,
         });
-        if ('erro' in validacao) return validacao.erro;
-        await salvar(validacao.dados);
+        await salvar(valores);
         return null;
       }}
     >
