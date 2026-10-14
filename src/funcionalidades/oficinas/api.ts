@@ -1,18 +1,17 @@
 import { supabase } from '@/servicos/supabase';
+import { validarResposta } from '@/compartilhado/esquemas';
 import type { PropostaOficina } from './tipos';
+import { esquemaListaOficinas, esquemaPropostaOficina } from './esquemas';
 import { validarOficina, type CamposOficina } from './regras';
 export async function listarOficinas(): Promise<PropostaOficina[]> {
   const { data, error } = await supabase.rpc('oficinas_listar');
   if (error) throw error;
-  if (!Array.isArray(data)) throw new Error('Não foi possível carregar as propostas.');
-  return data as unknown as PropostaOficina[];
+  return validarResposta(esquemaListaOficinas, data, 'Não foi possível carregar as propostas.');
 }
 export async function detalheOficina(id: number): Promise<PropostaOficina> {
   const { data, error } = await supabase.rpc('oficinas_detalhe', { p_id: id });
   if (error) throw error;
-  if (!data || typeof data !== 'object' || Array.isArray(data))
-    throw new Error('Proposta indisponível.');
-  return data as unknown as PropostaOficina;
+  return validarResposta(esquemaPropostaOficina, data, 'Proposta indisponível.');
 }
 export async function salvarOficina(p: PropostaOficina | null, campos: CamposOficina) {
   const duracao = validarOficina(campos);
