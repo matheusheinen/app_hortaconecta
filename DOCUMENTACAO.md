@@ -224,7 +224,7 @@ O código fica em `src/`, organizado por funcionalidade. `index.ts` registra `sr
 src/
   app/                 App, abas principais e abas do convidado
   funcionalidades/
-    autenticacao/      TelaLogin, useAcesso (estado do acesso), useSessao, recuperação de senha
+    autenticacao/      TelaLogin, useAcesso, useSessao, ContextoSessao (useSessaoAtual), recuperação de senha
     modoGestor/        alternância ONG ↔ voluntário
     voluntariado/      atividades, candidaturas, check-in, áreas e sugestões
     metas/             metas em dinheiro e de materiais, contribuições

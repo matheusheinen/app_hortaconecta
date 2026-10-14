@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -11,14 +12,13 @@ import { descreverQuantidade } from '../regras';
 import { estilosMeta } from '../componentes/IndicadoresMeta';
 
 export function TelaMinhasContribuicoesMetas({
-  usuarioId,
   voltar,
   abrir,
 }: {
-  usuarioId: string;
   voltar: () => void;
   abrir: (id: number) => void;
 }) {
+  const { usuarioId } = useSessaoAtual();
   const consulta = useCallback(() => minhasContribuicoesMetas(usuarioId), [usuarioId]);
   const { dados, erro, carregando, carregar } = useConsulta(consulta);
   return (

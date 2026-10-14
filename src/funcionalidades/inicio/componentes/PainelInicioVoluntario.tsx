@@ -21,9 +21,8 @@ import { IndicadoresInicio } from './IndicadoresInicio';
 import { CabecalhoSecao, EstadoVazio } from './SecaoInicio';
 import { estilosInicio } from './estilosInicio';
 
+/** Navegação que a pilha do Início entrega às telas. */
 export type AcoesInicio = {
-  nome: string;
-  sair: () => void;
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
@@ -39,6 +38,7 @@ export type AcoesInicio = {
 };
 
 type PropsPainel = AcoesInicio & {
+  nome: string;
   resumo: ResumoInicio | null;
   /** Tarefas que combinam com disponibilidade e áreas; vazio esconde a seção. */
   sugestoes?: AtividadeComVagas[];

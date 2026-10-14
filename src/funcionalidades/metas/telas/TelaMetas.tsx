@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Pressable, Text } from 'react-native';
 import { AbasFiltro, Botao } from '@/compartilhado/componentes/Ui';
@@ -11,20 +12,17 @@ import { descreverProgresso, metaFinalizada, prazoVencido } from '../regras';
 import { EtiquetaMeta, ProgressoMeta } from '../componentes/IndicadoresMeta';
 
 export const TelaMetas = memoTela(function TelaMetas({
-  ehGestao,
   voltar,
   abrir,
   criar,
   minhas,
-  convidado = false,
 }: {
-  ehGestao: boolean;
   voltar: () => void;
   abrir: (id: number) => void;
   criar: () => void;
   minhas: () => void;
-  convidado?: boolean;
 }) {
+  const { ehGestao, convidado } = useSessaoAtual();
   const { dados, erro, carregando, carregar } = useConsulta(listarMetas);
   const hoje = hojeIso();
   const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');

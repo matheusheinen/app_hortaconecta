@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Alert, Text } from 'react-native';
 import { Botao, Campo, Aviso } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -16,16 +17,15 @@ import { mensagemErro } from '@/compartilhado/utils/erros';
 import { tipo } from '@/compartilhado/tema';
 
 export function TelaOficinas({
-  gestao,
   voltar,
   abrir,
   criar,
 }: {
-  gestao: boolean;
   voltar: () => void;
   abrir: (id: number) => void;
   criar: () => void;
 }) {
+  const { ehGestao: gestao } = useSessaoAtual();
   const { dados, erro, carregando, carregar } = useConsulta(listarOficinas);
   return (
     <TelaFluxo
@@ -56,17 +56,14 @@ export function TelaOficinas({
 }
 export function TelaDetalheOficina({
   id,
-  gestao,
-  usuarioId,
   voltar,
   editar,
 }: {
   id: number;
-  gestao: boolean;
-  usuarioId: string;
   voltar: () => void;
   editar: () => void;
 }) {
+  const { ehGestao: gestao, usuarioId } = useSessaoAtual();
   const {
     dados: p,
     erro,

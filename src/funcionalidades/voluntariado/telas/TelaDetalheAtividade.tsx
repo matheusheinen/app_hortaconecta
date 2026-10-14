@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Alert, Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -13,26 +14,21 @@ import { mascararTelefone } from '@/compartilhado/utils/mascaras';
 
 type Props = {
   atividadeId: number;
-  ehGestao: boolean;
   voltar: () => void;
   editar: () => void;
   candidatos: () => void;
   checkin: () => void;
   perfil: () => void;
-  convidado?: boolean;
-  criarConta?: () => void;
 };
 export function TelaDetalheAtividade({
   atividadeId,
-  ehGestao,
   voltar,
   editar,
   candidatos,
   checkin,
   perfil,
-  convidado = false,
-  criarConta,
 }: Props) {
+  const { ehGestao, convidado, sair: criarConta } = useSessaoAtual();
   const consulta = useCallback(() => carregarDetalhe(atividadeId), [atividadeId]);
   const { dados, erro, carregando, carregar } = useConsulta(consulta);
   const [erroAcao, setErroAcao] = useState<string | null>(null);

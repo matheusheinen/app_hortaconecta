@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Botao, Campo } from '@/compartilhado/componentes/Ui';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -8,15 +9,8 @@ import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { carregarMeta, listarVoluntarios, registrarRecebimento } from '../api';
 import { descreverProgresso, descreverQuantidade, interpretarQuantidade } from '../regras';
 
-export function TelaRegistrarRecebimento({
-  id,
-  gestaoId,
-  voltar,
-}: {
-  id: number;
-  gestaoId: string;
-  voltar: () => void;
-}) {
+export function TelaRegistrarRecebimento({ id, voltar }: { id: number; voltar: () => void }) {
+  const { usuarioId: gestaoId } = useSessaoAtual();
   const consulta = useCallback(async () => {
     const [{ meta }, voluntarios] = await Promise.all([carregarMeta(id), listarVoluntarios()]);
     return { meta, voluntarios };

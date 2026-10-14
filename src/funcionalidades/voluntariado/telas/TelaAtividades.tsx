@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
@@ -12,26 +13,23 @@ import { mensagemErro } from '@/compartilhado/utils/erros';
 import { confirmarExclusao } from '@/compartilhado/utils/confirmar';
 
 type Props = {
-  ehGestao: boolean;
   voltar: () => void;
   onNova: () => void;
   onEditar: (atividade: Atividade) => void;
   onDetalhe: (id: number) => void;
   onMinhas: () => void;
   onHistorico: () => void;
-  convidado?: boolean;
 };
 
 export const TelaAtividades = memoTela(function TelaAtividades({
-  ehGestao,
   voltar,
   onNova,
   onEditar,
   onDetalhe,
   onMinhas,
   onHistorico,
-  convidado = false,
 }: Props) {
+  const { ehGestao, convidado } = useSessaoAtual();
   const { dados, carregando, erro, carregar } = useConsulta(listarAtividades);
   const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');
   const abertas = (dados ?? []).filter(a => !atividadeFinalizada(a.status));

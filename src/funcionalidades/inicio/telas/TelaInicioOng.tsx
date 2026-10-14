@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
@@ -6,8 +7,6 @@ import { Icone, type NomeIcone } from '@/compartilhado/componentes/Icone';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
 
 type Props = {
-  nome: string;
-  sair: () => void;
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
@@ -17,14 +16,13 @@ type Props = {
 };
 
 export const TelaInicioOng = memoTela(function TelaInicioOng({
-  nome,
-  sair,
   aoIrParaAtividades,
   aoIrParaMetas,
   aoIrParaDiario,
   aoIrParaOficinas,
   aoIrParaCertificados,
 }: Props) {
+  const { nome, sair } = useSessaoAtual();
   const { configuracao } = useConfiguracaoInstituicao();
 
   return (

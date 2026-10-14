@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Alert, Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -12,15 +13,14 @@ import { ImagemDiario } from '../componentes/ImagemDiario';
 
 export function TelaDetalheDiario({
   id,
-  gestao,
   voltar,
   editar,
 }: {
   id: number;
-  gestao: boolean;
   voltar: () => void;
   editar: () => void;
 }) {
+  const { ehGestao: gestao } = useSessaoAtual();
   const { dados, erro, carregando, carregar } = useConsulta(
     useCallback(() => detalheDiario(id), [id]),
   );

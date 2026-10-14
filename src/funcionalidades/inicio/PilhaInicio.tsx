@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TelaInicioOng } from './telas/TelaInicioOng';
 import { TelaInicioVoluntario } from './telas/TelaInicioVoluntario';
@@ -22,10 +23,6 @@ export type ParametrosInicio = {
 };
 const Pilha = createNativeStackNavigator<ParametrosInicio>();
 export function PilhaInicio({
-  gestao,
-  usuarioId,
-  nome,
-  sair,
   atividades,
   materiais,
   diario,
@@ -36,10 +33,6 @@ export function PilhaInicio({
   minhasAtividades,
   minhasContribuicoes,
 }: {
-  gestao: boolean;
-  usuarioId: string;
-  nome: string;
-  sair: () => void;
   atividades: () => void;
   materiais: () => void;
   diario: () => void;
@@ -50,13 +43,12 @@ export function PilhaInicio({
   minhasAtividades: () => void;
   minhasContribuicoes: () => void;
 }) {
+  const { ehGestao: gestao } = useSessaoAtual();
   return (
     <Pilha.Navigator screenOptions={{ headerShown: false }}>
       <Pilha.Screen name="resumo">
         {({ navigation }) => {
           const acoes = {
-            nome,
-            sair,
             aoIrParaAtividades: atividades,
             aoIrParaMetas: materiais,
             aoIrParaDiario: diario,
@@ -72,7 +64,6 @@ export function PilhaInicio({
           ) : (
             <TelaInicioVoluntario
               {...acoes}
-              usuarioId={usuarioId}
               aoPerfil={perfil}
               abrirAtividade={abrirAtividade}
               abrirMeta={abrirMeta}
@@ -88,7 +79,6 @@ export function PilhaInicio({
           <Pilha.Screen name="oficinas">
             {({ navigation }) => (
               <TelaOficinas
-                gestao={gestao}
                 voltar={() => navigation.goBack()}
                 criar={() => navigation.navigate('propor', { id: null })}
                 abrir={id => navigation.navigate('oficina', { id })}
@@ -100,8 +90,6 @@ export function PilhaInicio({
               <TelaDetalheOficina
                 key={route.params.id}
                 id={route.params.id}
-                gestao={gestao}
-                usuarioId={usuarioId}
                 voltar={() => navigation.goBack()}
                 editar={() => navigation.navigate('propor', route.params)}
               />
@@ -126,7 +114,6 @@ export function PilhaInicio({
           <Pilha.Screen name="certificados">
             {({ navigation }) => (
               <TelaCertificados
-                gestao={gestao}
                 voltar={() => navigation.goBack()}
                 abrir={id => navigation.navigate('certificado', { id })}
               />

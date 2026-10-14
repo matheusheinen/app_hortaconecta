@@ -116,13 +116,16 @@ export function useSessao() {
       ativo = false;
     };
   }, [perfilId, tipoPerfil, convidado]);
-  async function alternarModo(gestor: boolean) {
-    const id = sessao?.user?.id;
-    if (!id) return;
-    await alternarModoGestor(gestor);
-    await carregarPerfil(id);
-  }
-  async function sair() {
+  // Funções estáveis: entram no contexto de sessão, que não deve mudar a cada render.
+  const alternarModo = useCallback(
+    async (gestor: boolean) => {
+      if (!usuarioId) return;
+      await alternarModoGestor(gestor);
+      await carregarPerfil(usuarioId);
+    },
+    [usuarioId, carregarPerfil],
+  );
+  const sair = useCallback(async () => {
     if (saindo.current) return;
     const versao = revisaoSessao.current;
     try {
@@ -132,7 +135,16 @@ export function useSessao() {
     } catch (f) {
       if (versao === revisaoSessao.current) Alert.alert('Não foi possível sair', erroAuth(f));
     }
-  }
+  }, []);
+  const recarregarPerfil = useCallback(
+    (propagarErro = false) =>
+      usuarioId
+        ? carregarPerfil(usuarioId).catch(f => {
+            if (propagarErro) throw f;
+          })
+        : Promise.resolve(),
+    [usuarioId, carregarPerfil],
+  );
   return {
     sessao,
     perfil,
@@ -143,11 +155,6 @@ export function useSessao() {
     podeAlternarModo: podeAlternarModo || perfil?.tipo_perfil === 'ONG',
     alternarModo,
     sair,
-    recarregarPerfil: (propagarErro = false) =>
-      sessao?.user
-        ? carregarPerfil(sessao.user.id).catch(f => {
-            if (propagarErro) throw f;
-          })
-        : Promise.resolve(),
+    recarregarPerfil,
   };
 }

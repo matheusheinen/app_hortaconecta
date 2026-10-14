@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Alert, StyleSheet, Text } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
@@ -19,7 +20,6 @@ export function PainelVoluntarioMeta({
   contribuicoes,
   recebendo,
   vencido,
-  usuarioId,
   aoDeclarar,
   minhas,
 }: {
@@ -27,10 +27,10 @@ export function PainelVoluntarioMeta({
   contribuicoes: ContribuicaoComDoador[];
   recebendo: boolean;
   vencido: boolean;
-  usuarioId: string;
   aoDeclarar: () => Promise<void>;
   minhas: () => void;
 }) {
+  const { usuarioId } = useSessaoAtual();
   const { configuracao } = useConfiguracaoInstituicao();
   const [pix, setPix] = useState<Pix | null>(null);
   const [copiado, setCopiado] = useState(false);
