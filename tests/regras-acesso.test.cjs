@@ -19,31 +19,63 @@ const regras = modulo.exports;
 
 test('Acesso: login e cadastro exigem e-mail, senha e, no cadastro, o nome', () => {
   const campos = { nome: '', email: 'a@b.com', senha: 'segredo' };
-  assert.equal(regras.validarEntrada('entrar', campos), null);
-  assert.equal(
-    regras.validarEntrada('entrar', { ...campos, email: ' ' }),
-    'Informe e-mail e senha.',
-  );
-  assert.equal(
-    regras.validarEntrada('entrar', { ...campos, senha: '' }),
-    'Informe e-mail e senha.',
-  );
-  assert.equal(regras.validarEntrada('cadastrar', campos), 'Informe seu nome completo.');
-  assert.equal(regras.validarEntrada('cadastrar', { ...campos, nome: 'Ana' }), null);
+  assert.doesNotThrow(() => regras.validarEntrada('entrar', campos));
+  assert.throws(() => regras.validarEntrada('entrar', { ...campos, email: ' ' }), {
+    message: 'Informe e-mail e senha.',
+  });
+  assert.throws(() => regras.validarEntrada('entrar', { ...campos, senha: '' }), {
+    message: 'Informe e-mail e senha.',
+  });
+  assert.throws(() => regras.validarEntrada('cadastrar', campos), {
+    message: 'Informe seu nome completo.',
+  });
+  assert.doesNotThrow(() => regras.validarEntrada('cadastrar', { ...campos, nome: 'Ana' }));
+  assert.throws(() => regras.validarEmailRecuperacao('  '), /e-mail da conta/);
 });
 
 test('Acesso: nova senha pede código de 6 a 10 dígitos, dispensado depois de confirmado', () => {
   const base = { codigo: '123456', senha: 'segredo', codigoConfirmado: false };
-  assert.equal(regras.validarNovaSenha(base), null);
-  assert.match(regras.validarNovaSenha({ ...base, codigo: '12345' }), /código/);
-  assert.match(regras.validarNovaSenha({ ...base, codigo: 'abcdef' }), /código/);
-  assert.equal(regras.validarNovaSenha({ ...base, codigo: '', codigoConfirmado: true }), null);
-  assert.match(regras.validarNovaSenha({ ...base, senha: '12345' }), /6 caracteres/);
+  assert.doesNotThrow(() => regras.validarNovaSenha(base));
+  assert.throws(() => regras.validarNovaSenha({ ...base, codigo: '12345' }), /código/);
+  assert.throws(() => regras.validarNovaSenha({ ...base, codigo: 'abcdef' }), /código/);
+  assert.doesNotThrow(() =>
+    regras.validarNovaSenha({ ...base, codigo: '', codigoConfirmado: true }),
+  );
+  assert.throws(() => regras.validarNovaSenha({ ...base, senha: '12345' }), /6 caracteres/);
 });
 
-test('Acesso: rótulo do botão principal acompanha modo e etapa', () => {
-  assert.equal(regras.rotuloAcao('entrar', 'email'), 'Entrar');
-  assert.equal(regras.rotuloAcao('cadastrar', 'email'), 'Criar conta');
-  assert.equal(regras.rotuloAcao('recuperar', 'email'), 'Enviar código');
-  assert.equal(regras.rotuloAcao('recuperar', 'codigo'), 'Redefinir senha');
+test('Acesso: a máquina de estados segue o fluxo e ignora eventos fora de hora', () => {
+  const seguir = (...eventos) => eventos.reduce(regras.proximaFase, regras.faseInicial);
+  assert.deepEqual(seguir('alternarCadastro'), { modo: 'cadastrar' });
+  assert.deepEqual(seguir('alternarCadastro', 'contaCriada'), { modo: 'entrar' });
+  assert.deepEqual(seguir('abrirRecuperacao', 'codigoEnviado', 'codigoConfirmado'), {
+    modo: 'recuperar',
+    etapa: 'codigo',
+    codigoConfirmado: true,
+  });
+  assert.deepEqual(seguir('abrirRecuperacao', 'codigoEnviado', 'voltarAoLogin'), {
+    modo: 'entrar',
+  });
+  // Fora de hora: confirmar código sem tê-lo enviado, recuperar a partir do cadastro.
+  assert.deepEqual(seguir('codigoConfirmado'), { modo: 'entrar' });
+  assert.deepEqual(seguir('abrirRecuperacao', 'codigoConfirmado'), {
+    modo: 'recuperar',
+    etapa: 'email',
+  });
+  assert.deepEqual(seguir('alternarCadastro', 'abrirRecuperacao'), { modo: 'cadastrar' });
+  assert.deepEqual(seguir('abrirRecuperacao', 'alternarCadastro'), {
+    modo: 'recuperar',
+    etapa: 'email',
+  });
+  assert.equal(regras.codigoConfirmado(seguir('abrirRecuperacao', 'codigoEnviado')), false);
+});
+
+test('Acesso: rótulo do botão principal acompanha a fase', () => {
+  assert.equal(regras.rotuloAcao({ modo: 'entrar' }), 'Entrar');
+  assert.equal(regras.rotuloAcao({ modo: 'cadastrar' }), 'Criar conta');
+  assert.equal(regras.rotuloAcao({ modo: 'recuperar', etapa: 'email' }), 'Enviar código');
+  assert.equal(
+    regras.rotuloAcao({ modo: 'recuperar', etapa: 'codigo', codigoConfirmado: false }),
+    'Redefinir senha',
+  );
 });

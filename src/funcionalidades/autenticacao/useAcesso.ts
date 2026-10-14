@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { executarAuth, erroAuth } from './operacaoAuth';
 import {
   criarConta,
@@ -11,29 +11,30 @@ import {
 } from './api';
 import { definirRecuperacaoAtiva } from './recuperacaoSenha';
 import {
+  codigoConfirmado,
+  faseInicial,
+  proximaFase,
   rotuloAcao,
+  validarEmailRecuperacao,
   validarEntrada,
   validarNovaSenha,
-  type EtapaRecuperacao,
-  type ModoAcesso,
 } from './regras';
 
 /**
  * Estado e ações da tela de acesso: entrar, criar conta, entrar como convidado
- * e recuperar a senha por código. A tela só desenha o que este hook devolve.
+ * e recuperar a senha por código. A fase da tela segue a máquina de estados de
+ * regras.ts; a tela só desenha o que este hook devolve.
  */
 export function useAcesso() {
-  const [modo, setModo] = useState<ModoAcesso>('entrar');
-  const [etapa, setEtapa] = useState<EtapaRecuperacao>('email');
+  const [fase, despachar] = useReducer(proximaFase, faseInicial);
   const [codigo, setCodigo] = useState('');
-  // Código já confirmado: há sessão aberta à espera da nova senha.
-  const [verificado, setVerificado] = useState(false);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const verificado = codigoConfirmado(fase);
 
   function limparMensagens() {
     setErro(null);
@@ -41,11 +42,9 @@ export function useAcesso() {
   }
 
   function abrirRecuperacao() {
-    setModo('recuperar');
-    setEtapa('email');
+    despachar('abrirRecuperacao');
     setCodigo('');
     setSenha('');
-    setVerificado(false);
     limparMensagens();
   }
 
@@ -54,28 +53,24 @@ export function useAcesso() {
     // Com o código já validado há sessão aberta; sem fechá-la o app entraria sem a nova senha.
     if (verificado) await encerrarSessao().catch(() => {});
     definirRecuperacaoAtiva(false);
-    setModo('entrar');
-    setVerificado(false);
+    despachar('voltarAoLogin');
     setCodigo('');
     setSenha('');
     limparMensagens();
   }
 
   function alternarCadastro() {
-    setModo(modo === 'cadastrar' ? 'entrar' : 'cadastrar');
+    despachar('alternarCadastro');
     limparMensagens();
   }
 
   async function enviarCodigo() {
     if (ocupado) return;
     limparMensagens();
-    if (!email.trim()) {
-      setErro('Informe o e-mail da conta.');
-      return;
-    }
     try {
+      validarEmailRecuperacao(email);
       await executarAuth(() => enviarCodigoRecuperacao(email.trim()), setOcupado);
-      setEtapa('codigo');
+      despachar('codigoEnviado');
       setAviso('Se existir uma conta com este e-mail, enviamos um código de verificação.');
     } catch (f) {
       setErro(erroAuth(f));
@@ -85,13 +80,9 @@ export function useAcesso() {
   async function redefinirSenha() {
     if (ocupado) return;
     limparMensagens();
-    const problema = validarNovaSenha({ codigo, senha, codigoConfirmado: verificado });
-    if (problema) {
-      setErro(problema);
-      return;
-    }
     let sessaoAberta = verificado;
     try {
+      validarNovaSenha({ codigo, senha, codigoConfirmado: verificado });
       if (!sessaoAberta) {
         definirRecuperacaoAtiva(true);
         await executarAuth(
@@ -99,7 +90,7 @@ export function useAcesso() {
           setOcupado,
         );
         sessaoAberta = true;
-        setVerificado(true);
+        despachar('codigoConfirmado');
       }
       await executarAuth(() => definirNovaSenha(senha), setOcupado);
       // Senha trocada: libera o App, que já encontra a sessão aberta.
@@ -113,13 +104,9 @@ export function useAcesso() {
   async function entrarOuCadastrar() {
     if (ocupado) return;
     limparMensagens();
-    const problema = validarEntrada(modo, { nome, email, senha });
-    if (problema) {
-      setErro(problema);
-      return;
-    }
-    const cadastrando = modo === 'cadastrar';
+    const cadastrando = fase.modo === 'cadastrar';
     try {
+      validarEntrada(fase.modo, { nome, email, senha });
       const resposta = await executarAuth(
         () =>
           cadastrando
@@ -129,7 +116,7 @@ export function useAcesso() {
       );
       if (cadastrando && !resposta.data.session) {
         setAviso('Conta criada. Confirme seu e-mail antes de entrar.');
-        setModo('entrar');
+        despachar('contaCriada');
       }
     } catch (f) {
       setErro(erroAuth(f));
@@ -146,22 +133,22 @@ export function useAcesso() {
     }
   }
 
-  /** Ação do botão principal, conforme o modo e a etapa. */
+  /** Ação do botão principal, conforme a fase. */
   function confirmar() {
-    if (modo !== 'recuperar') return entrarOuCadastrar();
-    return etapa === 'email' ? enviarCodigo() : redefinirSenha();
+    if (fase.modo !== 'recuperar') return entrarOuCadastrar();
+    return fase.etapa === 'email' ? enviarCodigo() : redefinirSenha();
   }
 
   return {
-    modo,
-    etapa,
+    modo: fase.modo,
+    etapa: fase.modo === 'recuperar' ? fase.etapa : 'email',
     verificado,
     campos: { nome, email, senha, codigo },
     alterar: { nome: setNome, email: setEmail, senha: setSenha, codigo: setCodigo },
     erro,
     aviso,
     ocupado,
-    rotuloAcao: rotuloAcao(modo, etapa),
+    rotuloAcao: rotuloAcao(fase),
     confirmar,
     enviarCodigo,
     abrirRecuperacao,
