@@ -53,7 +53,7 @@ PostgreSQL no Supabase, mais `auth.users` (gerenciada pelo Supabase Auth). Tabel
 | --- | --- |
 | `habilidades` | `id` (PK), `nome_habilidade` (único), `categoria` |
 | `usuario_habilidades` | `usuario_id` (FK), `habilidade_id` (FK) — PK composta |
-| `atividades` | `id` (PK), `titulo`, `descricao`, `tipo` (`TAREFA_ONG` / `OFICINA_AUTORAL`), `autor_id` (FK), `data_hora_prevista`, `vagas_totais`, `vagas_ocupadas` (só APROVADA), `carga_horaria`, `status`, `criado_em`, `atualizado_em` |
+| `atividades` | `id` (PK), `titulo`, `descricao`, `tipo` (`TAREFA_ONG` / `OFICINA_AUTORAL`), `autor_id` (FK), `data_hora_prevista`, `vagas_totais`, `vagas_ocupadas` (só APROVADA), `carga_horaria`, `status`, `arquivada_em` (data em que a gestão arquivou a atividade; vazia se não foi arquivada), `criado_em`, `atualizado_em` |
 | `atividade_habilidades` | `atividade_id` (FK), `habilidade_id` (FK) — PK composta; áreas da tarefa, usadas nas sugestões |
 | `inscricoes_atividades` | `id` (PK), `atividade_id` (FK), `usuario_id` (FK), `data_inscricao`, `status_inscricao`, `presenca_confirmada`, `decidido_em`, `decidido_por`, `motivo_decisao`, `checkin_em`, `carga_horaria_registrada` |
 

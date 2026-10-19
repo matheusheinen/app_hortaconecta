@@ -168,6 +168,40 @@ test('Esquemas Zod aceitam as respostas reais das RPCs', async t => {
       );
       assert.equal(detalhe.nome_autor, 'Ana');
     });
+
+    await t.test(
+      'atividade arquivada: o esquema aceita a RPC antes e depois da migration',
+      async () => {
+        await como(gestao);
+        // Sem a coluna, a RPC não traz arquivada_em e o esquema devolve null.
+        const antes = validar(
+          voluntariado.esquemaDetalheAtividade,
+          await valor('SELECT public.voluntariado_detalhe($1) AS value', [atividade]),
+        );
+        assert.equal(antes.atividade.arquivada_em, null);
+
+        await como(null, 'owner');
+        await db.exec(
+          fs.readFileSync('supabase/reconciliacao/20261019120000_atividades_arquivar.sql', 'utf8'),
+        );
+        const realizada = await valor(
+          "INSERT INTO public.atividades(titulo,descricao,tipo,autor_id,data_hora_prevista,vagas_totais,carga_horaria,status) VALUES('Colheita','Mutirão','TAREFA_ONG',$1,now()-interval '1 day',3,2,'REALIZADA') RETURNING id AS value",
+          [gestao],
+        );
+        await como(gestao);
+        await db.query('SELECT public.voluntariado_arquivar_atividade($1,true)', [realizada]);
+        const arquivada = validar(
+          voluntariado.esquemaDetalheAtividade,
+          await valor('SELECT public.voluntariado_detalhe($1) AS value', [realizada]),
+        );
+        assert.equal(typeof arquivada.atividade.arquivada_em, 'string');
+        const naoArquivada = validar(
+          voluntariado.esquemaDetalheAtividade,
+          await valor('SELECT public.voluntariado_detalhe($1) AS value', [atividade]),
+        );
+        assert.equal(naoArquivada.atividade.arquivada_em, null);
+      },
+    );
   } finally {
     await db.close();
   }

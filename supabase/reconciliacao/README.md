@@ -39,6 +39,13 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
    local: `node --test tests/convidado.test.cjs`. Até ser aplicada, "Entrar como convidado"
    cria a sessão, mas o convidado não ficaria impedido de escrever pelo banco. Contas
    anônimas se acumulam em `auth.users`: ainda falta uma limpeza periódica (não há pg_cron).
+7. `20261019120000_atividades_arquivar.sql`: coluna `atividades.arquivada_em` e RPC
+   `voluntariado_arquivar_atividade`, para a gestão arquivar atividades finalizadas
+   (realizada, cancelada ou recusada) e restaurá-las; nada é apagado. Depende da
+   reconciliação 02. Verificação local: `node --test tests/atividades-arquivar.test.cjs`.
+   Até ser aplicada, o botão "Arquivar" falha com erro de função inexistente e a aba
+   "Arquivadas" fica vazia (sem a coluna, nenhuma atividade vem arquivada).
+
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 

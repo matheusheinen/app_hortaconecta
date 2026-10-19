@@ -82,6 +82,15 @@ export async function alterarStatusAtividade(
   if (error) throw error;
 }
 
+/** Só atividades finalizadas; o histórico de candidaturas e presenças é mantido. */
+export async function arquivarAtividade(id: number, arquivar: boolean): Promise<void> {
+  const { error } = await supabase.rpc('voluntariado_arquivar_atividade', {
+    p_atividade: id,
+    p_arquivar: arquivar,
+  });
+  if (error) throw error;
+}
+
 export async function decidirCandidatura(
   inscricaoId: number,
   decisao: 'APROVADA' | 'RECUSADA',

@@ -47,6 +47,7 @@ export type Database = {
       }
       atividades: {
         Row: {
+          arquivada_em: string | null
           atualizado_em: string
           autor_id: string
           carga_horaria: number
@@ -61,6 +62,7 @@ export type Database = {
           vagas_totais: number
         }
         Insert: {
+          arquivada_em?: string | null
           atualizado_em?: string
           autor_id: string
           carga_horaria: number
@@ -75,6 +77,7 @@ export type Database = {
           vagas_totais: number
         }
         Update: {
+          arquivada_em?: string | null
           atualizado_em?: string
           autor_id?: string
           carga_horaria?: number
@@ -900,6 +903,10 @@ export type Database = {
       }
       perfil_completo: { Args: { uid?: string }; Returns: boolean }
       solicitar_exclusao_conta: { Args: never; Returns: undefined }
+      voluntariado_arquivar_atividade: {
+        Args: { p_arquivar: boolean; p_atividade: number }
+        Returns: undefined
+      }
       voluntariado_cancelar: {
         Args: { p_inscricao: number }
         Returns: undefined

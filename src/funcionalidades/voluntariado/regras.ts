@@ -9,6 +9,20 @@ export function atividadeFinalizada(status: StatusAtividade): boolean {
   return status === 'REALIZADA' || status === 'CANCELADA' || status === 'RECUSADA';
 }
 
+export type AbaAtividades = 'abertas' | 'finalizadas' | 'arquivadas';
+
+/**
+ * Aba onde a atividade aparece. Arquivada sai das outras abas e só a gestão a
+ * vê; para os demais perfis ela some da lista.
+ */
+export function abaDaAtividade(
+  atividade: { status: StatusAtividade; arquivada_em: string | null },
+  ehGestao: boolean,
+): AbaAtividades | null {
+  if (atividade.arquivada_em) return ehGestao ? 'arquivadas' : null;
+  return atividadeFinalizada(atividade.status) ? 'finalizadas' : 'abertas';
+}
+
 export function disponibilidadeValida(valor: unknown): valor is SlotDisponibilidade[] {
   if (!Array.isArray(valor)) return false;
   const vistos = new Set<string>();
