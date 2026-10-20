@@ -1,3 +1,4 @@
+
 # Horta Conecta
 
 Aplicativo mobile de voluntariado, apadrinhamento e transparência para a Horta Comunitária Guaporé (Centro Ocupacional Bruno José Campos, Guaporé/RS).
@@ -193,13 +194,15 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | ID | O que existe na branch | Falta |
 | --- | --- | --- |
 | B15 | Propostas de oficina com decisão da gestão | Oculto no app: fora do MVP por decisão de 05/10 |
-| B16 | Triagem de candidatos com aprovação/recusa e motivo | Triagem de oficinas (fora do MVP); homologação |
+| B16 | Triagem de candidatos com aprovação/recusa e motivo (RPC `voluntariado_decidir`) | Triagem de oficinas (fora do MVP); homologação |
 | B17 | Check-in por QR com token temporário | Homologação em aparelho |
 | B18 | WhatsApp no detalhe da atividade e da meta | Compartilhamento; número cadastrado pela gestão |
-| B21 | Cópia da chave PIX e registro da contribuição (PENDENTE) | Aplicar a reconciliação pendente (PIX na configuração) |
-| B22 | — | Upload de comprovante e bucket privado |
-| B23 | Fila de conferência com confirmar/recusar e registro de doação recebida | Visualização do comprovante, quando houver upload |
-| B24 | Total recalculado pelo trigger do banco | Homologação |
+| B21 | Cópia da chave PIX e registro da contribuição (PENDENTE); código e testes prontos | Aplicar no Supabase a migration `20261005150000_contribuicoes_metas_pix.sql`; sem ela o perfil da gestão não cadastra a chave |
+| B22 | — (só existe a coluna opcional `url_comprovante`; não há upload nem bucket) | Upload de comprovante, bucket privado e policies |
+| B23 | Fila de conferência com confirmar/recusar (só contribuição PENDENTE) e registro de doação recebida | Visualização do comprovante, quando houver upload (B22) |
+| B24 | Total recalculado pelo trigger `atualizar_arrecadacao_meta` (soma e subtrai conforme APROVADA), coberto por teste | Homologação em fluxo real |
+
+Conferência de 20/10/2026 dos cards "Em Andamento" do Trello (B16, B21–B24, todos com prazo 16/10 vencido), feita sobre o código do `main`: só o B22 não tem implementação; B21 depende da migration no remoto; B16, B23 e B24 estão implementados, restando o que a coluna "Falta" indica.
 | B25 | Publicação, edição e ocultação com revisão e imagem privada | Homologação com Storage real |
 | B26 | Feed só com publicações PUBLICADA | Regra específica para imagens de menores |
 | B30 | Perfil da gestão em seções (conta, institucional, WhatsApp, PIX) | Seção de PIX depende da reconciliação pendente |
