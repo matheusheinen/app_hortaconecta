@@ -31,3 +31,4 @@ Guia completo para Windows, Expo Go, LAN e túnel: [docs/EXECUTAR_APP.md](docs/E
 - [DOCUMENTACAO.md](DOCUMENTACAO.md): visão, modelo de dados, regras de negócio,
   requisitos, backlog, **estrutura do código** e convenções. É a referência principal.
 - [docs/INDICE.md](docs/INDICE.md): escopo do MVP, fluxos, auditorias e reconciliação do Supabase.
+- [CONTRIBUTING.md](CONTRIBUTING.md): como trabalhar em equipe no GitHub (branches, PRs, conflitos).
