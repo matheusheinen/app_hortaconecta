@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/servicos/supabase';
-import type { Tables } from '@/servicos/database.types';
-
-type ConfiguracaoInstituicao = Tables<'configuracao_instituicao'>;
+import { carregarConfiguracaoInstituicao, type ConfiguracaoInstituicao } from '../api';
 
 /**
- * Registro único de `configuracao_instituicao`. Nome, cores e contatos da
- * instituição vêm daqui — ver CLAUDE.md > RNF0005 (não fixar no código).
+ * Nome, cores e contatos da instituição vêm daqui, e não fixos no código
+ * (DOCUMENTACAO.md > RNF0008, Parametrização e Extensibilidade).
  */
 export function useConfiguracaoInstituicao() {
   const [configuracao, setConfiguracao] = useState<ConfiguracaoInstituicao | null>(null);
@@ -15,14 +12,14 @@ export function useConfiguracaoInstituicao() {
   useEffect(() => {
     let ativo = true;
 
-    supabase
-      .from('configuracao_instituicao')
-      .select('*')
-      .single()
-      .then(({ data, error }) => {
+    carregarConfiguracaoInstituicao()
+      .catch((falha: { message?: string }) => {
+        console.warn('Falha ao carregar configuração da instituição:', falha?.message);
+        return null;
+      })
+      .then(dados => {
         if (!ativo) return;
-        if (error) console.warn('Falha ao carregar configuração da instituição:', error.message);
-        setConfiguracao(data ?? null);
+        setConfiguracao(dados);
         setCarregando(false);
       });
 

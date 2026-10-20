@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
+import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { excluirAtividade as excluirAtividadeApi, listarAtividades } from '../api';
@@ -11,26 +13,23 @@ import { mensagemErro } from '@/compartilhado/utils/erros';
 import { confirmarExclusao } from '@/compartilhado/utils/confirmar';
 
 type Props = {
-  ehGestao: boolean;
   voltar: () => void;
   onNova: () => void;
   onEditar: (atividade: Atividade) => void;
   onDetalhe: (id: number) => void;
   onMinhas: () => void;
   onHistorico: () => void;
-  convidado?: boolean;
 };
 
-export function TelaAtividades({
-  ehGestao,
+export const TelaAtividades = memoTela(function TelaAtividades({
   voltar,
   onNova,
   onEditar,
   onDetalhe,
   onMinhas,
   onHistorico,
-  convidado = false,
 }: Props) {
+  const { ehGestao, convidado } = useSessaoAtual();
   const { dados, carregando, erro, carregar } = useConsulta(listarAtividades);
   const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');
   const abertas = (dados ?? []).filter(a => !atividadeFinalizada(a.status));
@@ -98,13 +97,14 @@ export function TelaAtividades({
         </Text>
       ) : null}
       {visiveis.map(a => (
-        <Pressable
-          key={a.id}
-          onPress={() => onDetalhe(a.id)}
-          accessibilityRole="button"
-          accessibilityLabel={`Ver detalhes de ${a.titulo}`}
-        >
-          <CartaoFluxo>
+        <CartaoFluxo key={a.id}>
+          {/* Os botões de gestão ficam fora do Pressable: na web, botão dentro de botão é HTML inválido. */}
+          <Pressable
+            onPress={() => onDetalhe(a.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`Ver detalhes de ${a.titulo}`}
+            style={estilos.detalhe}
+          >
             <Text style={estilos.etiqueta}>
               {a.tipo === 'OFICINA_AUTORAL' ? 'OFICINA' : 'TAREFA'} ·{' '}
               {rotuloStatusAtividade[a.status].toUpperCase()}
@@ -117,26 +117,22 @@ export function TelaAtividades({
               {formatarData(a.data_hora_prevista)} · {a.vagas_totais}{' '}
               {a.vagas_totais === 1 ? 'vaga' : 'vagas'} · {a.carga_horaria}h
             </Text>
-            {ehGestao ? (
-              <View style={estilos.acoes}>
-                <View style={{ flex: 1 }}>
-                  <Botao titulo="Editar" variante="contorno" onPress={() => onEditar(a)} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Botao
-                    titulo="Excluir"
-                    variante="destrutivo"
-                    onPress={() => excluirAtividade(a)}
-                  />
-                </View>
+          </Pressable>
+          {ehGestao ? (
+            <View style={estilos.acoes}>
+              <View style={{ flex: 1 }}>
+                <Botao titulo="Editar" variante="contorno" onPress={() => onEditar(a)} />
               </View>
-            ) : null}
-          </CartaoFluxo>
-        </Pressable>
+              <View style={{ flex: 1 }}>
+                <Botao titulo="Excluir" variante="destrutivo" onPress={() => excluirAtividade(a)} />
+              </View>
+            </View>
+          ) : null}
+        </CartaoFluxo>
       ))}
     </TelaFluxo>
   );
-}
+});
 
 /** O react-native-web não implementa Alert; no navegador usa o do browser. */
 function avisar(titulo: string, mensagem: string) {
@@ -160,5 +156,6 @@ function formatarData(iso: string) {
 
 const estilos = StyleSheet.create({
   etiqueta: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, color: cores.tintaSuave },
+  detalhe: { gap: espaco.sm },
   acoes: { flexDirection: 'row', gap: espaco.sm, marginTop: espaco.xs },
 });

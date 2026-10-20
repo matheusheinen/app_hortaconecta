@@ -4,6 +4,25 @@ const fs = require('node:fs');
 const Module = require('node:module');
 const ts = require('typescript');
 
+function compilar(arquivo, dependencias = {}) {
+  const modulo = new Module(arquivo);
+  modulo.require = nome => {
+    if (!(nome in dependencias)) throw new Error(`Import inesperado: ${nome}`);
+    return dependencias[nome];
+  };
+  modulo._compile(
+    ts.transpileModule(fs.readFileSync(arquivo, 'utf8'), {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    }).outputText,
+    arquivo,
+  );
+  return modulo.exports;
+}
+
+const regras = compilar('src/funcionalidades/inicio/regras.ts', {
+  '@/compartilhado/utils/datas': compilar('src/compartilhado/utils/datas.ts'),
+});
+
 function carregar(respostas = {}) {
   const consulta = {
     limite: null,
@@ -50,21 +69,11 @@ function carregar(respostas = {}) {
     '@/funcionalidades/voluntariado/api': { carregarMinhasInscricoes: async () => [] },
     '@/funcionalidades/metas/api': { listarMetas: async () => [] },
     '@/funcionalidades/diario/api': { listarDiario: async () => [] },
+    './regras': regras,
   };
-  const modulo = new Module('resumoInicio');
-  modulo.require = nome => {
-    if (!(nome in dependencias)) throw new Error(`Import inesperado: ${nome}`);
-    return dependencias[nome];
-  };
-  modulo._compile(
-    ts.transpileModule(fs.readFileSync('src/funcionalidades/inicio/resumo.ts', 'utf8'), {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-    }).outputText,
-    'resumoInicio.cjs',
-  );
-  return modulo.exports;
+  return compilar('src/funcionalidades/inicio/api.ts', dependencias);
 }
-const { montarResumoInicio, formatarHorasInicio, progressoMetaInicio } = carregar();
+const { montarResumoInicio, formatarHorasInicio, progressoMetaInicio } = regras;
 const agora = new Date('2026-09-30T12:00:00Z');
 function dados(alteracoes = {}) {
   return {

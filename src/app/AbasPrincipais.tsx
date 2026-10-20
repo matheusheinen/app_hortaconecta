@@ -14,7 +14,7 @@ import { PilhaPerfilOng } from '@/funcionalidades/perfil/PilhaPerfilOng';
 import { PilhaPerfilVoluntario } from '@/funcionalidades/perfil/PilhaPerfilVoluntario';
 import { PilhaDiario } from '@/funcionalidades/diario/PilhaDiario';
 import { cores } from '@/compartilhado/tema';
-import type { Usuario } from '@/compartilhado/tipos';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Icone, type NomeIcone } from '@/compartilhado/componentes/Icone';
 
 type ParametrosDiario = {
@@ -64,24 +64,14 @@ export function opcoesAbasPrincipais(
   };
 }
 
-type Props = {
-  perfil: Usuario;
-  ehGestao: boolean;
-  sair: () => void;
-  recarregarPerfil: (propagarErro?: boolean) => Promise<void>;
-};
-
 /** Os dois perfis compartilham os destinos e os rótulos refletem seu papel. */
-export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Props) {
+export function AbasPrincipais() {
+  const { ehGestao } = useSessaoAtual();
   return (
     <Abas.Navigator screenOptions={({ route }) => opcoesAbasPrincipais(route.name)}>
       <Abas.Screen name="inicio" options={{ tabBarLabel: 'Início' }}>
         {({ navigation }) => (
           <PilhaInicio
-            gestao={ehGestao}
-            usuarioId={perfil.id}
-            nome={perfil.nome}
-            sair={sair}
             atividades={() => navigation.navigate('atividades', { screen: 'lista' })}
             materiais={() => navigation.navigate('metas', { screen: 'lista' })}
             diario={() => navigation.navigate('diario', { screen: 'lista' })}
@@ -123,8 +113,6 @@ export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Pro
       >
         {({ navigation }) => (
           <PilhaAtividades
-            ehGestao={ehGestao}
-            autorId={perfil.id}
             inicio={() => navigation.navigate('inicio', { screen: 'resumo' })}
             aoPerfil={() => navigation.navigate('perfil')}
           />
@@ -133,41 +121,18 @@ export function AbasPrincipais({ perfil, ehGestao, sair, recarregarPerfil }: Pro
 
       <Abas.Screen name="metas" options={{ tabBarLabel: ehGestao ? 'Doações' : 'Contribuir' }}>
         {({ navigation }) => (
-          <PilhaMetas
-            ehGestao={ehGestao}
-            usuarioId={perfil.id}
-            inicio={() => navigation.navigate('inicio', { screen: 'resumo' })}
-          />
+          <PilhaMetas inicio={() => navigation.navigate('inicio', { screen: 'resumo' })} />
         )}
       </Abas.Screen>
 
       <Abas.Screen name="diario" options={{ tabBarLabel: 'Diário' }}>
         {({ navigation }) => (
-          <PilhaDiario
-            gestao={ehGestao}
-            inicio={() => navigation.navigate('inicio', { screen: 'resumo' })}
-          />
+          <PilhaDiario inicio={() => navigation.navigate('inicio', { screen: 'resumo' })} />
         )}
       </Abas.Screen>
 
       <Abas.Screen name="perfil" options={{ tabBarLabel: 'Perfil' }}>
-        {() =>
-          ehGestao ? (
-            <PilhaPerfilOng
-              usuarioId={perfil.id}
-              nome={perfil.nome}
-              sair={sair}
-              recarregarPerfil={recarregarPerfil}
-            />
-          ) : (
-            <PilhaPerfilVoluntario
-              usuarioId={perfil.id}
-              nome={perfil.nome}
-              sair={sair}
-              recarregarPerfil={recarregarPerfil}
-            />
-          )
-        }
+        {() => (ehGestao ? <PilhaPerfilOng /> : <PilhaPerfilVoluntario />)}
       </Abas.Screen>
     </Abas.Navigator>
   );

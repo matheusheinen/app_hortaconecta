@@ -1,19 +1,22 @@
 import { supabase } from '@/servicos/supabase';
+import { validarResposta } from '@/compartilhado/esquemas';
 import type { Publicacao } from './tipos';
+import { esquemaListaPublicacoes, esquemaPublicacao } from './esquemas';
 import { salvarDiarioComImagem, validarPublicacao } from './regras';
 export const BUCKET_DIARIO = 'diario-imagens';
 export async function listarDiario(): Promise<Publicacao[]> {
   const { data, error } = await supabase.rpc('diario_listar');
   if (error) throw error;
-  if (!Array.isArray(data)) throw new Error('Não foi possível carregar as publicações.');
-  return data as unknown as Publicacao[];
+  return validarResposta(
+    esquemaListaPublicacoes,
+    data,
+    'Não foi possível carregar as publicações.',
+  );
 }
 export async function detalheDiario(id: number): Promise<Publicacao> {
   const { data, error } = await supabase.rpc('diario_detalhe', { p_id: id });
   if (error) throw error;
-  if (!data || typeof data !== 'object' || Array.isArray(data))
-    throw new Error('Publicação não encontrada ou indisponível.');
-  return data as unknown as Publicacao;
+  return validarResposta(esquemaPublicacao, data, 'Publicação não encontrada ou indisponível.');
 }
 export async function salvarDiario(dados: {
   revisao?: number | null;

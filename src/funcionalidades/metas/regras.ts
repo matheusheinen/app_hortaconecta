@@ -1,8 +1,10 @@
 /**
- * Regras puras das metas e contribuições. Sem imports para rodar nos testes Node.
+ * Regras puras das metas e contribuições, sem React nem Supabase.
  * O total arrecadado é calculado pelo banco (trigger atualizar_arrecadacao_meta),
  * somando só contribuições APROVADA; aqui apenas se exibe e se valida a entrada.
  */
+import { hojeIso, interpretarData } from '@/compartilhado/utils/datas';
+import type { MetaFormulario } from './tipos';
 
 type MetaBase = {
   tipo: 'FINANCEIRA' | 'MATERIAL';
@@ -73,4 +75,44 @@ export function interpretarQuantidade(texto: string): number | null {
   if (!/^\d{1,10}(?:[.,]\d{1,2})?$/.test(limpo)) return null;
   const valor = Number(limpo.replace(',', '.'));
   return Number.isFinite(valor) && valor > 0 ? valor : null;
+}
+
+/** O que o formulário de meta digita, ainda como texto. */
+export type EntradaMeta = {
+  tipo: MetaBase['tipo'];
+  titulo: string;
+  descricao: string;
+  unidade: string;
+  quantidade: string;
+  /** DD/MM/AAAA ou vazio. */
+  prazo: string;
+};
+
+/**
+ * Valida o formulário e devolve os campos prontos para salvar. Lança a
+ * primeira mensagem de erro para o usuário. Só a meta nova exige prazo futuro:
+ * ao editar, um prazo já vencido pode continuar como está.
+ */
+export function validarMeta(entrada: EntradaMeta, nova: boolean, hoje = hojeIso()): MetaFormulario {
+  const valor = interpretarQuantidade(entrada.quantidade);
+  const prazo = entrada.prazo.trim();
+  const prazoIso = prazo ? interpretarData(prazo) : null;
+  if (entrada.titulo.trim().length < 3)
+    throw new Error('O título precisa de ao menos 3 caracteres.');
+  if (!entrada.descricao.trim()) throw new Error('Descreva a meta.');
+  if (entrada.tipo === 'MATERIAL' && !entrada.unidade.trim())
+    throw new Error('Informe a unidade de medida (ex.: kg, unidades).');
+  if (valor === null)
+    throw new Error('Informe a quantidade da meta: número positivo, com até duas casas decimais.');
+  if (prazo && !prazoIso) throw new Error('Use o formato DD/MM/AAAA no prazo.');
+  if (nova && prazoIso && prazoIso < hoje)
+    throw new Error('O prazo precisa ser hoje ou uma data futura.');
+  return {
+    titulo: entrada.titulo.trim(),
+    descricao: entrada.descricao.trim(),
+    tipo: entrada.tipo,
+    unidade_medida: entrada.tipo === 'MATERIAL' ? entrada.unidade.trim() : null,
+    quantidade_meta: valor,
+    data_limite: prazoIso,
+  };
 }

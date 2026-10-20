@@ -1,5 +1,4 @@
 import type { Enums, Tables } from '@/servicos/database.types';
-import type { SlotDisponibilidade } from '@/compartilhado/tipos';
 
 export type TipoAtividade = Enums<'tipo_atividade'>;
 
@@ -7,6 +6,9 @@ export type StatusAtividade = Enums<'status_atividade'>;
 
 /** Colunas de `atividades` que o app lê. */
 export type Atividade = Omit<Tables<'atividades'>, 'atualizado_em' | 'vagas_ocupadas'>;
+
+/** Atividade lida com `vagas_ocupadas` (total de candidaturas aprovadas). */
+export type AtividadeComVagas = Atividade & { vagas_ocupadas: number };
 
 /** Campos que o formulário edita. O resto o banco preenche. */
 export type AtividadeFormulario = Pick<
@@ -37,7 +39,8 @@ export type Candidato = Inscricao & {
   nome: string;
   descricao: string | null;
   profissao: string | null;
-  disponibilidade_horarios: SlotDisponibilidade[];
+  /** jsonb livre; LEFT JOIN pode trazer null. Use disponibilidadeValida antes de ler. */
+  disponibilidade_horarios: unknown;
   habilidades: string[];
 };
 

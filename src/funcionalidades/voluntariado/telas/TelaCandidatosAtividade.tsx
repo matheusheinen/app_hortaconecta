@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Text } from 'react-native';
 import { Botao, Campo } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -12,13 +13,12 @@ import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 
 export function TelaCandidatosAtividade({
   atividadeId,
-  usuarioId,
   voltar,
 }: {
   atividadeId: number;
-  usuarioId: string;
   voltar: () => void;
 }) {
+  const { usuarioId } = useSessaoAtual();
   const consulta = useCallback(async () => {
     const [detalhe, candidatos] = await Promise.all([
       carregarDetalhe(atividadeId),

@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
@@ -8,15 +9,13 @@ import {
 } from './apiVoluntario';
 import { mensagemErro } from '@/compartilhado/utils/erros';
 import type { DadosPerfilVoluntario } from './regras';
-import {
-  ProvedorPerfilVoluntario,
-  TelaHubPerfilVoluntario,
-  TelaSecaoCadastro,
-  TelaSecaoDadosPessoais,
-  TelaSecaoDisponibilidade,
-  TelaSecaoEndereco,
-  TelaSecaoHabilidades,
-} from './telas/TelasPerfilVoluntario';
+import { ProvedorPerfilVoluntario } from './ContextoPerfilVoluntario';
+import { TelaHubPerfilVoluntario } from './telas/TelaHubPerfilVoluntario';
+import { TelaSecaoCadastro } from './telas/TelaSecaoCadastro';
+import { TelaSecaoDadosPessoais } from './telas/TelaSecaoDadosPessoais';
+import { TelaSecaoDisponibilidade } from './telas/TelaSecaoDisponibilidade';
+import { TelaSecaoEndereco } from './telas/TelaSecaoEndereco';
+import { TelaSecaoHabilidades } from './telas/TelaSecaoHabilidades';
 
 export type ParametrosPerfilVoluntario = {
   hub: undefined;
@@ -29,14 +28,8 @@ export type ParametrosPerfilVoluntario = {
 
 const Pilha = createNativeStackNavigator<ParametrosPerfilVoluntario>();
 
-type Props = {
-  usuarioId: string;
-  nome: string;
-  sair: () => void;
-  recarregarPerfil: (propagarErro?: boolean) => Promise<void>;
-};
-
-export function PilhaPerfilVoluntario({ usuarioId, nome, sair, recarregarPerfil }: Props) {
+export function PilhaPerfilVoluntario() {
+  const { usuarioId, nome, sair, recarregarPerfil } = useSessaoAtual();
   const [perfil, setPerfil] = useState<PerfilVoluntarioCarregado | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);

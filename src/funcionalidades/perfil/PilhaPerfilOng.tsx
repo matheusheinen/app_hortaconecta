@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
@@ -8,14 +9,12 @@ import {
   type PerfilOngCarregado,
 } from './apiOng';
 import { mensagemErro } from '@/compartilhado/utils/erros';
-import {
-  ProvedorPerfilOng,
-  TelaHubPerfilOng,
-  TelaSecaoContaOng,
-  TelaSecaoInstitucionalOng,
-  TelaSecaoRecebimentoOng,
-  TelaSecaoWhatsappOng,
-} from './telas/TelasPerfilOng';
+import { ProvedorPerfilOng } from './ContextoPerfilOng';
+import { TelaHubPerfilOng } from './telas/TelaHubPerfilOng';
+import { TelaSecaoContaOng } from './telas/TelaSecaoContaOng';
+import { TelaSecaoInstitucionalOng } from './telas/TelaSecaoInstitucionalOng';
+import { TelaSecaoRecebimentoOng } from './telas/TelaSecaoRecebimentoOng';
+import { TelaSecaoWhatsappOng } from './telas/TelaSecaoWhatsappOng';
 
 export type ParametrosPerfilOng = {
   hub: undefined;
@@ -27,14 +26,8 @@ export type ParametrosPerfilOng = {
 
 const Pilha = createNativeStackNavigator<ParametrosPerfilOng>();
 
-type Props = {
-  usuarioId: string;
-  nome: string;
-  sair: () => void;
-  recarregarPerfil: (propagarErro?: boolean) => Promise<void>;
-};
-
-export function PilhaPerfilOng({ usuarioId, nome, sair, recarregarPerfil }: Props) {
+export function PilhaPerfilOng() {
+  const { usuarioId, nome, sair, recarregarPerfil } = useSessaoAtual();
   const [dados, setDados] = useState<PerfilOngCarregado | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);

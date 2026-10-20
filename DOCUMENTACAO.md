@@ -224,20 +224,22 @@ O código fica em `src/`, organizado por funcionalidade. `index.ts` registra `sr
 src/
   app/                 App, abas principais e abas do convidado
   funcionalidades/
-    autenticacao/      TelaLogin, useSessao, recuperação de senha
+    autenticacao/      TelaLogin, useAcesso, useSessao, ContextoSessao (useSessaoAtual), recuperação de senha
     modoGestor/        alternância ONG ↔ voluntário
     voluntariado/      atividades, candidaturas, check-in, áreas e sugestões
     metas/             metas em dinheiro e de materiais, contribuições
     diario/            Diário de Transparência
     perfil/            perfis do voluntário e da gestão
-    inicio/            resumo da tela inicial
+    inicio/            resumo da tela inicial (api.ts consulta, regras.ts monta)
     convidado/         telas do acesso como convidado
     oficinas/          fora do MVP (ver escopoMvp.ts)
     certificados/      fora do MVP (ver escopoMvp.ts)
   compartilhado/
-    componentes/       Ui (Botao, Campo, Aviso, AbasFiltro), TelaFluxo, Icone, CampoData
+    componentes/       Ui (Botao, Campo, Aviso, AbasFiltro), TelaFluxo, Icone, CampoData, LimiteErro, memoTela
     hooks/             useConsulta, useAcao, useConfiguracaoInstituicao
     utils/             erros, datas, máscaras, validadores, confirmar, whatsapp
+    api.ts             consultas usadas por várias funcionalidades (configuração da instituição)
+    esquemas.ts        base do Zod: configuração, esquemaDe e validarResposta
     tema.ts, tipos.ts, escopoMvp.ts
   servicos/            cliente Supabase e tipos do banco
 ```
@@ -249,6 +251,7 @@ Dentro de cada funcionalidade:
 | `api.ts` | Acesso ao Supabase (tabelas, RPCs, Storage). Lança o erro em vez de devolvê-lo. As telas não importam `supabase` diretamente. |
 | `regras.ts` | Regras puras, sem imports de React ou Supabase, testáveis no Node. |
 | `tipos.ts` | Tipos do domínio, derivados de `database.types.ts` (`Tables<…>`, `Enums<…>`) sempre que possível. |
+| `esquemas.ts` | Esquemas Zod das respostas jsonb das RPCs (ver [Validação das respostas do servidor](#validação-das-respostas-do-servidor-zod)). Só existe nas funcionalidades que usam RPCs desse tipo. |
 | `Pilha<Fluxo>.tsx` | Navegador em pilha e tipos das rotas. |
 | `telas/` | Uma tela por arquivo (`Tela<Nome>.tsx`). |
 | `componentes/` | Componentes usados só por essa funcionalidade. |
@@ -259,13 +262,58 @@ O que é usado por mais de uma funcionalidade vai para `compartilhado/`.
 
 - Identificadores de banco, tabelas e colunas em **português, snake_case** — manter o padrão já existente.
 - Código TypeScript (componentes, funções, variáveis) em inglês ou português, mas **consistente com os arquivos vizinhos**; textos de interface sempre em português.
-- Tipar as respostas do Supabase; evitar `any`. Enums e linhas de tabela vêm de `database.types.ts`, não são redeclarados à mão.
+- Tipar as respostas do Supabase; evitar `any` e `as unknown as`. Enums e linhas de tabela vêm de `database.types.ts`, não são redeclarados à mão. Respostas jsonb de RPC passam por um esquema Zod (seção abaixo).
+- Validações de formulário e de regra de negócio ficam em `regras.ts` e **lançam `Error`** com a mensagem para o usuário; quem chama (`useAcao`, `SecaoPerfil`, `useAcesso`) mostra a mensagem.
+- Dados da sessão (`usuarioId`, `nome`, `ehGestao`, `convidado`, `sair`) vêm de `useSessaoAtual()`, não de props.
 - Rotas protegidas por autenticação ficam sob o controle do React Navigation.
 - Imports: relativos dentro da mesma funcionalidade (`../api`); entre funcionalidades e para `compartilhado`/`servicos`, pelo alias `@/` (`@/compartilhado/tema`), configurado em `tsconfig.json`.
 - Formatação pelo Prettier (`.prettierrc.json`) e lint pelo ESLint com `eslint-config-expo` (`eslint.config.js`). `npm run format` formata; `npm run lint` verifica.
 - Fim de linha LF em todo o repositório (`.gitattributes`); as pré-condições das reconciliações comparam hashes de funções.
 - Antes de commitar, rodar `npm run typecheck`, `npm run lint` e `npm test`.
 - Os testes (`tests/*.test.cjs`) carregam os módulos de `src/` pelo caminho e injetam as dependências pelo especificador do import (`'@/servicos/supabase'`, `'./regras'`). Ao mover um arquivo ou mudar um import, ajustar os testes correspondentes.
+
+## Validação das respostas do servidor (Zod)
+
+As consultas a tabelas já chegam tipadas pelo `database.types.ts`. As **RPCs que devolvem `jsonb`** não: para o TypeScript o retorno é `Json`, e antes o app fazia `as unknown as Tipo`, o que deixava passar em silêncio qualquer diferença entre o SQL e a tela. Essas respostas agora passam por um esquema [Zod](https://zod.dev) (versão 4, fixada em `~4.6`).
+
+**Quando usar:** em toda RPC cujo retorno seja `jsonb` (hoje: voluntariado, Diário, oficinas e certificados). Consultas `.from('tabela')` e RPCs que devolvem tipos simples (`boolean`, `bigint`) não precisam.
+
+**Como fazer:**
+
+1. O tipo continua em `tipos.ts` (ou vem de `database.types.ts`).
+2. O esquema fica em `<funcionalidade>/esquemas.ts` e é amarrado ao tipo com `esquemaDe<Tipo>()`:
+
+   ```ts
+   export const esquemaPublicacao = esquemaDe<Publicacao>()(
+     z.object({ id: z.number(), texto: z.string().nullable() /* … */ }),
+   );
+   ```
+
+   `esquemaDe` **não compila** se o esquema diferir do tipo em qualquer campo (nome, opcional, `null`). Enums usam `Constants.public.Enums`, gerado junto com `database.types.ts`.
+3. No `api.ts`, a resposta passa por `validarResposta(esquema, data, 'Mensagem para o usuário.')`. Fora do formato, ela lança essa mensagem; em desenvolvimento, o campo problemático aparece no console.
+
+**Cuidados:**
+
+- **Campos descartados.** O `z.object` remove os campos que o esquema não declara (por exemplo, `vagas_ocupadas` no detalhe da atividade). Como `esquemaDe` exige que esquema e tipo tenham os mesmos campos, só some o que o tipo também não tem. Para a tela usar um campo novo, acrescente-o **no tipo e no esquema**.
+- **`null` vindo do SQL.** `LEFT JOIN`, `to_jsonb` de colunas opcionais e `SELECT … INTO` podem gerar `null`. Declare `.nullable()` conforme o SQL, não conforme o caso comum. Exemplo: `profissao` e `disponibilidade_horarios` dos candidatos.
+- **Mudou uma RPC?** Atualize o tipo, o esquema e o teste `tests/esquemas-rpc.test.cjs`, que roda as RPCs reais (PGlite, sobre o catálogo remoto sintético) e valida cada resposta com os esquemas. Ele é o que garante que SQL e app falam a mesma língua.
+- **Hermes.** `compartilhado/esquemas.ts` liga `z.config({ jitless: true })`. Sem isso, o Zod 4 tenta gerar código com `new Function`, recurso que o Hermes (motor do React Native) pode não ter; o Zod detecta e recua sozinho, mas com a opção ligada o comportamento é o mesmo no celular, no web e nos testes. Não remover.
+- **Testes.** Os testes que carregam um `api.ts` com esquemas usam `tests/apoio/esquemas.cjs`, que compila os esquemas com o Zod real.
+
+## Padrões adotados
+
+| Padrão | Onde | Por quê |
+| --- | --- | --- |
+| Facade | `api.ts` de cada funcionalidade | As telas não conhecem o Supabase; trocar uma consulta não mexe na tela. |
+| Adapter | `esquemas.ts` + `validarResposta` | Converte e valida o `jsonb` das RPCs para os tipos do app. |
+| Provider (Context) | `ContextoSessao`, `ContextoPerfil*`, `ProvedorModoGestor` | Dados compartilhados sem repassar props por várias camadas. |
+| Máquina de estados | `autenticacao/regras.ts` (`proximaFase`) + `useReducer` em `useAcesso` | A tela de acesso só pode estar em uma fase válida. |
+| Hooks de comportamento | `useConsulta`, `useAcao`, `useAcesso` | Reaproveitam carga, envio e estado sem repetir código nas telas. |
+| Memo de tela | `memoTela` | Repõe a otimização que o render callback das pilhas desliga. |
+| Error boundary | `LimiteErro` | Um erro de renderização mostra uma tela de recuperação em vez de fechar o app. |
+| Feature flags | `escopoMvp.ts` | Recursos prontos, mas fora do MVP, ficam ocultos sem apagar código. |
+
+Decidido **não** adotar por enquanto: Strategy por papel (as diferenças entre gestão e voluntário são poucas e pontuais), Repository em classes, Redux e TanStack Query (exagero para o tamanho atual e para o prazo do MVP).
 
 ## Fora de escopo do MVP
 

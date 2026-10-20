@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Share, Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -9,14 +10,13 @@ import { mensagemErro } from '@/compartilhado/utils/erros';
 import { tipo } from '@/compartilhado/tema';
 
 export function TelaCertificados({
-  gestao,
   voltar,
   abrir,
 }: {
-  gestao: boolean;
   voltar: () => void;
   abrir: (id: string) => void;
 }) {
+  const { ehGestao: gestao } = useSessaoAtual();
   const { dados, erro, carregando, carregar } = useConsulta(listarCertificados);
   const [falha, setFalha] = useState<string | null>(null),
     [ocupado, setOcupado] = useState(false);

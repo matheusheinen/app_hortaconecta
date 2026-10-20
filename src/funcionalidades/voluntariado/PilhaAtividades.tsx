@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TelaAtividades } from './telas/TelaAtividades';
 import { TelaFormAtividade } from './telas/TelaFormAtividade';
@@ -21,35 +22,23 @@ export type ParametrosPilhaAtividades = {
 };
 const Pilha = createNativeStackNavigator<ParametrosPilhaAtividades>();
 type Props = {
-  ehGestao: boolean;
-  autorId: string;
   inicio: () => void;
   aoPerfil: () => void;
-  convidado?: boolean;
-  aoCriarConta?: () => void;
 };
 
-export function PilhaAtividades({
-  ehGestao,
-  autorId,
-  inicio,
-  aoPerfil,
-  convidado = false,
-  aoCriarConta,
-}: Props) {
+export function PilhaAtividades({ inicio, aoPerfil }: Props) {
+  const { ehGestao } = useSessaoAtual();
   return (
     <Pilha.Navigator screenOptions={{ headerShown: false }}>
       <Pilha.Screen name="lista">
         {({ navigation }) => (
           <TelaAtividades
-            ehGestao={ehGestao}
             voltar={inicio}
             onNova={() => navigation.navigate('formulario', { atividadeId: null })}
             onEditar={atividade => navigation.navigate('formulario', { atividadeId: atividade.id })}
             onDetalhe={atividadeId => navigation.navigate('detalhe', { atividadeId })}
             onMinhas={() => navigation.navigate('minhas')}
             onHistorico={() => navigation.navigate('historico')}
-            convidado={convidado}
           />
         )}
       </Pilha.Screen>
@@ -57,7 +46,6 @@ export function PilhaAtividades({
         {({ navigation, route }) => (
           <TelaDetalheAtividade
             atividadeId={route.params.atividadeId}
-            ehGestao={ehGestao}
             voltar={() => navigation.goBack()}
             editar={() =>
               navigation.navigate('formulario', { atividadeId: route.params.atividadeId })
@@ -65,8 +53,6 @@ export function PilhaAtividades({
             candidatos={() => navigation.navigate('candidatos', route.params)}
             checkin={() => navigation.navigate('checkin', route.params)}
             perfil={aoPerfil}
-            convidado={convidado}
-            criarConta={aoCriarConta}
           />
         )}
       </Pilha.Screen>
@@ -77,14 +63,12 @@ export function PilhaAtividades({
               route.params.atividadeId === null ? (
                 <TelaFormAtividade
                   atividade={null}
-                  autorId={autorId}
                   onPronto={() => navigation.goBack()}
                   onCancelar={() => navigation.goBack()}
                 />
               ) : (
                 <EditarAtividade
                   atividadeId={route.params.atividadeId}
-                  autorId={autorId}
                   voltar={() => navigation.goBack()}
                 />
               )
@@ -94,7 +78,6 @@ export function PilhaAtividades({
             {({ navigation, route }) => (
               <TelaCandidatosAtividade
                 atividadeId={route.params.atividadeId}
-                usuarioId={autorId}
                 voltar={() => navigation.goBack()}
               />
             )}
@@ -140,15 +123,7 @@ export function PilhaAtividades({
   );
 }
 
-function EditarAtividade({
-  atividadeId,
-  autorId,
-  voltar,
-}: {
-  atividadeId: number;
-  autorId: string;
-  voltar: () => void;
-}) {
+function EditarAtividade({ atividadeId, voltar }: { atividadeId: number; voltar: () => void }) {
   const consulta = useCallback(() => carregarDetalhe(atividadeId), [atividadeId]);
   const { dados, erro, carregando, carregar } = useConsulta(consulta);
   if (carregando || !dados)
@@ -163,12 +138,5 @@ function EditarAtividade({
         {null}
       </TelaFluxo>
     );
-  return (
-    <TelaFormAtividade
-      atividade={dados.atividade}
-      autorId={autorId}
-      onPronto={voltar}
-      onCancelar={voltar}
-    />
-  );
+  return <TelaFormAtividade atividade={dados.atividade} onPronto={voltar} onCancelar={voltar} />;
 }

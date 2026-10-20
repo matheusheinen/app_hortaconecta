@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TelaMetas } from './telas/TelaMetas';
 import { TelaDetalheMeta } from './telas/TelaDetalheMeta';
@@ -16,30 +17,17 @@ export type ParametrosMetas = {
 const Pilha = createNativeStackNavigator<ParametrosMetas>();
 
 /** Metas em dinheiro (PIX) ou de materiais, com contribuições conferidas pela gestão. */
-export function PilhaMetas({
-  ehGestao,
-  usuarioId,
-  inicio,
-  convidado = false,
-  aoCriarConta,
-}: {
-  ehGestao: boolean;
-  usuarioId: string;
-  inicio: () => void;
-  convidado?: boolean;
-  aoCriarConta?: () => void;
-}) {
+export function PilhaMetas({ inicio }: { inicio: () => void }) {
+  const { ehGestao } = useSessaoAtual();
   return (
     <Pilha.Navigator screenOptions={{ headerShown: false }}>
       <Pilha.Screen name="lista">
         {({ navigation }) => (
           <TelaMetas
-            ehGestao={ehGestao}
             voltar={inicio}
             abrir={id => navigation.navigate('detalhe', { id })}
             criar={() => navigation.navigate('formulario', { id: null })}
             minhas={() => navigation.navigate('minhas')}
-            convidado={convidado}
           />
         )}
       </Pilha.Screen>
@@ -48,14 +36,10 @@ export function PilhaMetas({
           <TelaDetalheMeta
             key={route.params.id}
             id={route.params.id}
-            ehGestao={ehGestao}
-            usuarioId={usuarioId}
             voltar={() => navigation.goBack()}
             editar={() => navigation.navigate('formulario', route.params)}
             registrar={() => navigation.navigate('registrar', route.params)}
             minhas={() => navigation.navigate('minhas')}
-            convidado={convidado}
-            criarConta={aoCriarConta}
           />
         )}
       </Pilha.Screen>
@@ -68,11 +52,7 @@ export function PilhaMetas({
           </Pilha.Screen>
           <Pilha.Screen name="registrar">
             {({ navigation, route }) => (
-              <TelaRegistrarRecebimento
-                id={route.params.id}
-                gestaoId={usuarioId}
-                voltar={() => navigation.goBack()}
-              />
+              <TelaRegistrarRecebimento id={route.params.id} voltar={() => navigation.goBack()} />
             )}
           </Pilha.Screen>
         </>
@@ -80,7 +60,6 @@ export function PilhaMetas({
         <Pilha.Screen name="minhas">
           {({ navigation }) => (
             <TelaMinhasContribuicoesMetas
-              usuarioId={usuarioId}
               voltar={() => navigation.goBack()}
               abrir={id => navigation.navigate('detalhe', { id })}
             />

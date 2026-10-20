@@ -7,6 +7,7 @@ import {
 } from '@/funcionalidades/voluntariado/PilhaAtividades';
 import { PilhaMetas, type ParametrosMetas } from '@/funcionalidades/metas/PilhaMetas';
 import { opcoesAbasPrincipais } from './AbasPrincipais';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import {
   TelaInicioConvidado,
   TelaPerfilConvidado,
@@ -26,7 +27,8 @@ const Abas = createBottomTabNavigator<ParametrosAbasConvidado>();
  * bloqueia a escrita (claim is_anonymous), então a tela só evita botões inúteis.
  * "Criar conta ou entrar" encerra a sessão anônima e volta ao login.
  */
-export function AbasConvidado({ usuarioId, sair }: { usuarioId: string; sair: () => void }) {
+export function AbasConvidado() {
+  const { sair } = useSessaoAtual();
   return (
     <Abas.Navigator screenOptions={({ route }) => opcoesAbasPrincipais(route.name)}>
       <Abas.Screen name="inicio" options={{ tabBarLabel: 'Início' }}>
@@ -41,25 +43,13 @@ export function AbasConvidado({ usuarioId, sair }: { usuarioId: string; sair: ()
       <Abas.Screen name="atividades" options={{ tabBarLabel: 'Voluntariado' }}>
         {({ navigation }) => (
           <PilhaAtividades
-            ehGestao={false}
-            autorId={usuarioId}
             inicio={() => navigation.navigate('inicio')}
             aoPerfil={() => navigation.navigate('perfil')}
-            convidado
-            aoCriarConta={sair}
           />
         )}
       </Abas.Screen>
       <Abas.Screen name="metas" options={{ tabBarLabel: 'Contribuir' }}>
-        {({ navigation }) => (
-          <PilhaMetas
-            ehGestao={false}
-            usuarioId={usuarioId}
-            inicio={() => navigation.navigate('inicio')}
-            convidado
-            aoCriarConta={sair}
-          />
-        )}
+        {({ navigation }) => <PilhaMetas inicio={() => navigation.navigate('inicio')} />}
       </Abas.Screen>
       <Abas.Screen name="perfil" options={{ tabBarLabel: 'Perfil' }}>
         {() => <TelaPerfilConvidado criarConta={sair} sair={sair} />}

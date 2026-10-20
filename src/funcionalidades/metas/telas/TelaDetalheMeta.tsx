@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Alert, Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
-import { formatarDataCurta } from '@/compartilhado/utils/datas';
+import { formatarDataCurta, hojeIso } from '@/compartilhado/utils/datas';
 import { tipo } from '@/compartilhado/tema';
-import { hojeIso } from '@/funcionalidades/perfil/regras';
 import type { Meta } from '../tipos';
 import {
   alterarStatusMeta,
@@ -21,25 +21,18 @@ import { PainelVoluntarioMeta } from '../componentes/PainelVoluntarioMeta';
 
 export function TelaDetalheMeta({
   id,
-  ehGestao,
-  usuarioId,
   voltar,
   editar,
   registrar,
   minhas,
-  convidado = false,
-  criarConta,
 }: {
   id: number;
-  ehGestao: boolean;
-  usuarioId: string;
   voltar: () => void;
   editar: () => void;
   registrar: () => void;
   minhas: () => void;
-  convidado?: boolean;
-  criarConta?: () => void;
 }) {
+  const { ehGestao, usuarioId, convidado, sair: criarConta } = useSessaoAtual();
   const consulta = useCallback(() => carregarMeta(id), [id]);
   const { dados, erro, carregando, carregar } = useConsulta(consulta);
   const acao = useAcao();
@@ -126,7 +119,6 @@ export function TelaDetalheMeta({
               contribuicoes={dados.contribuicoes}
               recebendo={recebendoContribuicoes(meta, hoje)}
               vencido={prazoVencido(meta, hoje)}
-              usuarioId={usuarioId}
               aoDeclarar={carregar}
               minhas={minhas}
             />

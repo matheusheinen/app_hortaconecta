@@ -30,6 +30,8 @@ export function TelaQrAtividade({
       return () => {
         geracao.current++;
       };
+      // atividadeId não é lido aqui, mas trocar de atividade precisa descartar o QR anterior.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [atividadeId]),
   );
   useEffect(() => {
@@ -67,6 +69,7 @@ export function TelaQrAtividade({
         anterior.
       </Text>
       {valido && emFoco ? (
+        // Branco fixo, fora do tema: o leitor precisa de contraste com o QR.
         <View style={{ alignItems: 'center', gap: 16, backgroundColor: '#FFFFFF', padding: 16 }}>
           <QRCode
             value={JSON.stringify({

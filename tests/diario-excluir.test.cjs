@@ -1,5 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { base: esquemasBase, esquemasDe } = require('./apoio/esquemas.cjs');
 const fs = require('node:fs');
 const Module = require('node:module');
 const ts = require('typescript');
@@ -163,6 +164,8 @@ test('Diário: excluirDiario chama a RPC e remove a imagem pela API Storage', as
   modulo.require = nome => {
     if (nome === '@/servicos/supabase') return { supabase };
     if (nome === './regras') return {};
+    if (nome === '@/compartilhado/esquemas') return esquemasBase;
+    if (nome === './esquemas') return esquemasDe('diario');
     throw new Error('Import inesperado: ' + nome);
   };
   modulo._compile(

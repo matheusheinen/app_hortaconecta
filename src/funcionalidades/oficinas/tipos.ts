@@ -1,7 +1,8 @@
 export type PropostaOficina = {
   id: number;
   autor_id: string;
-  nome_autor?: string;
+  /** Só no detalhe; null se o autor não for encontrado. */
+  nome_autor?: string | null;
   titulo: string;
   descricao: string;
   tema: string;

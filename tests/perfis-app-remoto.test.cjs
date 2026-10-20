@@ -27,7 +27,11 @@ function carregar(arquivo, dependencias = {}) {
 const validadores = carregar('src/compartilhado/utils/validadores.ts');
 const mascaras = carregar('src/compartilhado/utils/mascaras.ts', { './validadores': validadores });
 const regrasVoluntariado = carregar('src/funcionalidades/voluntariado/regras.ts');
-const regrasPerfil = carregar('src/funcionalidades/perfil/regras.ts');
+const datas = carregar('src/compartilhado/utils/datas.ts');
+const regrasPerfil = carregar('src/funcionalidades/perfil/regras.ts', {
+  '@/compartilhado/utils/validadores': validadores,
+  '@/compartilhado/utils/datas': datas,
+});
 const tipos = carregar('src/compartilhado/tipos.ts');
 
 const dados = () => ({
@@ -174,43 +178,78 @@ const secoes = {
   CartaoSecao: 'CartaoSecao',
   HubPerfil: 'HubPerfil',
   StatusPerfil: 'StatusPerfil',
+  OpcaoMarcavel: 'OpcaoMarcavel',
   estilosPerfil: {},
 };
 
-function telasVoluntario(contexto, buscarCep = async () => null) {
-  const { react, reiniciar } = reactFalso(contexto);
-  const telas = carregar('src/funcionalidades/perfil/telas/TelasPerfilVoluntario.tsx', {
+/** Carrega as telas (uma por arquivo) e junta as exportações num só objeto. */
+function carregarTelas(nomes, dependencias) {
+  return Object.assign(
+    {},
+    ...nomes.map(nome => carregar(`src/funcionalidades/perfil/telas/${nome}.tsx`, dependencias)),
+  );
+}
+
+function dependenciasTelas(react) {
+  return {
     react,
     'react-native': rn,
     '@/compartilhado/tema': { cores: {}, espaco: {} },
     '@/compartilhado/tipos': tipos,
     '@/compartilhado/utils/validadores': validadores,
     '@/compartilhado/utils/mascaras': mascaras,
+    '@/compartilhado/utils/datas': datas,
     '@/compartilhado/componentes/Ui': { Campo: 'Campo' },
     '@/compartilhado/componentes/CampoData': { CampoData: 'CampoData' },
     '../componentes/PerfilSecoes': secoes,
-    '../apiVoluntario': { buscarCep },
     '../regras': regrasPerfil,
-  });
+  };
+}
+
+function telasVoluntario(contexto, buscarCep = async () => null) {
+  const { react, reiniciar } = reactFalso(contexto);
+  const telas = carregarTelas(
+    [
+      'TelaHubPerfilVoluntario',
+      'TelaSecaoDadosPessoais',
+      'TelaSecaoCadastro',
+      'TelaSecaoEndereco',
+      'TelaSecaoDisponibilidade',
+      'TelaSecaoHabilidades',
+    ],
+    {
+      ...dependenciasTelas(react),
+      '../ContextoPerfilVoluntario': carregar(
+        'src/funcionalidades/perfil/ContextoPerfilVoluntario.tsx',
+        { react },
+      ),
+      '../apiVoluntario': { buscarCep },
+    },
+  );
   return { telas, reiniciar };
 }
 
 function telasOng(contexto) {
   const { react, reiniciar } = reactFalso(contexto);
-  const telas = carregar('src/funcionalidades/perfil/telas/TelasPerfilOng.tsx', {
-    react,
-    'react-native': rn,
-    '@/compartilhado/utils/validadores': validadores,
-    '@/compartilhado/utils/mascaras': mascaras,
-    '@/compartilhado/componentes/Ui': { Campo: 'Campo' },
-    '@/compartilhado/componentes/CampoData': { CampoData: 'CampoData' },
-    '../componentes/PerfilSecoes': secoes,
-    '../regras': regrasPerfil,
-    '../apiOng': carregar('src/funcionalidades/perfil/apiOng.ts', {
-      '@/servicos/supabase': {},
-      './apiGestao': {},
-    }),
-  });
+  const telas = carregarTelas(
+    [
+      'TelaHubPerfilOng',
+      'TelaSecaoContaOng',
+      'TelaSecaoInstitucionalOng',
+      'TelaSecaoWhatsappOng',
+      'TelaSecaoRecebimentoOng',
+    ],
+    {
+      ...dependenciasTelas(react),
+      '../ContextoPerfilOng': carregar('src/funcionalidades/perfil/ContextoPerfilOng.tsx', {
+        react,
+      }),
+      '../apiOng': carregar('src/funcionalidades/perfil/apiOng.ts', {
+        '@/servicos/supabase': {},
+        './apiGestao': {},
+      }),
+    },
+  );
   return { telas, reiniciar };
 }
 
@@ -319,8 +358,8 @@ test('Perfil voluntário: CEP preenchido pelo ViaCEP e CEP/UF inválidos barram 
       return telas.TelaSecaoEndereco({ voltar() {} });
     };
     await encontrar(render(), 'Campo', 'rotulo', rotulo).props.onChangeText(valor);
-    assert.match(
-      await encontrar(render(), 'SecaoPerfil').props.salvar(),
+    await assert.rejects(
+      encontrar(render(), 'SecaoPerfil').props.salvar(),
       new RegExp(rotulo + ' inválid'),
     );
     assert.equal(salvou, false);
@@ -424,7 +463,7 @@ test('Perfil gestão: seção de WhatsApp valida e envia só os dígitos', async
     return telas.TelaSecaoWhatsappOng({ voltar() {} });
   };
   encontrar(render(), 'Campo', 'rotulo', 'WhatsApp').props.onChangeText('5199');
-  assert.match(await encontrar(render(), 'SecaoPerfil').props.salvar(), /WhatsApp inválido/);
+  await assert.rejects(encontrar(render(), 'SecaoPerfil').props.salvar(), /WhatsApp inválido/);
   encontrar(render(), 'Campo', 'rotulo', 'WhatsApp').props.onChangeText('(51) 98888-7777');
   assert.equal(await encontrar(render(), 'SecaoPerfil').props.salvar(), null);
   assert.deepEqual(enviados, [{ whatsapp: '51988887777' }]);
@@ -511,4 +550,53 @@ test('Perfil gestão: PIX lido e gravado na configuração; sem a coluna, a seç
   const antigo = await libOng(semColuna).carregarPerfilOng('g');
   assert.equal(antigo.pixDisponivel, false);
   assert.equal(antigo.whatsapp, '51999999999');
+});
+
+test('Perfil: validações das seções lançam a mensagem ou devolvem os campos normalizados', () => {
+  const conta = { nome: ' Ana ', telefone: '(51) 98888-7777', instagram: '@ana.h', descricao: '' };
+  assert.deepEqual(regrasPerfil.validarConta(conta, 'A apresentação'), {
+    nome: 'Ana',
+    telefone: '51988887777',
+    perfil_instagram: 'ana.h',
+    descricao: null,
+  });
+  assert.throws(() => regrasPerfil.validarConta({ ...conta, nome: 'A' }, 'X'), /nome/);
+  assert.throws(() => regrasPerfil.validarConta({ ...conta, telefone: '123' }, 'X'), /Telefone/);
+  assert.throws(() => regrasPerfil.validarConta({ ...conta, instagram: 'a b' }, 'X'), /Instagram/);
+  assert.throws(
+    () => regrasPerfil.validarConta({ ...conta, descricao: 'x'.repeat(501) }, 'A descrição'),
+    { message: 'A descrição pode ter no máximo 500 caracteres.' },
+  );
+
+  const cadastro = { cpf: '', nascimento: '10/05/1990', profissao: ' Agrônoma ' };
+  assert.deepEqual(regrasPerfil.validarCadastroVoluntario(cadastro, '2026-10-13'), {
+    cpf: null,
+    data_nascimento: '1990-05-10',
+    profissao: 'Agrônoma',
+  });
+  assert.throws(
+    () => regrasPerfil.validarCadastroVoluntario({ ...cadastro, cpf: '111.111.111-11' }),
+    /CPF/,
+  );
+  assert.throws(
+    () =>
+      regrasPerfil.validarCadastroVoluntario(
+        { ...cadastro, nascimento: '13/10/2026' },
+        '2026-10-13',
+      ),
+    /no passado/,
+  );
+  assert.throws(
+    () =>
+      regrasPerfil.validarInstitucional(
+        { cnpj: '', razaoSocial: '', fundacao: '01/01/2030', responsavel: '' },
+        '2026-10-13',
+      ),
+    /futuro/,
+  );
+  assert.deepEqual(regrasPerfil.validarWhatsapp(''), { whatsapp: null });
+  assert.throws(
+    () => regrasPerfil.validarRecebimento({ chave: 'x', beneficiario: 'A' }),
+    /beneficiário/,
+  );
 });

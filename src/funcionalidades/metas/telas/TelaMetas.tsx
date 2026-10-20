@@ -1,30 +1,28 @@
 import React, { useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
+import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Pressable, Text } from 'react-native';
 import { AbasFiltro, Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
-import { formatarDataCurta } from '@/compartilhado/utils/datas';
+import { formatarDataCurta, hojeIso } from '@/compartilhado/utils/datas';
 import { tipo } from '@/compartilhado/tema';
-import { hojeIso } from '@/funcionalidades/perfil/regras';
 import { listarMetas } from '../api';
 import { descreverProgresso, metaFinalizada, prazoVencido } from '../regras';
 import { EtiquetaMeta, ProgressoMeta } from '../componentes/IndicadoresMeta';
 
-export function TelaMetas({
-  ehGestao,
+export const TelaMetas = memoTela(function TelaMetas({
   voltar,
   abrir,
   criar,
   minhas,
-  convidado = false,
 }: {
-  ehGestao: boolean;
   voltar: () => void;
   abrir: (id: number) => void;
   criar: () => void;
   minhas: () => void;
-  convidado?: boolean;
 }) {
+  const { ehGestao, convidado } = useSessaoAtual();
   const { dados, erro, carregando, carregar } = useConsulta(listarMetas);
   const hoje = hojeIso();
   const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');
@@ -89,4 +87,4 @@ export function TelaMetas({
       ))}
     </TelaFluxo>
   );
-}
+});

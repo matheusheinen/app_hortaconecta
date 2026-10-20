@@ -154,10 +154,37 @@ export function SecaoPerfil({
   );
 }
 
+/** Opção que liga e desliga, como um período livre ou uma habilidade. */
+export function OpcaoMarcavel({
+  rotulo,
+  rotuloAcessivel = rotulo,
+  ativa,
+  onPress,
+}: {
+  rotulo: string;
+  rotuloAcessivel?: string;
+  ativa: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: ativa }}
+      accessibilityLabel={rotuloAcessivel}
+      style={[estilos.opcao, ativa && estilos.opcaoAtiva]}
+    >
+      <Text style={[estilos.opcaoTexto, ativa && estilos.opcaoTextoAtivo]}>{rotulo}</Text>
+    </Pressable>
+  );
+}
+
 export const estilosPerfil = StyleSheet.create({
   multilinha: { minHeight: 80, textAlignVertical: 'top', paddingTop: 12 },
   linha: { flexDirection: 'row', gap: espaco.sm },
   explicacao: { ...tipo.apoio, marginBottom: espaco.md },
+  /** Linha que quebra para agrupar OpcaoMarcavel. */
+  opcoes: { flexDirection: 'row', flexWrap: 'wrap', gap: espaco.sm, flex: 1 },
 });
 
 const estilos = StyleSheet.create({
@@ -173,8 +200,8 @@ const estilos = StyleSheet.create({
   },
   cabecalho: { flexDirection: 'row', alignItems: 'flex-start', gap: espaco.md },
   status: { borderRadius: 18, padding: espaco.md, gap: espaco.sm, borderWidth: 1 },
-  statusOk: { backgroundColor: cores.folhaClara, borderColor: '#CFE5D7' },
-  statusPendente: { backgroundColor: '#FBF4EA', borderColor: '#EEDDC5' },
+  statusOk: { backgroundColor: cores.folhaClara, borderColor: cores.folhaLinha },
+  statusPendente: { backgroundColor: cores.areia, borderColor: cores.areiaLinha },
   statusTitulo: { fontSize: 16, fontWeight: '700', color: cores.tinta },
   barra: { height: 8, borderRadius: 4, backgroundColor: cores.fundo, overflow: 'hidden' },
   barraPreenchida: { height: 8, borderRadius: 4, backgroundColor: cores.folha },
@@ -191,6 +218,17 @@ const estilos = StyleSheet.create({
   secaoTitulo: { fontSize: 15, fontWeight: '700', color: cores.tinta },
   chip: { borderRadius: 12, paddingHorizontal: espaco.sm, paddingVertical: 3 },
   chipOk: { backgroundColor: cores.folhaClara },
-  chipPendente: { backgroundColor: '#FBF4EA' },
+  chipPendente: { backgroundColor: cores.areia },
   chipTexto: { fontSize: 12, fontWeight: '700' },
+  opcao: {
+    borderWidth: 1.5,
+    borderColor: cores.linha,
+    borderRadius: 20,
+    paddingHorizontal: espaco.md,
+    paddingVertical: espaco.xs + 2,
+    backgroundColor: cores.fundo,
+  },
+  opcaoAtiva: { borderColor: cores.folha, backgroundColor: cores.folhaClara },
+  opcaoTexto: { fontSize: 13, fontWeight: '600', color: cores.tintaSuave },
+  opcaoTextoAtivo: { color: cores.folha },
 });

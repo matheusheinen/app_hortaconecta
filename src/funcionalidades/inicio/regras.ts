@@ -1,12 +1,12 @@
-import { supabase } from '@/servicos/supabase';
-import { carregarMinhasInscricoes } from '@/funcionalidades/voluntariado/api';
-import { listarMetas } from '@/funcionalidades/metas/api';
-import { listarDiario } from '@/funcionalidades/diario/api';
-import type { Atividade, MinhaInscricao } from '@/funcionalidades/voluntariado/tipos';
+import type {
+  Atividade,
+  AtividadeComVagas,
+  MinhaInscricao,
+} from '@/funcionalidades/voluntariado/tipos';
 import type { Meta, StatusValidacao } from '@/funcionalidades/metas/tipos';
 import type { Publicacao } from '@/funcionalidades/diario/tipos';
+import { hojeIso } from '@/compartilhado/utils/datas';
 
-export type AtividadeInicio = Atividade & { vagas_ocupadas: number };
 export type ResumoInicio = {
   perfilCompleto: boolean;
   /** Carga prevista registrada no check-in; não mede tempo efetivamente trabalhado. */
@@ -19,11 +19,11 @@ export type ResumoInicio = {
   publicacao: Publicacao | null;
 };
 
-type DadosInicio = {
+export type DadosInicio = {
   perfilCompleto: boolean;
   inscricoes: MinhaInscricao[];
   contribuicoes: { status_validacao: StatusValidacao }[];
-  atividades: AtividadeInicio[];
+  atividades: AtividadeComVagas[];
   metas: Meta[];
   diario: Publicacao[];
 };
@@ -54,8 +54,7 @@ export function montarResumoInicio(dados: DadosInicio, agora = new Date()): Resu
       // O banco mantém vagas_ocupadas como o total de candidaturas aprovadas.
       vagasDisponiveis: Math.max(0, atividade.vagas_totais - atividade.vagas_ocupadas),
     }));
-  const p = (n: number) => String(n).padStart(2, '0');
-  const hoje = `${agora.getFullYear()}-${p(agora.getMonth() + 1)}-${p(agora.getDate())}`;
+  const hoje = hojeIso(agora);
   const meta =
     dados.metas
       .filter(
@@ -81,50 +80,6 @@ export function montarResumoInicio(dados: DadosInicio, agora = new Date()): Resu
     meta,
     publicacao,
   };
-}
-
-/** Mantém a autorização das consultas existentes. Uma falha nunca vira contagem zero. */
-export async function carregarResumoInicio(): Promise<ResumoInicio> {
-  const agora = new Date();
-  const [perfilCompleto, inscricoes, contribuicoes, atividades, metas, diario] = await Promise.all([
-    carregarElegibilidade(),
-    carregarMinhasInscricoes(),
-    carregarMinhasContribuicoes(),
-    carregarProximasAtividades(agora),
-    listarMetas(),
-    listarDiario(),
-  ]);
-  return montarResumoInicio(
-    { perfilCompleto, inscricoes, contribuicoes, atividades, metas, diario },
-    agora,
-  );
-}
-
-async function carregarElegibilidade(): Promise<boolean> {
-  const { data, error } = await supabase.rpc('voluntariado_elegibilidade');
-  if (error) throw error;
-  if (typeof data !== 'boolean') throw new Error('Não foi possível verificar seu cadastro.');
-  return data;
-}
-
-/** A RLS de contribuicoes devolve ao voluntário apenas as próprias. */
-async function carregarMinhasContribuicoes(): Promise<{ status_validacao: StatusValidacao }[]> {
-  const { data, error } = await supabase.from('contribuicoes').select('status_validacao');
-  if (error) throw error;
-  if (!Array.isArray(data)) throw new Error('Não foi possível carregar suas contribuições.');
-  return data;
-}
-
-async function carregarProximasAtividades(agora: Date): Promise<AtividadeInicio[]> {
-  const { data, error } = await supabase
-    .from('atividades')
-    .select('*')
-    .eq('status', 'ABERTA')
-    .gte('data_hora_prevista', agora.toISOString())
-    .order('data_hora_prevista', { ascending: true });
-  if (error) throw error;
-  if (!Array.isArray(data)) throw new Error('Não foi possível carregar as próximas atividades.');
-  return data;
 }
 
 export function formatarHorasInicio(horas: number): string {

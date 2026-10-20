@@ -1,4 +1,6 @@
 import React from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
+import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
@@ -8,17 +10,16 @@ import { listarDiario } from '../api';
 import { DataPublicacao } from '../componentes/DataPublicacao';
 import { ImagemDiario } from '../componentes/ImagemDiario';
 
-export function TelaDiario({
-  gestao,
+export const TelaDiario = memoTela(function TelaDiario({
   voltar,
   abrir,
   criar,
 }: {
-  gestao: boolean;
   voltar: () => void;
   abrir: (id: number) => void;
   criar: () => void;
 }) {
+  const { ehGestao: gestao } = useSessaoAtual();
   const { dados, erro, carregando, carregar } = useConsulta(listarDiario);
   return (
     <TelaFluxo
@@ -45,4 +46,4 @@ export function TelaDiario({
       ))}
     </TelaFluxo>
   );
-}
+});

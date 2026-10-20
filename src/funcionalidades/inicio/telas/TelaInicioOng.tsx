@@ -1,29 +1,28 @@
 import React from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
+import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { Icone, type NomeIcone } from '@/compartilhado/componentes/Icone';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
 
 type Props = {
-  nome: string;
-  sair: () => void;
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
-  /** Ausente quando o recurso está fora do MVP (ver lib/escopoMvp). */
+  /** Ausente quando o recurso está fora do MVP (ver compartilhado/escopoMvp.ts). */
   aoIrParaCertificados?: () => void;
   aoIrParaOficinas?: () => void;
 };
 
-export function TelaInicioOng({
-  nome,
-  sair,
+export const TelaInicioOng = memoTela(function TelaInicioOng({
   aoIrParaAtividades,
   aoIrParaMetas,
   aoIrParaDiario,
   aoIrParaOficinas,
   aoIrParaCertificados,
 }: Props) {
+  const { nome, sair } = useSessaoAtual();
   const { configuracao } = useConfiguracaoInstituicao();
 
   return (
@@ -92,7 +91,7 @@ export function TelaInicioOng({
       </View>
     </ScrollView>
   );
-}
+});
 
 function CartaoGestao({
   titulo,

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -21,12 +22,12 @@ import { carregarAreasAtividade, salvarAreasAtividade } from '../areasAtividade'
 
 type Props = {
   atividade: Atividade | null;
-  autorId: string;
   onPronto: () => void;
   onCancelar: () => void;
 };
 
-export function TelaFormAtividade({ atividade, autorId, onPronto, onCancelar }: Props) {
+export function TelaFormAtividade({ atividade, onPronto, onCancelar }: Props) {
+  const { usuarioId: autorId } = useSessaoAtual();
   const editando = atividade !== null;
 
   const [titulo, setTitulo] = useState(atividade?.titulo ?? '');

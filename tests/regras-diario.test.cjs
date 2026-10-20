@@ -1,5 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { base: esquemasBase, esquemasDe } = require('./apoio/esquemas.cjs');
 const fs = require('node:fs'),
   Module = require('node:module'),
   ts = require('typescript');
@@ -112,6 +113,8 @@ test('Diário: adaptador envia JPEG sem sobrescrever, solicita URL por 60s e pro
   api.require = id => {
     if (id === '@/servicos/supabase') return { supabase: cliente };
     if (id === './regras') return m.exports;
+    if (id === '@/compartilhado/esquemas') return esquemasBase;
+    if (id === './esquemas') return esquemasDe('diario');
     throw new Error('Importação inesperada: ' + id);
   };
   api._compile(

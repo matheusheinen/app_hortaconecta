@@ -1,17 +1,18 @@
 import React from 'react';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TelaDiario } from './telas/TelaDiario';
 import { TelaDetalheDiario } from './telas/TelaDetalheDiario';
 import { TelaFormDiario } from './telas/TelaFormDiario';
 type Rotas = { lista: undefined; detalhe: { id: number }; formulario: { id: number | null } };
 const Pilha = createNativeStackNavigator<Rotas>();
-export function PilhaDiario({ gestao, inicio }: { gestao: boolean; inicio: () => void }) {
+export function PilhaDiario({ inicio }: { inicio: () => void }) {
+  const { ehGestao: gestao } = useSessaoAtual();
   return (
     <Pilha.Navigator screenOptions={{ headerShown: false }}>
       <Pilha.Screen name="lista">
         {({ navigation }) => (
           <TelaDiario
-            gestao={gestao}
             voltar={inicio}
             abrir={id => navigation.navigate('detalhe', { id })}
             criar={() => navigation.navigate('formulario', { id: null })}
@@ -23,7 +24,6 @@ export function PilhaDiario({ gestao, inicio }: { gestao: boolean; inicio: () =>
           <TelaDetalheDiario
             key={route.params.id}
             id={route.params.id}
-            gestao={gestao}
             voltar={() => navigation.goBack()}
             editar={() => navigation.navigate('formulario', route.params)}
           />
