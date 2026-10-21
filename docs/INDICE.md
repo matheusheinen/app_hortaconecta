@@ -32,6 +32,7 @@ relatório divergir do DOCUMENTACAO.md, vale o DOCUMENTACAO.md.
 | [Contribuições: metas em dinheiro e de materiais](mvp/CONTRIBUICOES.md) | RF0010–RF0012, RF0015, RNF0004 | B19–B24, B30, B34 |
 | [Diário de Transparência](mvp/DIARIO.md) | RF0013, RNF0003, RNF0005 | B25–B27 |
 | [Correções do MVP](mvp/CORRECOES_MVP.md) | RNF0007, RNF0010, RNF0011 | — |
+| [Foto do perfil (21/10/2026)](mvp/FOTO_PERFIL.md) | RF0002 | B31 |
 
 ## Implementado, fora do MVP por enquanto
 
