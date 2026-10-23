@@ -15,7 +15,8 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
 
 **Pendente de aplicação** (decisão de 05/10/2026), depois dos dois acima:
 
-3. `20261005150000_contribuicoes_metas_pix.sql`: PIX em `configuracao_instituicao`,
+3. `20261005150000_contribuicoes_metas_pix.sql` (**aplicada em 23/10/2026**; as tabelas de
+   materiais já não existiam no remoto, então não houve perda de dados): PIX em `configuracao_instituicao`,
    voluntário só contribui em meta aberta e **exclusão** de `solicitacoes_materiais`,
    `contribuicoes_materiais` e funções `materiais_*`, com os dados. Ver
    [CONTRIBUICOES.md](../../docs/mvp/CONTRIBUICOES.md). Verificação local:

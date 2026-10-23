@@ -156,12 +156,14 @@ export type Database = {
         Row: {
           atualizado_em: string
           chamada: string | null
+          chave_pix: string | null
           cidade: string
           cor_acento: string | null
           cor_primaria: string | null
           email_contato: string | null
           endereco: string | null
           id: number
+          nome_beneficiario_pix: string | null
           nome_completo: string
           nome_curto: string
           site: string | null
@@ -174,12 +176,14 @@ export type Database = {
         Insert: {
           atualizado_em?: string
           chamada?: string | null
+          chave_pix?: string | null
           cidade: string
           cor_acento?: string | null
           cor_primaria?: string | null
           email_contato?: string | null
           endereco?: string | null
           id?: number
+          nome_beneficiario_pix?: string | null
           nome_completo: string
           nome_curto: string
           site?: string | null
@@ -192,12 +196,14 @@ export type Database = {
         Update: {
           atualizado_em?: string
           chamada?: string | null
+          chave_pix?: string | null
           cidade?: string
           cor_acento?: string | null
           cor_primaria?: string | null
           email_contato?: string | null
           endereco?: string | null
           id?: number
+          nome_beneficiario_pix?: string | null
           nome_completo?: string
           nome_curto?: string
           site?: string | null
@@ -264,64 +270,6 @@ export type Database = {
           {
             foreignKeyName: "contribuicoes_validado_por_fkey"
             columns: ["validado_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contribuicoes_materiais: {
-        Row: {
-          criado_em: string
-          decidido_em: string | null
-          decidido_por: string | null
-          id: number
-          observacao: string | null
-          quantidade: number
-          solicitacao_id: number
-          status: string
-          usuario_id: string
-        }
-        Insert: {
-          criado_em?: string
-          decidido_em?: string | null
-          decidido_por?: string | null
-          id?: never
-          observacao?: string | null
-          quantidade: number
-          solicitacao_id: number
-          status?: string
-          usuario_id: string
-        }
-        Update: {
-          criado_em?: string
-          decidido_em?: string | null
-          decidido_por?: string | null
-          id?: never
-          observacao?: string | null
-          quantidade?: number
-          solicitacao_id?: number
-          status?: string
-          usuario_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contribuicoes_materiais_decidido_por_fkey"
-            columns: ["decidido_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contribuicoes_materiais_solicitacao_id_fkey"
-            columns: ["solicitacao_id"]
-            isOneToOne: false
-            referencedRelation: "solicitacoes_materiais"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contribuicoes_materiais_usuario_id_fkey"
-            columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]
@@ -634,50 +582,6 @@ export type Database = {
           },
         ]
       }
-      solicitacoes_materiais: {
-        Row: {
-          atualizado_em: string
-          criado_em: string
-          criado_por: string
-          descricao: string
-          id: number
-          nome: string
-          quantidade_necessaria: number
-          quantidade_recebida: number
-          status: string
-        }
-        Insert: {
-          atualizado_em?: string
-          criado_em?: string
-          criado_por: string
-          descricao: string
-          id?: never
-          nome: string
-          quantidade_necessaria: number
-          quantidade_recebida?: number
-          status?: string
-        }
-        Update: {
-          atualizado_em?: string
-          criado_em?: string
-          criado_por?: string
-          descricao?: string
-          id?: never
-          nome?: string
-          quantidade_necessaria?: number
-          quantidade_recebida?: number
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "solicitacoes_materiais_criado_por_fkey"
-            columns: ["criado_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       usuario_habilidades: {
         Row: {
           habilidade_id: number
@@ -848,30 +752,6 @@ export type Database = {
       }
       e_ong: { Args: { uid?: string }; Returns: boolean }
       gestao_salvar_perfil: { Args: { p_dados: Json }; Returns: boolean }
-      materiais_contribuir: {
-        Args: { p_quantidade: number; p_solicitacao: number }
-        Returns: number
-      }
-      materiais_decidir: {
-        Args: { p_contribuicao: number; p_status: string }
-        Returns: undefined
-      }
-      materiais_detalhe: { Args: { p_solicitacao: number }; Returns: Json }
-      materiais_listar: { Args: never; Returns: Json }
-      materiais_minhas: { Args: never; Returns: Json }
-      materiais_salvar: {
-        Args: {
-          p_descricao: string
-          p_id: number
-          p_nome: string
-          p_quantidade: number
-        }
-        Returns: number
-      }
-      materiais_status: {
-        Args: { p_solicitacao: number; p_status: string }
-        Returns: undefined
-      }
       oficinas_cancelar: {
         Args: { p_id: number; p_revisao: number }
         Returns: undefined

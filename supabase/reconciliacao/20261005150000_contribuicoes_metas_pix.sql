@@ -48,7 +48,13 @@ DROP FUNCTION IF EXISTS public.materiais_salvar(bigint,text,text,integer),
  public.materiais_detalhe(bigint), public.materiais_minhas();
 -- A leitura de solicitações consulta contribuicoes_materiais; sem CASCADE,
 -- para que qualquer outra dependência inesperada interrompa a migration.
-DROP POLICY IF EXISTS materiais_solic_leitura ON public.solicitacoes_materiais;
+-- DROP POLICY IF EXISTS falha quando a tabela não existe; só remove se ela existir.
+DO $drop_policy$
+BEGIN
+ IF to_regclass('public.solicitacoes_materiais') IS NOT NULL THEN
+  DROP POLICY IF EXISTS materiais_solic_leitura ON public.solicitacoes_materiais;
+ END IF;
+END $drop_policy$;
 DROP TABLE IF EXISTS public.contribuicoes_materiais;
 DROP TABLE IF EXISTS public.solicitacoes_materiais;
 COMMIT;
