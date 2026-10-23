@@ -1,6 +1,5 @@
 import { supabase } from '@/servicos/supabase';
-import { imagemJpeg } from '@/funcionalidades/diario/regras';
-import { declararComComprovante } from './comprovante';
+import { declararComComprovante, imagemComprovante } from './comprovante';
 import type { Contribuicao, Meta, MetaFormulario, TipoMeta } from './tipos';
 
 export type ContribuicaoComDoador = Contribuicao & { usuarios: { nome: string } | null };
@@ -94,42 +93,54 @@ export async function alterarStatusMeta(id: number, status: Meta['status']): Pro
 }
 
 /**
- * Voluntário declara o que enviou; fica PENDENTE até a gestão conferir. O
- * comprovante é opcional: JPEG em base64, enviado ao bucket privado antes do registro.
+ * Envia o comprovante (JPEG, PNG ou WebP em base64) ao bucket privado e devolve
+ * o caminho; o registro da contribuição usa esse caminho. Sem imagem, não envia nada.
  */
-export async function declararContribuicao(
-  metaId: number,
-  usuarioId: string,
-  quantidade: number,
-  comprovanteBase64: string | null = null,
+async function comComprovante(
+  base64: string | null,
+  inserir: (caminho: string | null) => Promise<void>,
 ): Promise<void> {
   await declararComComprovante(
-    comprovanteBase64 === null ? null : imagemJpeg(comprovanteBase64),
-    async arquivo => {
-      const { data: caminho, error: erroCaminho } = await supabase.rpc('comprovante_caminho');
+    base64 === null ? null : imagemComprovante(base64),
+    async imagem => {
+      const { data: caminho, error: erroCaminho } = await supabase.rpc('comprovante_caminho', {
+        p_ext: imagem.extensao,
+      });
       if (erroCaminho) throw erroCaminho;
       if (!caminho) throw new Error('Não foi possível preparar o envio do comprovante.');
-      const { error } = await supabase.storage.from(BUCKET_COMPROVANTES).upload(caminho, arquivo, {
-        contentType: 'image/jpeg',
-        upsert: false,
-        cacheControl: '60',
-      });
+      const { error } = await supabase.storage
+        .from(BUCKET_COMPROVANTES)
+        .upload(caminho, imagem.arquivo, {
+          contentType: imagem.tipo,
+          upsert: false,
+          cacheControl: '60',
+        });
       if (error) throw new Error('Falha no envio do comprovante: ' + error.message);
       return caminho;
     },
     async caminho => {
       await supabase.storage.from(BUCKET_COMPROVANTES).remove([caminho]);
     },
-    async caminho => {
-      const { error } = await supabase.from('contribuicoes').insert({
-        meta_id: metaId,
-        usuario_id: usuarioId,
-        quantidade_oferecida: quantidade,
-        ...(caminho ? { url_comprovante: caminho } : {}),
-      });
-      if (error) throw error;
-    },
+    inserir,
   );
+}
+
+/** Voluntário declara o que enviou; fica PENDENTE até a gestão conferir. */
+export async function declararContribuicao(
+  metaId: number,
+  usuarioId: string,
+  quantidade: number,
+  comprovanteBase64: string | null = null,
+): Promise<void> {
+  await comComprovante(comprovanteBase64, async caminho => {
+    const { error } = await supabase.from('contribuicoes').insert({
+      meta_id: metaId,
+      usuario_id: usuarioId,
+      quantidade_oferecida: quantidade,
+      ...(caminho ? { url_comprovante: caminho } : {}),
+    });
+    if (error) throw error;
+  });
 }
 
 /** URL assinada de curta duração; o bucket é privado. */
@@ -149,17 +160,21 @@ export async function registrarRecebimento(params: {
   gestaoId: string;
   quantidade: number;
   observacao: string | null;
+  comprovanteBase64?: string | null;
 }): Promise<void> {
-  const { error } = await supabase.from('contribuicoes').insert({
-    meta_id: params.metaId,
-    usuario_id: params.doadorId,
-    quantidade_oferecida: params.quantidade,
-    status_validacao: 'APROVADA',
-    validado_por: params.gestaoId,
-    validado_em: new Date().toISOString(),
-    observacao_validacao: params.observacao,
+  await comComprovante(params.comprovanteBase64 ?? null, async caminho => {
+    const { error } = await supabase.from('contribuicoes').insert({
+      meta_id: params.metaId,
+      usuario_id: params.doadorId,
+      quantidade_oferecida: params.quantidade,
+      status_validacao: 'APROVADA',
+      validado_por: params.gestaoId,
+      validado_em: new Date().toISOString(),
+      observacao_validacao: params.observacao,
+      ...(caminho ? { url_comprovante: caminho } : {}),
+    });
+    if (error) throw error;
   });
-  if (error) throw error;
 }
 
 export async function validarContribuicao(

@@ -20,10 +20,11 @@ reconciliação pendente e homologação.
 | Gestão | Confere no extrato e confirma ou recusa | Registra a doação recebida, já APROVADA |
 
 - O pagamento acontece **fora do app**. Não há integração bancária, PIX dinâmico
-  nem conciliação automática. O comprovante em imagem é opcional (B22): JPEG de até
-  5 MiB no bucket privado `comprovantes`, em `{uid}/{uuid}.jpg`; `url_comprovante`
+  nem conciliação automática. O comprovante em imagem é opcional (B22): JPEG, PNG ou WebP de até
+  5 MiB (SVG não é aceito) no bucket privado `comprovantes`, em `{uid}/{uuid}.{ext}`; `url_comprovante`
   guarda o caminho. O voluntário lê só os próprios, a gestão lê todos, ninguém
-  altera, e o dono só apaga arquivo ainda sem contribuição ligada.
+  altera, e o dono só apaga arquivo ainda sem contribuição ligada. A gestão também
+  pode anexar o comprovante ao registrar uma doação recebida; o doador o enxerga.
 - A gestão pode registrar diretamente qualquer doação recebida, em dinheiro ou
   material, desde que o doador seja um voluntário cadastrado. O registro entra
   APROVADA, com `validado_por` e `validado_em` da gestão.

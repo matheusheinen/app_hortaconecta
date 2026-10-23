@@ -10,8 +10,46 @@ m._compile(
   }).outputText,
   'comprovante.cjs',
 );
-const { declararComComprovante } = m.exports;
-const arquivo = new Uint8Array([255, 216, 255]).buffer;
+const { declararComComprovante, imagemComprovante, LIMITE_COMPROVANTE } = m.exports;
+const arquivo = {
+  arquivo: new Uint8Array([255, 216, 255]).buffer,
+  extensao: 'jpg',
+  tipo: 'image/jpeg',
+};
+const b64 = bytes => Buffer.from(bytes).toString('base64');
+const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0];
+const WEBP = [0x52, 0x49, 0x46, 0x46, 1, 2, 3, 4, 0x57, 0x45, 0x42, 0x50];
+
+test('Comprovante: reconhece JPEG, PNG e WebP pelos bytes, não pela extensão', () => {
+  assert.deepEqual(
+    [[255, 216, 255, 224], PNG, WEBP].map(b => {
+      const r = imagemComprovante(b64(b));
+      return [r.extensao, r.tipo, r.arquivo.byteLength];
+    }),
+    [
+      ['jpg', 'image/jpeg', 4],
+      ['png', 'image/png', 10],
+      ['webp', 'image/webp', 12],
+    ],
+  );
+});
+
+test('Comprovante: recusa SVG, GIF, texto, base64 inválido e arquivo acima de 5 MiB', () => {
+  const svg = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+  );
+  for (const ruim of [svg, Buffer.from('GIF89a'), Buffer.from('texto qualquer')])
+    assert.throws(() => imagemComprovante(ruim.toString('base64')), /Formato não aceito/);
+  assert.throws(() => imagemComprovante('%%%%'), /ler a imagem/);
+  assert.throws(() => imagemComprovante(''), /5 MiB/);
+  const grande = Buffer.alloc(LIMITE_COMPROVANTE + 1);
+  grande.set([255, 216, 255]);
+  assert.equal(
+    imagemComprovante(grande.subarray(0, LIMITE_COMPROVANTE).toString('base64')).arquivo.byteLength,
+    LIMITE_COMPROVANTE,
+  );
+  assert.throws(() => imagemComprovante(grande.toString('base64')), /5 MiB/);
+});
 
 test('Comprovante: sem arquivo só registra a contribuição, sem tocar no Storage', async () => {
   const chamadas = [];
@@ -28,8 +66,8 @@ test('Comprovante: envia primeiro e registra a contribuição com o caminho devo
   const chamadas = [];
   await declararComComprovante(
     arquivo,
-    async a => {
-      chamadas.push(['enviar', a.byteLength]);
+    async i => {
+      chamadas.push(['enviar', i.arquivo.byteLength]);
       return 'uid/arquivo.jpg';
     },
     async () => chamadas.push('remover'),

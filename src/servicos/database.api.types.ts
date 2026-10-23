@@ -42,7 +42,7 @@ type TabelasAplicativo = Omit<Database['public']['Tables'], 'configuracao_instit
 // remoto. Remover este bloco ao regenerar database.types.ts.
 type FuncoesPendentes = {
   // Reconciliação 20261023170000_comprovantes_storage, aplicada no remoto; remover ao regenerar database.types.ts.
-  comprovante_caminho: { Args: Record<string, never>; Returns: string };
+  comprovante_caminho: { Args: { p_ext: string }; Returns: string };
   diario_excluir_revisao: { Args: { p_id: number; p_revisao: number }; Returns: string | null };
   gestor_alternar_modo: { Args: { p_gestor: boolean }; Returns: string };
   gestor_pode_alternar_modo: { Args: Record<string, never>; Returns: boolean };

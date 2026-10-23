@@ -61,6 +61,10 @@ continuam independentes do calendário.
 5. `20261023170000_comprovantes_storage.sql` (**aplicada em 23/10/2026**, B22): bucket privado `comprovantes`, RPC
    `comprovante_caminho`, policies de Storage e restrição em `contribuicoes.url_comprovante`.
    Verificação local: `node --test tests/comprovantes-storage.test.cjs`. Não depende do PIX.
+6. `20261023190000_comprovantes_formatos.sql` (**aplicada em 23/10/2026**, B22): o bucket passa a aceitar JPEG, PNG e
+   WebP, `comprovante_caminho(p_ext)` recebe a extensão, a gestão anexa comprovante ao
+   registrar doação e o doador lê o arquivo ligado à contribuição dele. Depende do item 5.
+   Verificação local: `node --test tests/comprovantes-formatos.test.cjs`.
 
 As novas tabelas recebem RLS e grants explícitos; funções privadas não ficam
 acessíveis ao cliente. Contas autenticadas leem o próprio perfil, e a gestão

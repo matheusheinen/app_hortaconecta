@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
-import { Alert, Image, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import * as ImagePicker from 'expo-image-picker';
 import { Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
 import { formatarDataCurta, formatarDataHora } from '@/compartilhado/utils/datas';
+import { avisar, confirmarAcao } from '@/compartilhado/utils/confirmar';
 import { mascararTelefone } from '@/compartilhado/utils/mascaras';
 import { abrirWhatsApp } from '@/compartilhado/utils/whatsapp';
 import { cores, tipo } from '@/compartilhado/tema';
@@ -16,6 +16,7 @@ import { carregarPix, declararContribuicao, type ContribuicaoComDoador, type Pix
 import { descreverQuantidade, interpretarQuantidade } from '../regras';
 import { estilosMeta } from './IndicadoresMeta';
 import { ComprovanteContribuicao } from './ComprovanteContribuicao';
+import { SeletorComprovante, type ComprovanteEscolhido } from './SeletorComprovante';
 
 export function PainelVoluntarioMeta({
   meta,
@@ -38,7 +39,7 @@ export function PainelVoluntarioMeta({
   const [copiado, setCopiado] = useState(false);
   const [quantidade, setQuantidade] = useState('');
   const [sucesso, setSucesso] = useState(false);
-  const [comprovante, setComprovante] = useState<{ uri: string; base64: string } | null>(null);
+  const [comprovante, setComprovante] = useState<ComprovanteEscolhido | null>(null);
   const acao = useAcao();
   const financeira = meta.tipo === 'FINANCEIRA';
 
@@ -70,53 +71,31 @@ export function PainelVoluntarioMeta({
       ? `Olá! Vi a meta "${meta.titulo}" no app e tenho uma dúvida sobre a doação.`
       : `Olá! Vi a meta "${meta.titulo}" no app e quero contribuir com material. Como combinamos a entrega?`;
     if (!(await abrirWhatsApp(numero, mensagem))) {
-      Alert.alert(
+      avisar(
         'Não foi possível abrir o WhatsApp',
         `Fale com a gestão pelo número ${mascararTelefone(numero)}.`,
       );
     }
   }
-  async function escolherComprovante() {
-    try {
-      const resultado = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        quality: 0.8,
-        base64: true,
-        exif: false,
-        allowsMultipleSelection: false,
-      });
-      if (resultado.canceled) return;
-      const asset = resultado.assets[0];
-      if (!asset.base64) throw new Error('Não foi possível ler a imagem. Escolha outra foto.');
-      setComprovante({ uri: asset.uri, base64: asset.base64 });
-    } catch (falha) {
-      Alert.alert('Comprovante', falha instanceof Error ? falha.message : 'Tente outra imagem.');
-    }
-  }
   function declarar() {
     const valor = interpretarQuantidade(quantidade);
     if (valor === null) {
-      Alert.alert('Valor inválido', 'Informe um valor positivo, com até duas casas decimais.');
+      avisar('Valor inválido', 'Informe um valor positivo, com até duas casas decimais.');
       return;
     }
-    Alert.alert(
+    confirmarAcao(
       'Informar doação?',
       `Você informa que transferiu ${descreverQuantidade(valor, meta)}. A gestão confere no extrato antes de somar ao total.`,
-      [
-        { text: 'Voltar', style: 'cancel' },
-        {
-          text: 'Informar',
-          onPress: () => {
-            void acao.executar(async () => {
-              await declararContribuicao(meta.id, usuarioId, valor, comprovante?.base64 ?? null);
-              setQuantidade('');
-              setComprovante(null);
-              setSucesso(true);
-              await aoDeclarar();
-            });
-          },
-        },
-      ],
+      'Informar',
+      () => {
+        void acao.executar(async () => {
+          await declararContribuicao(meta.id, usuarioId, valor, comprovante?.base64 ?? null);
+          setQuantidade('');
+          setComprovante(null);
+          setSucesso(true);
+          await aoDeclarar();
+        });
+      },
     );
   }
 
@@ -168,31 +147,11 @@ export function PainelVoluntarioMeta({
             keyboardType="decimal-pad"
             placeholder="Ex.: 25,00"
           />
-          {comprovante ? (
-            <>
-              <Image
-                source={{ uri: comprovante.uri }}
-                style={{ height: 180, width: '100%', borderRadius: 10 }}
-                resizeMode="contain"
-                accessibilityLabel="Comprovante selecionado"
-              />
-              <Botao
-                titulo="Remover comprovante"
-                variante="contorno"
-                onPress={() => setComprovante(null)}
-                desabilitado={acao.ocupado}
-              />
-            </>
-          ) : (
-            <Botao
-              titulo="Anexar comprovante (opcional)"
-              variante="contorno"
-              onPress={() => {
-                void escolherComprovante();
-              }}
-              desabilitado={acao.ocupado}
-            />
-          )}
+          <SeletorComprovante
+            valor={comprovante}
+            aoMudar={setComprovante}
+            desabilitado={acao.ocupado}
+          />
           <Botao
             titulo="Informar doação"
             carregando={acao.ocupado}

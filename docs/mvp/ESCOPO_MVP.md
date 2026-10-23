@@ -80,7 +80,7 @@ aparecer no Início, com o rótulo "Oficina", caso exista uma atividade desse ti
 | Pendência | Backlog | Detalhe |
 | --- | --- | --- |
 | Aplicar a reconciliação `20261005150000_contribuicoes_metas_pix.sql` | B21, B30 | Move o PIX para `configuracao_instituicao`, exige meta aberta para o voluntário e exclui as tabelas de materiais. Depois, regenerar `database.types.ts` e remover o bloco `ColunasPix`. Ver [CONTRIBUICOES.md](CONTRIBUICOES.md). |
-| Upload de comprovante | B22 | Código pronto: anexo opcional (JPEG, até 5 MiB) em bucket privado `comprovantes`, visto pela gestão na fila de conferência. Migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026. |
+| Upload de comprovante | B22 | Código pronto: anexo opcional (JPEG, PNG ou WebP, até 5 MiB) em bucket privado `comprovantes`, visto pela gestão na fila de conferência. Migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026. |
 | Compressão local de imagens | B27 (RNF0005) | `expo-image-manipulator` ainda não está instalado; o Diário envia a imagem com `quality: 0.8`, sem redimensionar. |
 | Restrição de imagens de menores | B26 (RNF0003) | O feed mostra só publicações PUBLICADA; não há regra específica para imagens de crianças e adolescentes. |
 | Parametrização da instituição | B28 (RF0015) | Não há tela para editar nome, textos, cores e logo de `configuracao_instituicao`; só WhatsApp e PIX pelo perfil da gestão. |

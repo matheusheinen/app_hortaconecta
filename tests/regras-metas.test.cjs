@@ -79,13 +79,17 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
   };
   let respostaUpdate = { data: [{ id: 1 }], error: null };
   const enviados = [],
-    removidos = [];
+    removidos = [],
+    rpcs = [];
   let falharInsert = false;
   const supabase = {
-    rpc: async nome => ({
-      data: nome === 'comprovante_caminho' ? 'uid/novo.jpg' : null,
-      error: null,
-    }),
+    rpc: async (nome, args) => {
+      rpcs.push([nome, args]);
+      return {
+        data: nome === 'comprovante_caminho' ? `uid/novo.${args.p_ext}` : null,
+        error: null,
+      };
+    },
     storage: {
       from: bucket => ({
         upload: async (caminho, arquivo, opcoes) => {
@@ -114,7 +118,6 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
   };
   const metas = carregar('src/funcionalidades/metas/api.ts', {
     '@/servicos/supabase': { supabase },
-    '@/funcionalidades/diario/regras': carregar('src/funcionalidades/diario/regras.ts'),
     './comprovante': carregar('src/funcionalidades/metas/comprovante.ts'),
   });
   await metas.declararContribuicao(7, 'v', 25.5);
@@ -140,10 +143,21 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
     quantidade_oferecida: 10,
     url_comprovante: 'uid/novo.jpg',
   });
+  assert.deepEqual(rpcs.at(-1), ['comprovante_caminho', { p_ext: 'jpg' }]);
+  // PNG vai com a extensão e o tipo certos.
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0]).toString('base64');
+  await metas.declararContribuicao(7, 'v', 10, png);
+  assert.deepEqual(rpcs.at(-1), ['comprovante_caminho', { p_ext: 'png' }]);
+  assert.equal(enviados.at(-1).opcoes.contentType, 'image/png');
+  enviados.length = 0;
   falharInsert = true;
   await assert.rejects(metas.declararContribuicao(7, 'v', 10, jpeg), /meta encerrada/);
   assert.deepEqual(removidos, ['uid/novo.jpg']);
   await assert.rejects(metas.declararContribuicao(7, 'v', 10, 'não-é-base64!'), /imagem/i);
+  const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>').toString('base64');
+  const antesDoSvg = enviados.length;
+  await assert.rejects(metas.declararContribuicao(7, 'v', 10, svg), /Formato não aceito/);
+  assert.equal(enviados.length, antesDoSvg);
   falharInsert = false;
   await metas.registrarRecebimento({
     metaId: 7,
@@ -152,6 +166,17 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
     quantidade: 3,
     observacao: null,
   });
+  assert.equal('url_comprovante' in chamadas.at(-1).valores, false);
+  await metas.registrarRecebimento({
+    metaId: 7,
+    doadorId: 'v',
+    gestaoId: 'g',
+    quantidade: 3,
+    observacao: null,
+    comprovanteBase64: jpeg,
+  });
+  assert.equal(chamadas.at(-1).valores.url_comprovante, 'uid/novo.jpg');
+  assert.equal(chamadas.at(-1).valores.status_validacao, 'APROVADA');
   const lancamento = chamadas.at(-1).valores;
   assert.equal(lancamento.status_validacao, 'APROVADA');
   assert.equal(lancamento.validado_por, 'g');
