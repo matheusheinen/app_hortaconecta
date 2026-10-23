@@ -69,6 +69,11 @@ continuam independentes do calendário.
    recalcula `quantidade_arrecadada` (soma das APROVADA) em INSERT, UPDATE e DELETE. O remoto já
    tem essa lógica; a migration é idempotente e só corrige totais divergentes. Verificação local:
    `node --test tests/contribuicoes-metas.test.cjs`.
+8. `20261023210000_contribuicoes_conferencia.sql` (**pendente de aplicação**, B23): gatilho que só deixa
+   conferir contribuição PENDENTE (aprovada ou recusada não volta atrás), impede trocar meta, doador, valor,
+   comprovante e data de envio na conferência e exige motivo ao recusar. Depende do item 7. O app funciona
+   sem ela, mas a trava passa a valer só depois. Verificação local:
+   `node --test tests/contribuicoes-conferencia.test.cjs`.
 
 As novas tabelas recebem RLS e grants explícitos; funções privadas não ficam
 acessíveis ao cliente. Contas autenticadas leem o próprio perfil, e a gestão

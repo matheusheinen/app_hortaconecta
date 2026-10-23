@@ -6,6 +6,9 @@ export type ContribuicaoComDoador = Contribuicao & { usuarios: { nome: string } 
 export type MinhaContribuicaoMeta = Contribuicao & {
   metas_demandas: Pick<Meta, 'id' | 'titulo' | 'tipo' | 'unidade_medida' | 'status'> | null;
 };
+export type ContribuicaoPendente = ContribuicaoComDoador & {
+  metas_demandas: Pick<Meta, 'id' | 'titulo' | 'tipo' | 'unidade_medida'> | null;
+};
 export const BUCKET_COMPROVANTES = 'comprovantes';
 export type Pix = { chave_pix: string | null; nome_beneficiario_pix: string | null };
 
@@ -55,6 +58,32 @@ export async function carregarMeta(
       quantidade_oferecida: Number(c.quantidade_oferecida),
     })) as ContribuicaoComDoador[],
   };
+}
+
+/** Fila da gestão: contribuições PENDENTE de todas as metas, das mais antigas às mais novas. */
+export async function listarPendentes(): Promise<ContribuicaoPendente[]> {
+  const { data, error } = await supabase
+    .from('contribuicoes')
+    .select(
+      '*, usuarios!contribuicoes_usuario_id_fkey(nome), metas_demandas(id, titulo, tipo, unidade_medida)',
+    )
+    .eq('status_validacao', 'PENDENTE')
+    .order('data_envio', { ascending: true });
+  if (error) throw error;
+  if (!Array.isArray(data)) throw new Error('Não foi possível carregar a fila de conferência.');
+  return data.map(c => ({
+    ...c,
+    quantidade_oferecida: Number(c.quantidade_oferecida),
+  })) as ContribuicaoPendente[];
+}
+
+export async function contarPendentes(): Promise<number> {
+  const { count, error } = await supabase
+    .from('contribuicoes')
+    .select('id', { count: 'exact', head: true })
+    .eq('status_validacao', 'PENDENTE');
+  if (error) throw error;
+  return count ?? 0;
 }
 
 export async function minhasContribuicoesMetas(

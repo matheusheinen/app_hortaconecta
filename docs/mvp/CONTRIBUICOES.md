@@ -17,7 +17,7 @@ reconciliação pendente e homologação.
 | --- | --- | --- |
 | Gestão | Publica a meta com valor e prazo opcional | Publica a meta com quantidade, unidade e prazo opcional |
 | Voluntário | Copia a chave PIX, transfere fora do app e informa o valor (PENDENTE) | Combina a entrega com a gestão, pelo WhatsApp se houver número cadastrado |
-| Gestão | Confere no extrato e confirma ou recusa | Registra a doação recebida, já APROVADA |
+| Gestão | Confere no extrato, pela fila geral ("Fila de conferência", em Metas e doações) ou pela meta, e confirma ou recusa; recusar exige o motivo, que o voluntário vê. Decisão tomada não se desfaz | Registra a doação recebida, já APROVADA |
 
 - O pagamento acontece **fora do app**. Não há integração bancária, PIX dinâmico
   nem conciliação automática. O comprovante em imagem é opcional (B22): JPEG, PNG ou WebP de até

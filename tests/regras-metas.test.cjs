@@ -233,3 +233,12 @@ test('Metas: o formulário valida os campos e devolve os dados prontos para salv
   // Ao editar, o prazo já vencido continua aceito.
   assert.equal(regras.validarMeta(entrada, false, '2026-10-20').data_limite, '2026-10-10');
 });
+
+test('Conferência: aprovar aceita nota opcional; recusar exige motivo', () => {
+  assert.equal(regras.validarConferencia(true, ''), null);
+  assert.equal(regras.validarConferencia(true, '  Conferido no extrato '), 'Conferido no extrato');
+  assert.equal(regras.validarConferencia(false, ' Valor não consta '), 'Valor não consta');
+  assert.throws(() => regras.validarConferencia(false, ''), /motivo da recusa/);
+  assert.throws(() => regras.validarConferencia(false, ' a '), /motivo da recusa/);
+  assert.throws(() => regras.validarConferencia(true, 'x'.repeat(501)), /500 caracteres/);
+});

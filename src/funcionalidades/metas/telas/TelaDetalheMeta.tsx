@@ -9,13 +9,9 @@ import { confirmarAcao } from '@/compartilhado/utils/confirmar';
 import { formatarDataCurta, hojeIso } from '@/compartilhado/utils/datas';
 import { tipo } from '@/compartilhado/tema';
 import type { Meta } from '../tipos';
-import {
-  alterarStatusMeta,
-  carregarMeta,
-  validarContribuicao,
-  type ContribuicaoComDoador,
-} from '../api';
-import { descreverQuantidade, prazoVencido, recebendoContribuicoes } from '../regras';
+import { alterarStatusMeta, carregarMeta } from '../api';
+import { prazoVencido, recebendoContribuicoes } from '../regras';
+import { useConferencia } from '../useConferencia';
 import { EtiquetaMeta, ProgressoMeta } from '../componentes/IndicadoresMeta';
 import { PainelGestaoMeta } from '../componentes/PainelGestaoMeta';
 import { PainelVoluntarioMeta } from '../componentes/PainelVoluntarioMeta';
@@ -48,22 +44,7 @@ export function TelaDetalheMeta({
       });
     });
   }
-  function conferir(c: ContribuicaoComDoador, aprovada: boolean) {
-    confirmarAcao(
-      aprovada ? 'Confirmar contribuição?' : 'Recusar contribuição?',
-      aprovada
-        ? `Confirme só depois de conferir o recebimento de ${descreverQuantidade(c.quantidade_oferecida, meta!)}. O valor passa a contar no total.`
-        : 'A contribuição não entra no total. O voluntário verá a recusa.',
-      aprovada ? 'Confirmar' : 'Recusar',
-      () => {
-        void acao.executar(async () => {
-          await validarContribuicao(c.id, usuarioId, aprovada, null);
-          await carregar();
-        });
-      },
-      !aprovada,
-    );
-  }
+  const conferirContribuicao = useConferencia(acao, usuarioId, carregar);
 
   return (
     <TelaFluxo
@@ -94,7 +75,9 @@ export function TelaDetalheMeta({
               ocupado={acao.ocupado}
               editar={editar}
               registrar={registrar}
-              conferir={conferir}
+              conferir={(c, aprovada, observacao) =>
+                conferirContribuicao(c, meta, aprovada, observacao)
+              }
               mudarStatus={mudarStatus}
             />
           ) : convidado ? (

@@ -5,6 +5,7 @@ import { TelaMetas } from './telas/TelaMetas';
 import { TelaDetalheMeta } from './telas/TelaDetalheMeta';
 import { TelaFormMeta } from './telas/TelaFormMeta';
 import { TelaRegistrarRecebimento } from './telas/TelaRegistrarRecebimento';
+import { TelaFilaConferencia } from './telas/TelaFilaConferencia';
 import { TelaMinhasContribuicoesMetas } from './telas/TelaMinhasContribuicoes';
 
 export type ParametrosMetas = {
@@ -13,6 +14,7 @@ export type ParametrosMetas = {
   formulario: { id: number | null };
   registrar: { id: number };
   minhas: undefined;
+  fila: undefined;
 };
 const Pilha = createNativeStackNavigator<ParametrosMetas>();
 
@@ -28,6 +30,7 @@ export function PilhaMetas({ inicio }: { inicio: () => void }) {
             abrir={id => navigation.navigate('detalhe', { id })}
             criar={() => navigation.navigate('formulario', { id: null })}
             minhas={() => navigation.navigate('minhas')}
+            fila={() => navigation.navigate('fila')}
           />
         )}
       </Pilha.Screen>
@@ -48,6 +51,14 @@ export function PilhaMetas({ inicio }: { inicio: () => void }) {
           <Pilha.Screen name="formulario">
             {({ navigation, route }) => (
               <TelaFormMeta id={route.params.id} voltar={() => navigation.goBack()} />
+            )}
+          </Pilha.Screen>
+          <Pilha.Screen name="fila">
+            {({ navigation }) => (
+              <TelaFilaConferencia
+                voltar={() => navigation.goBack()}
+                abrirMeta={id => navigation.navigate('detalhe', { id })}
+              />
             )}
           </Pilha.Screen>
           <Pilha.Screen name="registrar">

@@ -116,3 +116,14 @@ export function validarMeta(entrada: EntradaMeta, nova: boolean, hoje = hojeIso(
     data_limite: prazoIso,
   };
 }
+
+/**
+ * Observação da conferência. Aprovar aceita nota opcional; recusar exige o
+ * motivo, que o voluntário lê em "Minhas contribuições". O banco repete a regra.
+ */
+export function validarConferencia(aprovada: boolean, observacao: string): string | null {
+  const texto = observacao.trim();
+  if (texto.length > 500) throw new Error('A observação pode ter até 500 caracteres.');
+  if (!aprovada && texto.length < 3) throw new Error('Informe o motivo da recusa.');
+  return texto || null;
+}
