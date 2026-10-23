@@ -65,6 +65,10 @@ continuam independentes do calendário.
    WebP, `comprovante_caminho(p_ext)` recebe a extensão, a gestão anexa comprovante ao
    registrar doação e o doador lê o arquivo ligado à contribuição dele. Depende do item 5.
    Verificação local: `node --test tests/comprovantes-formatos.test.cjs`.
+7. `20261023200000_arrecadacao_trigger.sql` (**pendente de aplicação**, B24): versiona o trigger que
+   recalcula `quantidade_arrecadada` (soma das APROVADA) em INSERT, UPDATE e DELETE. O remoto já
+   tem essa lógica; a migration é idempotente e só corrige totais divergentes. Verificação local:
+   `node --test tests/contribuicoes-metas.test.cjs`.
 
 As novas tabelas recebem RLS e grants explícitos; funções privadas não ficam
 acessíveis ao cliente. Contas autenticadas leem o próprio perfil, e a gestão
