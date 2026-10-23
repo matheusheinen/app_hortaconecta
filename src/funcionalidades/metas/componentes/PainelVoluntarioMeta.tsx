@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { Alert, Image, StyleSheet, Text } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import * as ImagePicker from 'expo-image-picker';
 import { Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
@@ -14,6 +15,7 @@ import { rotuloStatusValidacao, type Meta } from '../tipos';
 import { carregarPix, declararContribuicao, type ContribuicaoComDoador, type Pix } from '../api';
 import { descreverQuantidade, interpretarQuantidade } from '../regras';
 import { estilosMeta } from './IndicadoresMeta';
+import { ComprovanteContribuicao } from './ComprovanteContribuicao';
 
 export function PainelVoluntarioMeta({
   meta,
@@ -36,6 +38,7 @@ export function PainelVoluntarioMeta({
   const [copiado, setCopiado] = useState(false);
   const [quantidade, setQuantidade] = useState('');
   const [sucesso, setSucesso] = useState(false);
+  const [comprovante, setComprovante] = useState<{ uri: string; base64: string } | null>(null);
   const acao = useAcao();
   const financeira = meta.tipo === 'FINANCEIRA';
 
@@ -73,6 +76,23 @@ export function PainelVoluntarioMeta({
       );
     }
   }
+  async function escolherComprovante() {
+    try {
+      const resultado = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+        base64: true,
+        exif: false,
+        allowsMultipleSelection: false,
+      });
+      if (resultado.canceled) return;
+      const asset = resultado.assets[0];
+      if (!asset.base64) throw new Error('Não foi possível ler a imagem. Escolha outra foto.');
+      setComprovante({ uri: asset.uri, base64: asset.base64 });
+    } catch (falha) {
+      Alert.alert('Comprovante', falha instanceof Error ? falha.message : 'Tente outra imagem.');
+    }
+  }
   function declarar() {
     const valor = interpretarQuantidade(quantidade);
     if (valor === null) {
@@ -88,8 +108,9 @@ export function PainelVoluntarioMeta({
           text: 'Informar',
           onPress: () => {
             void acao.executar(async () => {
-              await declararContribuicao(meta.id, usuarioId, valor);
+              await declararContribuicao(meta.id, usuarioId, valor, comprovante?.base64 ?? null);
               setQuantidade('');
+              setComprovante(null);
               setSucesso(true);
               await aoDeclarar();
             });
@@ -147,6 +168,31 @@ export function PainelVoluntarioMeta({
             keyboardType="decimal-pad"
             placeholder="Ex.: 25,00"
           />
+          {comprovante ? (
+            <>
+              <Image
+                source={{ uri: comprovante.uri }}
+                style={{ height: 180, width: '100%', borderRadius: 10 }}
+                resizeMode="contain"
+                accessibilityLabel="Comprovante selecionado"
+              />
+              <Botao
+                titulo="Remover comprovante"
+                variante="contorno"
+                onPress={() => setComprovante(null)}
+                desabilitado={acao.ocupado}
+              />
+            </>
+          ) : (
+            <Botao
+              titulo="Anexar comprovante (opcional)"
+              variante="contorno"
+              onPress={() => {
+                void escolherComprovante();
+              }}
+              desabilitado={acao.ocupado}
+            />
+          )}
           <Botao
             titulo="Informar doação"
             carregando={acao.ocupado}
@@ -190,6 +236,7 @@ export function PainelVoluntarioMeta({
             {rotuloStatusValidacao[c.status_validacao]} · {formatarDataHora(c.data_envio)}
           </Text>
           {c.observacao_validacao ? <Text style={tipo.apoio}>{c.observacao_validacao}</Text> : null}
+          {c.url_comprovante ? <ComprovanteContribuicao caminho={c.url_comprovante} /> : null}
         </CartaoFluxo>
       ))}
       <Botao titulo="Minhas contribuições" variante="contorno" onPress={minhas} />

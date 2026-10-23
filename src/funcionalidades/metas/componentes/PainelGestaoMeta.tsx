@@ -8,6 +8,7 @@ import { rotuloStatusValidacao, type Meta } from '../tipos';
 import type { ContribuicaoComDoador } from '../api';
 import { descreverQuantidade } from '../regras';
 import { estilosMeta } from './IndicadoresMeta';
+import { ComprovanteContribuicao } from './ComprovanteContribuicao';
 
 export function PainelGestaoMeta({
   meta,
@@ -43,6 +44,11 @@ export function PainelGestaoMeta({
             {c.usuarios?.nome ?? 'Voluntário'} · {descreverQuantidade(c.quantidade_oferecida, meta)}
           </Text>
           <Text style={tipo.apoio}>Informado em {formatarDataHora(c.data_envio)}</Text>
+          {c.url_comprovante ? (
+            <ComprovanteContribuicao caminho={c.url_comprovante} />
+          ) : (
+            <Text style={tipo.apoio}>Sem comprovante anexado.</Text>
+          )}
           <View style={estilos.linha}>
             <View style={{ flex: 1 }}>
               <Botao titulo="Confirmar" onPress={() => conferir(c, true)} desabilitado={ocupado} />
@@ -70,6 +76,7 @@ export function PainelGestaoMeta({
             {c.validado_em ? ` em ${formatarDataHora(c.validado_em)}` : ''}
           </Text>
           {c.observacao_validacao ? <Text style={tipo.apoio}>{c.observacao_validacao}</Text> : null}
+          {c.url_comprovante ? <ComprovanteContribuicao caminho={c.url_comprovante} /> : null}
         </CartaoFluxo>
       ))}
       <Botao titulo="Editar meta" variante="contorno" onPress={editar} desabilitado={ocupado} />

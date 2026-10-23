@@ -1,10 +1,13 @@
 import { supabase } from '@/servicos/supabase';
+import { imagemJpeg } from '@/funcionalidades/diario/regras';
+import { declararComComprovante } from './comprovante';
 import type { Contribuicao, Meta, MetaFormulario, TipoMeta } from './tipos';
 
 export type ContribuicaoComDoador = Contribuicao & { usuarios: { nome: string } | null };
 export type MinhaContribuicaoMeta = Contribuicao & {
   metas_demandas: Pick<Meta, 'id' | 'titulo' | 'tipo' | 'unidade_medida' | 'status'> | null;
 };
+export const BUCKET_COMPROVANTES = 'comprovantes';
 export type Pix = { chave_pix: string | null; nome_beneficiario_pix: string | null };
 
 const colunasMeta =
@@ -90,16 +93,53 @@ export async function alterarStatusMeta(id: number, status: Meta['status']): Pro
   if (!data?.length) throw new Error('A meta não foi atualizada.');
 }
 
-/** Voluntário declara o que enviou; fica PENDENTE até a gestão conferir. */
+/**
+ * Voluntário declara o que enviou; fica PENDENTE até a gestão conferir. O
+ * comprovante é opcional: JPEG em base64, enviado ao bucket privado antes do registro.
+ */
 export async function declararContribuicao(
   metaId: number,
   usuarioId: string,
   quantidade: number,
+  comprovanteBase64: string | null = null,
 ): Promise<void> {
-  const { error } = await supabase
-    .from('contribuicoes')
-    .insert({ meta_id: metaId, usuario_id: usuarioId, quantidade_oferecida: quantidade });
+  await declararComComprovante(
+    comprovanteBase64 === null ? null : imagemJpeg(comprovanteBase64),
+    async arquivo => {
+      const { data: caminho, error: erroCaminho } = await supabase.rpc('comprovante_caminho');
+      if (erroCaminho) throw erroCaminho;
+      if (!caminho) throw new Error('Não foi possível preparar o envio do comprovante.');
+      const { error } = await supabase.storage.from(BUCKET_COMPROVANTES).upload(caminho, arquivo, {
+        contentType: 'image/jpeg',
+        upsert: false,
+        cacheControl: '60',
+      });
+      if (error) throw new Error('Falha no envio do comprovante: ' + error.message);
+      return caminho;
+    },
+    async caminho => {
+      await supabase.storage.from(BUCKET_COMPROVANTES).remove([caminho]);
+    },
+    async caminho => {
+      const { error } = await supabase.from('contribuicoes').insert({
+        meta_id: metaId,
+        usuario_id: usuarioId,
+        quantidade_oferecida: quantidade,
+        ...(caminho ? { url_comprovante: caminho } : {}),
+      });
+      if (error) throw error;
+    },
+  );
+}
+
+/** URL assinada de curta duração; o bucket é privado. */
+export async function urlComprovante(caminho: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(BUCKET_COMPROVANTES)
+    .createSignedUrl(caminho, 60);
   if (error) throw error;
+  if (!data?.signedUrl) throw new Error('Comprovante indisponível.');
+  return data.signedUrl;
 }
 
 /** Gestão registra o que recebeu em mãos; entra APROVADA com ela como validadora. */

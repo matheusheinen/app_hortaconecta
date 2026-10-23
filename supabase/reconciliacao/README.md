@@ -58,6 +58,10 @@ Novas presenças usam check-in com código e carga horária prevista registrada.
 Presenças antigas não recebem check-in/horas retroativos. Propostas aprovadas
 continuam independentes do calendário.
 
+5. `20261023170000_comprovantes_storage.sql` (**aplicada em 23/10/2026**, B22): bucket privado `comprovantes`, RPC
+   `comprovante_caminho`, policies de Storage e restrição em `contribuicoes.url_comprovante`.
+   Verificação local: `node --test tests/comprovantes-storage.test.cjs`. Não depende do PIX.
+
 As novas tabelas recebem RLS e grants explícitos; funções privadas não ficam
 acessíveis ao cliente. Contas autenticadas leem o próprio perfil, e a gestão
 mantém acesso necessário à triagem. Privilégios de TRUNCATE, REFERENCES e TRIGGER

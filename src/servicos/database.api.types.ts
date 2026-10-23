@@ -41,6 +41,8 @@ type TabelasAplicativo = Omit<Database['public']['Tables'], 'configuracao_instit
 // RPC da reconciliação 20261005170000_diario_excluir ainda não aplicada no
 // remoto. Remover este bloco ao regenerar database.types.ts.
 type FuncoesPendentes = {
+  // Reconciliação 20261023170000_comprovantes_storage, aplicada no remoto; remover ao regenerar database.types.ts.
+  comprovante_caminho: { Args: Record<string, never>; Returns: string };
   diario_excluir_revisao: { Args: { p_id: number; p_revisao: number }; Returns: string | null };
   gestor_alternar_modo: { Args: { p_gestor: boolean }; Returns: string };
   gestor_pode_alternar_modo: { Args: Record<string, never>; Returns: boolean };

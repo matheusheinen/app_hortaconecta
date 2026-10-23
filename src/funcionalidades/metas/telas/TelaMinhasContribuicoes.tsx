@@ -10,6 +10,7 @@ import { rotuloStatusValidacao } from '../tipos';
 import { minhasContribuicoesMetas } from '../api';
 import { descreverQuantidade } from '../regras';
 import { estilosMeta } from '../componentes/IndicadoresMeta';
+import { ComprovanteContribuicao } from '../componentes/ComprovanteContribuicao';
 
 export function TelaMinhasContribuicoesMetas({
   voltar,
@@ -44,6 +45,7 @@ export function TelaMinhasContribuicoesMetas({
             {rotuloStatusValidacao[c.status_validacao]} · {formatarDataHora(c.data_envio)}
           </Text>
           {c.observacao_validacao ? <Text style={tipo.apoio}>{c.observacao_validacao}</Text> : null}
+          {c.url_comprovante ? <ComprovanteContribuicao caminho={c.url_comprovante} /> : null}
           {c.metas_demandas ? (
             <Botao titulo="Ver meta" variante="contorno" onPress={() => abrir(c.meta_id)} />
           ) : null}

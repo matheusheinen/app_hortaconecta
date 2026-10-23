@@ -78,11 +78,31 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
     return b;
   };
   let respostaUpdate = { data: [{ id: 1 }], error: null };
+  const enviados = [],
+    removidos = [];
+  let falharInsert = false;
   const supabase = {
+    rpc: async nome => ({
+      data: nome === 'comprovante_caminho' ? 'uid/novo.jpg' : null,
+      error: null,
+    }),
+    storage: {
+      from: bucket => ({
+        upload: async (caminho, arquivo, opcoes) => {
+          enviados.push({ bucket, caminho, bytes: arquivo.byteLength, opcoes });
+          return { error: null };
+        },
+        remove: async caminhos => {
+          removidos.push(...caminhos);
+          return { error: null };
+        },
+      }),
+    },
     from: tabela => ({
       insert: valores => {
         const r = { tabela, op: 'insert', valores, filtros: [] };
         chamadas.push(r);
+        if (falharInsert) return Promise.resolve({ error: new Error('meta encerrada') });
         return builder(r);
       },
       update: valores => {
@@ -94,6 +114,8 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
   };
   const metas = carregar('src/funcionalidades/metas/api.ts', {
     '@/servicos/supabase': { supabase },
+    '@/funcionalidades/diario/regras': carregar('src/funcionalidades/diario/regras.ts'),
+    './comprovante': carregar('src/funcionalidades/metas/comprovante.ts'),
   });
   await metas.declararContribuicao(7, 'v', 25.5);
   assert.deepEqual(chamadas.at(-1).valores, {
@@ -101,6 +123,28 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
     usuario_id: 'v',
     quantidade_oferecida: 25.5,
   });
+  assert.deepEqual(enviados, []);
+  const jpeg = Buffer.from([255, 216, 255, 224, 0, 1]).toString('base64');
+  await metas.declararContribuicao(7, 'v', 10, jpeg);
+  assert.deepEqual(enviados, [
+    {
+      bucket: 'comprovantes',
+      caminho: 'uid/novo.jpg',
+      bytes: 6,
+      opcoes: { contentType: 'image/jpeg', upsert: false, cacheControl: '60' },
+    },
+  ]);
+  assert.deepEqual(chamadas.at(-1).valores, {
+    meta_id: 7,
+    usuario_id: 'v',
+    quantidade_oferecida: 10,
+    url_comprovante: 'uid/novo.jpg',
+  });
+  falharInsert = true;
+  await assert.rejects(metas.declararContribuicao(7, 'v', 10, jpeg), /meta encerrada/);
+  assert.deepEqual(removidos, ['uid/novo.jpg']);
+  await assert.rejects(metas.declararContribuicao(7, 'v', 10, 'não-é-base64!'), /imagem/i);
+  falharInsert = false;
   await metas.registrarRecebimento({
     metaId: 7,
     doadorId: 'v',

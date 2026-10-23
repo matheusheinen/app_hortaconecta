@@ -197,8 +197,8 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | B17 | Check-in por QR com token temporário | Homologação em aparelho |
 | B18 | WhatsApp no detalhe da atividade e da meta | Compartilhamento; número cadastrado pela gestão |
 | B21 | Cópia da chave PIX e registro da contribuição (PENDENTE) | Aplicar a reconciliação pendente (PIX na configuração) |
-| B22 | — | Upload de comprovante e bucket privado |
-| B23 | Fila de conferência com confirmar/recusar e registro de doação recebida | Visualização do comprovante, quando houver upload |
+| B22 | Anexo opcional do comprovante, bucket privado `comprovantes` e visualização pela gestão | Homologar com Storage real (migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026) |
+| B23 | Fila de conferência com confirmar/recusar e registro de doação recebida | Homologação do comprovante (B22) |
 | B24 | Total recalculado pelo trigger do banco | Homologação |
 | B25 | Publicação, edição e ocultação com revisão e imagem privada | Homologação com Storage real |
 | B26 | Feed só com publicações PUBLICADA | Regra específica para imagens de menores |
