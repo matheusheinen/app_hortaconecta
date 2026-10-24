@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
-import { rotuloStatusMeta, type Meta } from '../tipos';
+import { rotuloStatusMeta, rotuloStatusValidacao, type Meta, type StatusValidacao } from '../tipos';
 import { descreverProgresso, percentualMeta } from '../regras';
 
 export function ProgressoMeta({ meta }: { meta: Meta }) {
@@ -43,9 +43,32 @@ const estilos = StyleSheet.create({
   trilha: { height: 8, borderRadius: 4, backgroundColor: cores.folhaClara, overflow: 'hidden' },
   preenchimento: { height: 8, borderRadius: 4, backgroundColor: cores.folha },
   etiqueta: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, color: cores.tintaSuave },
+  situacao: {
+    alignSelf: 'flex-start',
+    borderRadius: 10,
+    paddingHorizontal: espaco.sm,
+    paddingVertical: espaco.xs,
+  },
+  situacaoTexto: { fontSize: 12, fontWeight: '700' },
 });
 
 /** Estilos compartilhados pelas telas de metas. */
 export const estilosMeta = StyleSheet.create({
   destaque: { fontSize: 15, fontWeight: '700', color: cores.tinta },
 });
+
+const coresValidacao: Record<StatusValidacao, { fundo: string; texto: string }> = {
+  PENDENTE: { fundo: cores.areia, texto: cores.terra },
+  APROVADA: { fundo: cores.folhaFundo, texto: cores.folhaEscura },
+  RECUSADA: { fundo: cores.beterrabaClara, texto: cores.beterraba },
+};
+
+/** Situação da conferência de uma contribuição, em etiqueta colorida. */
+export function EtiquetaValidacao({ status }: { status: StatusValidacao }) {
+  const { fundo, texto } = coresValidacao[status];
+  return (
+    <View style={[estilos.situacao, { backgroundColor: fundo }]}>
+      <Text style={[estilos.situacaoTexto, { color: texto }]}>{rotuloStatusValidacao[status]}</Text>
+    </View>
+  );
+}

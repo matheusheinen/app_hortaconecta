@@ -242,3 +242,30 @@ test('Conferência: aprovar aceita nota opcional; recusar exige motivo', () => {
   assert.throws(() => regras.validarConferencia(false, ' a '), /motivo da recusa/);
   assert.throws(() => regras.validarConferencia(true, 'x'.repeat(501)), /500 caracteres/);
 });
+
+test('Minhas contribuições: conta e filtra por situação da conferência', () => {
+  const lista = [
+    { id: 1, status_validacao: 'PENDENTE' },
+    { id: 2, status_validacao: 'APROVADA' },
+    { id: 3, status_validacao: 'APROVADA' },
+    { id: 4, status_validacao: 'RECUSADA' },
+  ];
+  assert.deepEqual(regras.contarPorSituacao(lista), {
+    TODAS: 4,
+    PENDENTE: 1,
+    APROVADA: 2,
+    RECUSADA: 1,
+  });
+  assert.deepEqual(regras.contarPorSituacao([]), {
+    TODAS: 0,
+    PENDENTE: 0,
+    APROVADA: 0,
+    RECUSADA: 0,
+  });
+  assert.equal(regras.filtrarPorSituacao(lista, 'TODAS').length, 4);
+  assert.deepEqual(
+    regras.filtrarPorSituacao(lista, 'APROVADA').map(c => c.id),
+    [2, 3],
+  );
+  assert.equal(regras.filtrarPorSituacao(lista, 'RECUSADA')[0].id, 4);
+});

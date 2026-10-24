@@ -72,6 +72,11 @@ indisponível e as metas em dinheiro avisam que a chave não foi cadastrada.
   telas em `src/funcionalidades/metas/telas/`, acesso a dados em `src/funcionalidades/metas/api.ts` e
   regras puras em `src/funcionalidades/metas/regras.ts`.
 - Perfil da gestão: seção **Recebimento de doações (PIX)**.
+- **Minhas contribuições** (voluntário, B33): lista as contribuições do voluntário
+  com a situação da conferência em etiqueta colorida (aguardando, confirmada,
+  recusada), a observação do revisor e o comprovante. As abas Todas, Em análise,
+  Confirmadas e Recusadas filtram a lista e mostram a contagem de cada situação
+  (`contarPorSituacao` e `filtrarPorSituacao` em `regras.ts`).
 - Início do voluntário: "Precisamos de" mostra a meta aberta mais recente, ainda
   não atingida e dentro do prazo. O indicador de contribuições conta as APROVADA
   do voluntário.
