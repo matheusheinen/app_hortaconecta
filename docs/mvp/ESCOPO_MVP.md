@@ -86,7 +86,7 @@ aparecer no Início, com o rótulo "Oficina", caso exista uma atividade desse ti
 | Parametrização da instituição | B28 (RF0015) | Não há tela para editar nome, textos, cores e logo de `configuracao_instituicao`; só WhatsApp e PIX pelo perfil da gestão. |
 | Compartilhamento | B18 (RF0009) | WhatsApp pronto; compartilhamento de conteúdo não implementado. |
 | Foto do usuário | B31 (RF0002) | Perfil em seções pronto; foto não implementada. |
-| Mensagem de impacto | B33 (RF0008) | Histórico pronto; mensagem de impacto não implementada. |
+| Histórico e mensagem de impacto | B32 (RF0008) | Pronto: histórico com total de horas previstas acumuladas e mensagem de impacto no check-in e em cada participação (texto fixo no app, sem migration). |
 | Apresentação da instituição | B32 (RF0016) | Não implementada. |
 | Notificações push | B29 (RF0014) | Não implementadas; falta coluna para o token do dispositivo. |
 | Homologação | — | Android, login/JWT reais, Storage real, concorrência entre conexões independentes. |
