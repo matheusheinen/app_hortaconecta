@@ -205,7 +205,7 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | B30 | Perfil da gestão em seções (conta, institucional, WhatsApp, PIX) | Seção de PIX depende da reconciliação pendente |
 | B31 | Perfil do voluntário em seções com busca de CEP | Foto do usuário |
 | B32 | Histórico de participação com carga prevista | Mensagem de impacto |
-| B33 | "Minhas contribuições" com situação de conferência | Homologação |
+| B33 | "Minhas contribuições" com etiqueta de situação da conferência e filtro por situação | Homologação em dispositivo |
 
 ## Cronograma
 
