@@ -49,7 +49,7 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
    decidida, atividade cancelada e contribuição conferida para o voluntário). Depende da
    reconciliação 02; inclui quem está em modo gestor se `gestores` existir. Verificação local:
    `node --test tests/notificacoes.test.cjs`. **Aplicada em 26/10/2026**: 5 gatilhos e a tabela na publicação `supabase_realtime` conferidos.
-9. `20261026140000_notificacoes_cancelamento_pendentes.sql` (**pendente de aplicação**): troca só o corpo
+9. `20261026140000_notificacoes_cancelamento_pendentes.sql` (**aplicada em 26/10/2026**): troca só o corpo
    da função do gatilho de atividade cancelada, que passa a avisar também a candidatura PENDENTE. Depende
    do item 8. Verificação local: `node --test tests/notificacoes.test.cjs`.
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
