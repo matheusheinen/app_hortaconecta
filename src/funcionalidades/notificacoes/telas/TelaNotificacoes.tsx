@@ -6,18 +6,14 @@ import { cores, tipo } from '@/compartilhado/tema';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { listarNotificacoes, marcarNotificacaoLida, marcarTodasLidas } from '../api';
+import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { useNotificacoes } from '../ContextoNotificacoes';
+import { destinoNotificacao } from '../destino';
+import { abrirDestino } from '../navegacao';
 import type { Notificacao } from '../tipos';
 
-export function TelaNotificacoes({
-  voltar,
-  abrirAtividade,
-  abrirMeta,
-}: {
-  voltar: () => void;
-  abrirAtividade: (id: number) => void;
-  abrirMeta: (id: number) => void;
-}) {
+export function TelaNotificacoes({ voltar }: { voltar: () => void }) {
+  const { ehGestao } = useSessaoAtual();
   const { versao, naoLidas, recarregar } = useNotificacoes();
   // A lista é refeita ao focar a tela e a cada notificação recebida.
   const consulta = useCallback(() => listarNotificacoes(), []);
@@ -39,8 +35,9 @@ export function TelaNotificacoes({
         await Promise.all([carregar(), recarregar()]);
       }
     });
-    if (notificacao.atividade_id !== null) abrirAtividade(notificacao.atividade_id);
-    else if (notificacao.meta_id !== null) abrirMeta(notificacao.meta_id);
+    const destino = destinoNotificacao(notificacao, ehGestao);
+    // Sem destino próprio (alvo apagado), fica na lista em vez de empilhar a mesma tela.
+    if (destino.tela !== 'notificacoes') abrirDestino(destino);
   }
 
   const itens = dados ?? [];

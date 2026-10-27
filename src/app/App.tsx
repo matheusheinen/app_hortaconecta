@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
+import { navegacaoRef } from '@/funcionalidades/notificacoes/navegacao';
 import { useSessao } from '@/funcionalidades/autenticacao/useSessao';
 import { useRecuperacaoAtiva } from '@/funcionalidades/autenticacao/recuperacaoSenha';
 import { fundoLogin, TelaLogin } from '@/funcionalidades/autenticacao/telas/TelaLogin';
@@ -130,7 +131,7 @@ function Conteudo() {
         <ProvedorNotificacoes usuarioId={perfil.id}>
           <ProvedorModoGestor value={modoGestor}>
             {/* A chave reinicia as pilhas ao trocar de modo, evitando telas do outro papel. */}
-            <NavigationContainer key={perfil.tipo_perfil}>
+            <NavigationContainer ref={navegacaoRef} key={perfil.tipo_perfil}>
               <AbasPrincipais />
             </NavigationContainer>
           </ProvedorModoGestor>

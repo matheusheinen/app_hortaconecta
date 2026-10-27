@@ -78,13 +78,7 @@ export function PilhaInicio({
         }}
       </Pilha.Screen>
       <Pilha.Screen name="notificacoes">
-        {({ navigation }) => (
-          <TelaNotificacoes
-            voltar={() => navigation.goBack()}
-            abrirAtividade={abrirAtividade}
-            abrirMeta={abrirMeta}
-          />
-        )}
+        {({ navigation }) => <TelaNotificacoes voltar={() => navigation.goBack()} />}
       </Pilha.Screen>
       {recursosPosMvp.oficinas ? (
         <>

@@ -4,6 +4,8 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
 import { registrarTokenPush, removerTokenPush } from './api';
+import type { Notificacao } from './tipos';
+import { dadosDoToque } from './toque';
 
 const CANAL_PADRAO = 'padrao';
 
@@ -55,13 +57,17 @@ export async function pedirPermissaoNotificacoes(): Promise<boolean> {
  * chegar em tempo real. É um aviso local: não depende de FCM, APNs nem de build próprio, mas
  * só aparece com o app aberto ou em segundo plano recente.
  */
-export async function mostrarAvisoLocal(titulo: string, corpo: string): Promise<void> {
+export async function mostrarAvisoLocal(notificacao: Notificacao): Promise<void> {
   try {
     if (!plataforma()) return;
     const permissao = await Notifications.getPermissionsAsync();
     if (!permissao.granted) return;
     await Notifications.scheduleNotificationAsync({
-      content: { title: titulo, body: corpo },
+      content: {
+        title: notificacao.titulo,
+        body: notificacao.corpo,
+        data: { notificacaoId: notificacao.id, ...dadosDoToque(notificacao) },
+      },
       trigger: null,
     });
   } catch (falha) {

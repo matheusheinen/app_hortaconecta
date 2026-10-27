@@ -7,14 +7,15 @@ import { TelaFormMeta } from './telas/TelaFormMeta';
 import { TelaRegistrarRecebimento } from './telas/TelaRegistrarRecebimento';
 import { TelaFilaConferencia } from './telas/TelaFilaConferencia';
 import { TelaMinhasContribuicoesMetas } from './telas/TelaMinhasContribuicoes';
+import { voltarDe, type Origem } from '@/funcionalidades/notificacoes/navegacao';
 
 export type ParametrosMetas = {
   lista: undefined;
-  detalhe: { id: number };
+  detalhe: { id: number; origem?: Origem };
   formulario: { id: number | null };
   registrar: { id: number };
-  minhas: undefined;
-  fila: undefined;
+  minhas: { origem?: Origem } | undefined;
+  fila: { origem?: Origem } | undefined;
 };
 const Pilha = createNativeStackNavigator<ParametrosMetas>();
 
@@ -39,7 +40,7 @@ export function PilhaMetas({ inicio }: { inicio: () => void }) {
           <TelaDetalheMeta
             key={route.params.id}
             id={route.params.id}
-            voltar={() => navigation.goBack()}
+            voltar={() => voltarDe(route.params.origem, () => navigation.goBack())}
             editar={() => navigation.navigate('formulario', route.params)}
             registrar={() => navigation.navigate('registrar', route.params)}
             minhas={() => navigation.navigate('minhas')}
@@ -54,9 +55,9 @@ export function PilhaMetas({ inicio }: { inicio: () => void }) {
             )}
           </Pilha.Screen>
           <Pilha.Screen name="fila">
-            {({ navigation }) => (
+            {({ navigation, route }) => (
               <TelaFilaConferencia
-                voltar={() => navigation.goBack()}
+                voltar={() => voltarDe(route.params?.origem, () => navigation.goBack())}
                 abrirMeta={id => navigation.navigate('detalhe', { id })}
               />
             )}
@@ -69,9 +70,9 @@ export function PilhaMetas({ inicio }: { inicio: () => void }) {
         </>
       ) : (
         <Pilha.Screen name="minhas">
-          {({ navigation }) => (
+          {({ navigation, route }) => (
             <TelaMinhasContribuicoesMetas
-              voltar={() => navigation.goBack()}
+              voltar={() => voltarDe(route.params?.origem, () => navigation.goBack())}
               abrir={id => navigation.navigate('detalhe', { id })}
             />
           )}

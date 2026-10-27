@@ -9,6 +9,9 @@ const g2 = '33333333-3333-4333-8333-333333333333';
 const v2 = '55555555-5555-4555-8555-555555555555';
 const arq = f => fs.readFileSync(f, 'utf8');
 const migration = arq('supabase/reconciliacao/20261026130000_notificacoes.sql');
+const cancelamento = arq(
+  'supabase/reconciliacao/20261026140000_notificacoes_cancelamento_pendentes.sql',
+);
 
 test('Notificações (B29), dados sintéticos', async t => {
   const db = new PGlite();
@@ -51,6 +54,7 @@ test('Notificações (B29), dados sintéticos', async t => {
     await db.query('SELECT public.gestor_alternar_modo(false)');
     await role(null, 'owner');
     await db.exec(migration);
+    await db.exec(cancelamento);
     await db.query('ROLLBACK').catch(() => {});
 
     const atividade = await scalar(
@@ -154,7 +158,7 @@ test('Notificações (B29), dados sintéticos', async t => {
       assert.equal(await total(), antes, 'cancelar uma recusada não avisa ninguém');
     });
 
-    await t.test('atividade cancelada avisa só quem estava aprovado', async () => {
+    await t.test('atividade cancelada avisa quem estava aprovado', async () => {
       await role(null, 'owner');
       await db.query("UPDATE public.atividades SET status='CANCELADA' WHERE id=$1", [atividade]);
       const n = await de('ATIVIDADE_CANCELADA');
@@ -168,6 +172,30 @@ test('Notificações (B29), dados sintéticos', async t => {
         atividade,
       ]);
       assert.equal(await total(), antes, 'outras mudanças não notificam');
+    });
+
+    await t.test('cancelar pela RPC avisa aprovados e pendentes, e não recusados', async () => {
+      await role(null, 'owner');
+      const outra = await scalar(
+        "INSERT INTO public.atividades(titulo,descricao,tipo,autor_id,data_hora_prevista,vagas_totais,carga_horaria,status) VALUES('Colheita','Colher','TAREFA_ONG',$1,now()+interval '4 days',5,2,'ABERTA') RETURNING id AS value",
+        [g],
+      );
+      await db.query(
+        "INSERT INTO public.inscricoes_atividades(atividade_id,usuario_id,status_inscricao) VALUES($1,$2,'APROVADA')",
+        [outra, v2],
+      );
+      await db.query(
+        "INSERT INTO public.inscricoes_atividades(atividade_id,usuario_id,status_inscricao) VALUES($1,$2,'PENDENTE')",
+        [outra, v],
+      );
+      await db.query(
+        "INSERT INTO public.inscricoes_atividades(atividade_id,usuario_id,status_inscricao) VALUES($1,$2,'RECUSADA')",
+        [outra, g2],
+      );
+      await role(g);
+      await db.query("SELECT public.voluntariado_status_atividade($1,'CANCELADA')", [outra]);
+      const n = (await de('ATIVIDADE_CANCELADA')).filter(x => x.corpo.includes('Colheita'));
+      assert.deepEqual(n.map(x => x.usuario_id).sort(), [v, v2].sort());
     });
 
     let contribuicao;
