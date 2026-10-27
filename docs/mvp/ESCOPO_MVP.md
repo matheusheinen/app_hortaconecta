@@ -85,7 +85,7 @@ aparecer no Início, com o rótulo "Oficina", caso exista uma atividade desse ti
 | Restrição de imagens de menores | B26 (RNF0003) | O feed mostra só publicações PUBLICADA; não há regra específica para imagens de crianças e adolescentes. |
 | Parametrização da instituição | B28 (RF0015) | Não há tela para editar nome, textos, cores e logo de `configuracao_instituicao`; só WhatsApp e PIX pelo perfil da gestão. |
 | Compartilhamento | B18 (RF0009) | WhatsApp pronto; compartilhamento de conteúdo não implementado. |
-| Foto do usuário | B31 (RF0002) | Perfil em seções pronto; foto não implementada. |
+| Foto do usuário | B31 (RF0002) | Implementada e com reconciliação aplicada em 21/10; funções e permissões verificadas. Homologação de seleção/envio em aparelho pendente. Ver [FOTO_PERFIL.md](FOTO_PERFIL.md). |
 | Histórico e mensagem de impacto | B32 (RF0008) | Pronto: histórico com total de horas previstas acumuladas e mensagem de impacto no check-in e em cada participação (texto fixo no app, sem migration). |
 | Apresentação da instituição | B32 (RF0016) | Não implementada. |
 | Notificações | B29 (RF0014) | Notificações dentro do app: tabela `notificacoes` (RLS), gatilhos nos fluxos de voluntariado e contribuições, sino no Início e aviso do sistema com o app aberto, em tempo real pelo Supabase Realtime (migration `20261026130000_notificacoes.sql`, **não aplicada**). Push com o app fechado exige FCM/APNs e development build; a base (`dispositivos_push`) existe, mas o envio não foi feito e o registro remoto fica desligado (`EXPO_PUBLIC_PUSH_REMOTO`). |

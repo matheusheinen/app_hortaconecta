@@ -8,6 +8,7 @@ type RpcNulos = {
   oficinas_salvar: 'p_id' | 'p_revisao' | 'p_conhecimentos' | 'p_observacoes';
   oficinas_decidir: 'p_observacao';
   voluntariado_decidir: 'p_motivo';
+  perfil_foto_salvar: 'p_caminho' | 'p_anterior';
 };
 
 type FuncaoAplicativo<Nome extends PropertyKey, Funcao> = Funcao extends {

@@ -52,6 +52,14 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 
+**Foto do perfil aplicada em 21/10/2026 (versão remota `20261021155604`):**
+`20261021120000_foto_perfil.sql` adiciona o bucket privado `perfil-fotos` e as
+RPCs de caminho/salvamento com controle de concorrência. Depende apenas das
+reconciliações 01 e 02; pode ser aplicada independentemente das atualizações
+3 a 6 acima. Não altera dados de perfil existentes nem converte fotos legadas.
+Ver [contrato, aplicação e limites](../../docs/mvp/FOTO_PERFIL.md).
+Verificação local: `node --test tests/foto-perfil-banco.test.cjs`.
+
 O segundo arquivo foi criado por `supabase migration new` e movido para esta
 pasta para separar a reconciliação do histórico incompatível. Cada arquivo tem
 pré-condições e uma transação própria. Não execute `db push` usando o conjunto

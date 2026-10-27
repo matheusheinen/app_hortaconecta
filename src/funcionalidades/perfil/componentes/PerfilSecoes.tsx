@@ -6,6 +6,7 @@ import { Aviso, Botao } from '@/compartilhado/componentes/Ui';
 import { Icone } from '@/compartilhado/componentes/Icone';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { CartaoModoGestor } from '@/funcionalidades/modoGestor/ModoGestor';
+import { FotoPerfil } from './FotoPerfil';
 
 /** Tela inicial do perfil: cabeçalho, resumo de status e lista de seções. */
 export function HubPerfil({
@@ -30,11 +31,9 @@ export function HubPerfil({
       <View style={estilos.cabecalho}>
         <View style={{ flex: 1 }}>
           <Text style={tipo.titulo} accessibilityRole="header">
-            Perfil
+            Meu perfil
           </Text>
-          <Text style={tipo.apoio}>
-            {nome} · {papel}
-          </Text>
+          <Text style={tipo.apoio}>Gerencie sua foto e seus dados.</Text>
         </View>
         <Pressable
           onPress={sair}
@@ -45,6 +44,7 @@ export function HubPerfil({
           <Text style={[tipo.apoio, { color: cores.folha, fontWeight: '600' }]}>Sair</Text>
         </Pressable>
       </View>
+      <FotoPerfil nome={nome} papel={papel} />
       {erro ? <Aviso mensagem={erro} /> : null}
       {erro ? <Botao titulo="Tentar novamente" onPress={carregar} /> : null}
       {carregando && !erro ? <ActivityIndicator color={cores.folha} /> : null}
