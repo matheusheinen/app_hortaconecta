@@ -1,5 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type TextInputInstance,
+  type TextInputProps,
+} from 'react-native';
 import { cores } from '@/compartilhado/tema';
 
 /** Campo arredondado da tela de acesso, com rótulo em caixa alta acima. */
@@ -9,7 +16,7 @@ export function CampoAcesso({
   ...props
 }: TextInputProps & {
   rotulo: string;
-  referencia?: React.Ref<TextInput>;
+  referencia?: React.Ref<TextInputInstance>;
 }) {
   return (
     <View style={estilos.campo}>
