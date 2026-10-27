@@ -85,7 +85,7 @@ aparecer no Início, com o rótulo "Oficina", caso exista uma atividade desse ti
 | Restrição de imagens de menores | B26 (RNF0003) | O feed mostra só publicações PUBLICADA; não há regra específica para imagens de crianças e adolescentes. |
 | Parametrização da instituição | B28 (RF0015) | Não há tela para editar nome, textos, cores e logo de `configuracao_instituicao`; só WhatsApp e PIX pelo perfil da gestão. |
 | Compartilhamento | B18 (RF0009) | WhatsApp pronto; compartilhamento de conteúdo não implementado. |
-| Foto do usuário | B31 (RF0002) | Perfil em seções pronto; foto não implementada. |
+| Foto do usuário | B31 (RF0002) | Implementada e com reconciliação aplicada em 21/10; funções e permissões verificadas. Homologação de seleção/envio em aparelho pendente. Ver [FOTO_PERFIL.md](FOTO_PERFIL.md). |
 | Mensagem de impacto | B33 (RF0008) | Histórico pronto; mensagem de impacto não implementada. |
 | Apresentação da instituição | B32 (RF0016) | Não implementada. |
 | Notificações push | B29 (RF0014) | Não implementadas; falta coluna para o token do dispositivo. |

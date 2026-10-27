@@ -17,11 +17,23 @@ O app resolve três problemas da instituição: captação de voluntários (banc
 - **Verificação local:** `npx tsc --noEmit` sem erros e `npm test` com 117 testes aprovados.
 - **Documentação:** índice em [docs/INDICE.md](docs/INDICE.md). Os relatórios de `docs/` são registros datados; cada um abre com um bloco "Situação em 05/10/2026". Quando um relatório divergir deste arquivo, este arquivo prevalece.
 
+### Foto do perfil — implantação em 21/10/2026
+
+A foto pessoal foi implementada para voluntários e gestores no cabeçalho do perfil,
+com seleção, recorte quadrado, normalização JPEG até 512 px, substituição e remoção.
+É opcional e não interfere na elegibilidade. O armazenamento é privado.
+A reconciliação `supabase/reconciliacao/20261021120000_foto_perfil.sql` foi aplicada
+no HortaConecta como versão remota `20261021155604`. Bucket, funções, permissões e
+geração de caminho sob o papel autenticado foram verificados; os tipos foram
+regenerados. A homologação do seletor e do envio de uma foto em aparelho permanece
+necessária.
+Contrato, permissões e roteiro: [docs/mvp/FOTO_PERFIL.md](docs/mvp/FOTO_PERFIL.md).
+
 ## Stack
 
 - **App:** React Native + Expo SDK 57, TypeScript, React Navigation 7. Antes de escrever código, consultar a documentação versionada: https://docs.expo.dev/versions/v57.0.0/ (ver `AGENTS.md`).
 - **Backend:** Supabase (BaaS) — Auth, PostgreSQL, Storage, Row Level Security
-- **Imagens:** `expo-image-manipulator` (compressão local antes do upload) — **ainda não instalado**; hoje o Diário usa só `quality: 0.8` do `expo-image-picker` (B27).
+- **Imagens:** `expo-image-manipulator` instalado para recortar e reduzir fotos de perfil antes do upload. O Diário ainda usa só `quality: 0.8` do `expo-image-picker`, sem redimensionar (B27 pendente).
 - **Notificações:** Expo Notifications (prioridade baixa, ainda não implementado) — falta no modelo uma coluna para o token do dispositivo (ex.: `usuarios.expo_push_token`)
 - **Integrações:** WhatsApp via deep link (`wa.me`), PIX estático (chave copia e cola, `expo-clipboard`), ViaCEP para endereço
 - **Check-in:** `expo-camera` (leitura de QR) e `react-native-qrcode-svg` (geração)
@@ -203,7 +215,7 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | B25 | Publicação, edição e ocultação com revisão e imagem privada | Homologação com Storage real |
 | B26 | Feed só com publicações PUBLICADA | Regra específica para imagens de menores |
 | B30 | Perfil da gestão em seções (conta, institucional, WhatsApp, PIX) | Seção de PIX depende da reconciliação pendente |
-| B31 | Perfil do voluntário em seções com busca de CEP | Foto do usuário |
+| B31 | Perfil em seções, busca de CEP e foto pessoal com troca/remoção; banco atualizado em 21/10 | Homologar seleção e envio de foto em aparelho |
 | B32 | Histórico de participação com carga prevista | Mensagem de impacto |
 | B33 | "Minhas contribuições" com situação de conferência | Homologação |
 

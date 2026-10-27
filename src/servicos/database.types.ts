@@ -1,4 +1,3 @@
-/** Contrato gerado do Supabase remoto após reconciliação, 30/09/2026. */
 export type Json =
   | string
   | number
@@ -11,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -47,6 +46,7 @@ export type Database = {
       }
       atividades: {
         Row: {
+          arquivada_em: string | null
           atualizado_em: string
           autor_id: string
           carga_horaria: number
@@ -61,6 +61,7 @@ export type Database = {
           vagas_totais: number
         }
         Insert: {
+          arquivada_em?: string | null
           atualizado_em?: string
           autor_id: string
           carga_horaria: number
@@ -75,6 +76,7 @@ export type Database = {
           vagas_totais: number
         }
         Update: {
+          arquivada_em?: string | null
           atualizado_em?: string
           autor_id?: string
           carga_horaria?: number
@@ -261,64 +263,6 @@ export type Database = {
           {
             foreignKeyName: "contribuicoes_validado_por_fkey"
             columns: ["validado_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contribuicoes_materiais: {
-        Row: {
-          criado_em: string
-          decidido_em: string | null
-          decidido_por: string | null
-          id: number
-          observacao: string | null
-          quantidade: number
-          solicitacao_id: number
-          status: string
-          usuario_id: string
-        }
-        Insert: {
-          criado_em?: string
-          decidido_em?: string | null
-          decidido_por?: string | null
-          id?: never
-          observacao?: string | null
-          quantidade: number
-          solicitacao_id: number
-          status?: string
-          usuario_id: string
-        }
-        Update: {
-          criado_em?: string
-          decidido_em?: string | null
-          decidido_por?: string | null
-          id?: never
-          observacao?: string | null
-          quantidade?: number
-          solicitacao_id?: number
-          status?: string
-          usuario_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contribuicoes_materiais_decidido_por_fkey"
-            columns: ["decidido_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contribuicoes_materiais_solicitacao_id_fkey"
-            columns: ["solicitacao_id"]
-            isOneToOne: false
-            referencedRelation: "solicitacoes_materiais"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contribuicoes_materiais_usuario_id_fkey"
-            columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]
@@ -631,50 +575,6 @@ export type Database = {
           },
         ]
       }
-      solicitacoes_materiais: {
-        Row: {
-          atualizado_em: string
-          criado_em: string
-          criado_por: string
-          descricao: string
-          id: number
-          nome: string
-          quantidade_necessaria: number
-          quantidade_recebida: number
-          status: string
-        }
-        Insert: {
-          atualizado_em?: string
-          criado_em?: string
-          criado_por: string
-          descricao: string
-          id?: never
-          nome: string
-          quantidade_necessaria: number
-          quantidade_recebida?: number
-          status?: string
-        }
-        Update: {
-          atualizado_em?: string
-          criado_em?: string
-          criado_por?: string
-          descricao?: string
-          id?: never
-          nome?: string
-          quantidade_necessaria?: number
-          quantidade_recebida?: number
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "solicitacoes_materiais_criado_por_fkey"
-            columns: ["criado_por"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       usuario_habilidades: {
         Row: {
           habilidade_id: number
@@ -843,8 +743,11 @@ export type Database = {
         Args: { p_id: number; p_revisao: number; p_status: string }
         Returns: undefined
       }
+      e_convidado: { Args: never; Returns: boolean }
       e_ong: { Args: { uid?: string }; Returns: boolean }
       gestao_salvar_perfil: { Args: { p_dados: Json }; Returns: boolean }
+      gestor_alternar_modo: { Args: { p_gestor: boolean }; Returns: string }
+      gestor_pode_alternar_modo: { Args: never; Returns: boolean }
       materiais_contribuir: {
         Args: { p_quantidade: number; p_solicitacao: number }
         Returns: number
@@ -899,7 +802,18 @@ export type Database = {
         Returns: number
       }
       perfil_completo: { Args: { uid?: string }; Returns: boolean }
+      perfil_foto_caminho: { Args: never; Returns: string }
+      perfil_foto_livre: { Args: { p_caminho: string }; Returns: boolean }
+      perfil_foto_propria: { Args: { p_caminho: string }; Returns: boolean }
+      perfil_foto_salvar: {
+        Args: { p_anterior: string; p_caminho: string; p_usuario_id: string }
+        Returns: boolean
+      }
       solicitar_exclusao_conta: { Args: never; Returns: undefined }
+      voluntariado_arquivar_atividade: {
+        Args: { p_arquivar: boolean; p_atividade: number }
+        Returns: undefined
+      }
       voluntariado_cancelar: {
         Args: { p_inscricao: number }
         Returns: undefined

@@ -34,7 +34,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Permita selecionar fotos das atividades para o Diário institucional.",
+          "photosPermission": "Permita selecionar sua foto de perfil e fotos das atividades para o Diário institucional.",
           "microphonePermission": false
         }
       ]
