@@ -1,9 +1,9 @@
 import { Platform } from 'react-native';
+import { isRunningInExpoGo } from 'expo';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import { AndroidImportance } from 'expo-notifications';
 import { registrarTokenPush, removerTokenPush } from './api';
+import { obterNotificacoesDoSistema } from './sistema';
 import type { Notificacao } from './tipos';
 import { dadosDoToque } from './toque';
 
@@ -11,16 +11,6 @@ const CANAL_PADRAO = 'padrao';
 
 /** Token deste aparelho já enviado ao servidor; usado para removê-lo ao sair da conta. */
 let tokenRegistrado: string | null = null;
-
-// Com o app aberto, a notificação aparece como banner em vez de ser descartada.
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
 
 function plataforma(): 'ios' | 'android' | null {
   return Platform.OS === 'ios' || Platform.OS === 'android' ? Platform.OS : null;
@@ -33,12 +23,13 @@ function plataforma(): 'ios' | 'android' | null {
 export async function pedirPermissaoNotificacoes(): Promise<boolean> {
   try {
     const sistema = plataforma();
-    if (!sistema) return false;
+    const Notifications = obterNotificacoesDoSistema();
+    if (!sistema || !Notifications) return false;
     // No Android 13+ o pedido de permissão só aparece depois de existir um canal.
     if (sistema === 'android') {
       await Notifications.setNotificationChannelAsync(CANAL_PADRAO, {
         name: 'Avisos do Horta Conecta',
-        importance: AndroidImportance.DEFAULT,
+        importance: Notifications.AndroidImportance.DEFAULT,
       });
     }
     let permissao = await Notifications.getPermissionsAsync();
@@ -54,12 +45,14 @@ export async function pedirPermissaoNotificacoes(): Promise<boolean> {
 
 /**
  * Mostra no sistema (banner/central de notificações) o aviso de uma notificação que acabou de
- * chegar em tempo real. É um aviso local: não depende de FCM, APNs nem de build próprio, mas
- * só aparece com o app aberto ou em segundo plano recente.
+ * chegar em tempo real, quando o ambiente suporta o módulo nativo. É um aviso local:
+ * não depende de FCM/APNs e só aparece com o app aberto ou em segundo plano recente.
  */
 export async function mostrarAvisoLocal(notificacao: Notificacao): Promise<void> {
   try {
     if (!plataforma()) return;
+    const Notifications = obterNotificacoesDoSistema();
+    if (!Notifications) return;
     const permissao = await Notifications.getPermissionsAsync();
     if (!permissao.granted) return;
     await Notifications.scheduleNotificationAsync({
@@ -82,7 +75,9 @@ export async function mostrarAvisoLocal(notificacao: Notificacao): Promise<void>
 export async function registrarDispositivoPush(): Promise<string | null> {
   try {
     const sistema = plataforma();
-    if (!sistema || !Device.isDevice || !(await pedirPermissaoNotificacoes())) return null;
+    if (!sistema || isRunningInExpoGo() || !Device.isDevice) return null;
+    const Notifications = obterNotificacoesDoSistema();
+    if (!Notifications || !(await pedirPermissaoNotificacoes())) return null;
     const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
     if (!projectId) {
       console.warn('Notificações: projectId do EAS ausente. Rode `eas init`.');

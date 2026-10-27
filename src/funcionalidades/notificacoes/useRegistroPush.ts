@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { isRunningInExpoGo } from 'expo';
 import { pedirPermissaoNotificacoes, registrarDispositivoPush } from './push';
 
 const pushRemoto = process.env.EXPO_PUBLIC_PUSH_REMOTO === 'true';
@@ -10,6 +11,8 @@ const pushRemoto = process.env.EXPO_PUBLIC_PUSH_REMOTO === 'true';
 export function useRegistroPush(usuarioId: string | null, ativo: boolean) {
   useEffect(() => {
     if (!usuarioId || !ativo) return;
-    void (pushRemoto ? registrarDispositivoPush() : pedirPermissaoNotificacoes());
+    void (pushRemoto && !isRunningInExpoGo()
+      ? registrarDispositivoPush()
+      : pedirPermissaoNotificacoes());
   }, [usuarioId, ativo]);
 }
