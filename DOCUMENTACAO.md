@@ -22,7 +22,7 @@ O app resolve três problemas da instituição: captação de voluntários (banc
 - **App:** React Native + Expo SDK 57, TypeScript, React Navigation 7. Antes de escrever código, consultar a documentação versionada: https://docs.expo.dev/versions/v57.0.0/ (ver `AGENTS.md`).
 - **Backend:** Supabase (BaaS) — Auth, PostgreSQL, Storage, Row Level Security
 - **Imagens:** `expo-image-manipulator` (compressão local antes do upload) — **ainda não instalado**; hoje o Diário usa só `quality: 0.8` do `expo-image-picker` (B27).
-- **Notificações:** Expo Notifications (prioridade baixa, ainda não implementado) — falta no modelo uma coluna para o token do dispositivo (ex.: `usuarios.expo_push_token`)
+- **Notificações:** Expo Notifications (prioridade baixa) — tokens em `voluntariado_privado.dispositivos_push` (vários aparelhos por usuário), gravados pelas RPCs `push_registrar_token` e `push_remover_token`; o envio remoto não existe. As notificações do dia a dia vivem em `public.notificacoes` (gatilhos no banco, sino no app via Realtime)
 - **Integrações:** WhatsApp via deep link (`wa.me`), PIX estático (chave copia e cola, `expo-clipboard`), ViaCEP para endereço
 - **Check-in:** `expo-camera` (leitura de QR) e `react-native-qrcode-svg` (geração)
 - **Build/testes:** Expo Go, EAS Build; testes com `node --test` e PGlite (PostgreSQL em memória)

@@ -12,6 +12,9 @@ import { cores } from '@/compartilhado/tema';
 import { Aviso, Botao } from '@/compartilhado/componentes/Ui';
 import { LimiteErro } from '@/compartilhado/componentes/LimiteErro';
 import { ProvedorModoGestor } from '@/funcionalidades/modoGestor/ModoGestor';
+import { ProvedorNotificacoes } from '@/funcionalidades/notificacoes/ContextoNotificacoes';
+import { useRegistroPush } from '@/funcionalidades/notificacoes/useRegistroPush';
+import { desregistrarDispositivoPush } from '@/funcionalidades/notificacoes/push';
 import { ProvedorSessao, type SessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 
 // A barra de abas já aplica a margem inferior; repetir aqui dobraria o espaço.
@@ -43,6 +46,7 @@ function Conteudo() {
   } = useSessao();
 
   const recuperandoSenha = useRecuperacaoAtiva();
+  useRegistroPush(perfil?.id ?? null, !!sessao && !ehConvidado);
 
   // Memorizados: um objeto novo a cada render faria todas as telas renderizarem de novo.
   const valorSessao = useMemo<SessaoAtual | null>(
@@ -53,7 +57,10 @@ function Conteudo() {
             nome: perfil.nome,
             ehGestao: ehGestao && !ehConvidado,
             convidado: ehConvidado,
-            sair,
+            // O token só sai do servidor com a sessão ainda válida, então vem antes do logout.
+            sair: () => {
+              void desregistrarDispositivoPush().finally(sair);
+            },
             recarregarPerfil,
           }
         : null,
@@ -120,12 +127,14 @@ function Conteudo() {
   return (
     <SafeAreaView style={estilos.raiz} edges={bordasComAbas}>
       <ProvedorSessao valor={valorSessao}>
-        <ProvedorModoGestor value={modoGestor}>
-          {/* A chave reinicia as pilhas ao trocar de modo, evitando telas do outro papel. */}
-          <NavigationContainer key={perfil.tipo_perfil}>
-            <AbasPrincipais />
-          </NavigationContainer>
-        </ProvedorModoGestor>
+        <ProvedorNotificacoes usuarioId={perfil.id}>
+          <ProvedorModoGestor value={modoGestor}>
+            {/* A chave reinicia as pilhas ao trocar de modo, evitando telas do outro papel. */}
+            <NavigationContainer key={perfil.tipo_perfil}>
+              <AbasPrincipais />
+            </NavigationContainer>
+          </ProvedorModoGestor>
+        </ProvedorNotificacoes>
       </ProvedorSessao>
     </SafeAreaView>
   );

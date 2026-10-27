@@ -39,6 +39,16 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
    local: `node --test tests/convidado.test.cjs`. Até ser aplicada, "Entrar como convidado"
    cria a sessão, mas o convidado não ficaria impedido de escrever pelo banco. Contas
    anônimas se acumulam em `auth.users`: ainda falta uma limpeza periódica (não há pg_cron).
+7. `20261026120000_dispositivos_push.sql`: tabela privada `dispositivos_push` e RPCs
+   `push_registrar_token` / `push_remover_token` (B29). Depende da reconciliação 02.
+   Convidado não registra token. Verificação local:
+   `node --test tests/dispositivos-push.test.cjs`. Até ser aplicada, o app só registra um
+   aviso no console ao tentar salvar o token; nada quebra.
+8. `20261026130000_notificacoes.sql`: tabela `notificacoes` com RLS, Realtime, RPCs de leitura
+   e gatilhos (candidatura nova/cancelada, presença, contribuição nova para a gestão; candidatura
+   decidida, atividade cancelada e contribuição conferida para o voluntário). Depende da
+   reconciliação 02; inclui quem está em modo gestor se `gestores` existir. Verificação local:
+   `node --test tests/notificacoes.test.cjs`. Até ser aplicada, o sino do app fica em zero.
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 

@@ -88,7 +88,7 @@ aparecer no Início, com o rótulo "Oficina", caso exista uma atividade desse ti
 | Foto do usuário | B31 (RF0002) | Perfil em seções pronto; foto não implementada. |
 | Histórico e mensagem de impacto | B32 (RF0008) | Pronto: histórico com total de horas previstas acumuladas e mensagem de impacto no check-in e em cada participação (texto fixo no app, sem migration). |
 | Apresentação da instituição | B32 (RF0016) | Não implementada. |
-| Notificações push | B29 (RF0014) | Não implementadas; falta coluna para o token do dispositivo. |
+| Notificações | B29 (RF0014) | Notificações dentro do app: tabela `notificacoes` (RLS), gatilhos nos fluxos de voluntariado e contribuições, sino no Início e aviso do sistema com o app aberto, em tempo real pelo Supabase Realtime (migration `20261026130000_notificacoes.sql`, **não aplicada**). Push com o app fechado exige FCM/APNs e development build; a base (`dispositivos_push`) existe, mas o envio não foi feito e o registro remoto fica desligado (`EXPO_PUBLIC_PUSH_REMOTO`). |
 | Homologação | — | Android, login/JWT reais, Storage real, concorrência entre conexões independentes. |
 | Dependências | — | `npm audit` aponta 30 vulnerabilidades (19 altas), ainda não avaliadas. |
 | Política de `contribuicoes` | B23 (RNF0007) | A gestão pode alterar a quantidade de uma contribuição já aprovada (policy de UPDATE herdada). Avaliar se deve ser travado. |
