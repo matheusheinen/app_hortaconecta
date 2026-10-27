@@ -3,6 +3,8 @@ import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
+import { formatarHorasInicio } from '@/funcionalidades/inicio/regras';
+import { mensagemImpacto, totalHorasParticipacao } from '../regras';
 import { rotuloInscricao, rotuloStatusAtividade } from '../tipos';
 import { carregarMinhasInscricoes } from '../api';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
@@ -18,6 +20,7 @@ export function TelaMinhasCandidaturas({
 }) {
   const { dados, erro, carregando, carregar } = useConsulta(carregarMinhasInscricoes);
   const itens = (dados ?? []).filter(item => !historico || item.inscricao.presenca_confirmada);
+  const total = totalHorasParticipacao(itens);
   return (
     <TelaFluxo
       titulo={historico ? 'Histórico de participação' : 'Minhas candidaturas'}
@@ -31,6 +34,20 @@ export function TelaMinhasCandidaturas({
           A carga horária abaixo é a prevista na atividade, registrada no check-in. Não mede horas
           efetivamente realizadas.
         </Text>
+      ) : null}
+      {historico && total.participacoes ? (
+        <CartaoFluxo>
+          <Text style={tipo.secao}>{formatarHorasInicio(total.horas)} acumuladas</Text>
+          <Text style={tipo.corpo}>
+            {total.participacoes} {total.participacoes === 1 ? 'participação' : 'participações'}{' '}
+            confirmadas
+          </Text>
+          {total.semCarga ? (
+            <Text style={tipo.apoio}>
+              {total.semCarga} registro(s) antigo(s) sem carga no check-in não entram na soma.
+            </Text>
+          ) : null}
+        </CartaoFluxo>
       ) : null}
       {!itens.length ? (
         <Text style={tipo.apoio}>
@@ -59,6 +76,7 @@ export function TelaMinhasCandidaturas({
               ? ' (valor atual; registro antigo sem carga no check-in)'
               : ''}
           </Text>
+          {historico ? <Text style={tipo.apoio}>{mensagemImpacto(a.titulo)}</Text> : null}
           <Botao titulo="Ver atividade" variante="contorno" onPress={() => abrir(a.id)} />
         </CartaoFluxo>
       ))}

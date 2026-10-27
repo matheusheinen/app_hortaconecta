@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert } from 'react-native';
+import { avisar } from '@/compartilhado/utils/confirmar';
 import type { Session } from '@supabase/supabase-js';
 import type { Usuario } from '@/compartilhado/tipos';
 import { carregarUsuario, encerrarSessao, observarSessao, obterSessao } from './api';
@@ -133,7 +133,7 @@ export function useSessao() {
         saindo.current = v;
       });
     } catch (f) {
-      if (versao === revisaoSessao.current) Alert.alert('Não foi possível sair', erroAuth(f));
+      if (versao === revisaoSessao.current) avisar('Não foi possível sair', erroAuth(f));
     }
   }, []);
   const recarregarPerfil = useCallback(

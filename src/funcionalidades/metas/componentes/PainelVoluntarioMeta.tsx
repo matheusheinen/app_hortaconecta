@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
 import { formatarDataCurta, formatarDataHora } from '@/compartilhado/utils/datas';
+import { avisar, confirmarAcao } from '@/compartilhado/utils/confirmar';
 import { mascararTelefone } from '@/compartilhado/utils/mascaras';
 import { abrirWhatsApp } from '@/compartilhado/utils/whatsapp';
 import { cores, tipo } from '@/compartilhado/tema';
@@ -14,6 +15,8 @@ import { rotuloStatusValidacao, type Meta } from '../tipos';
 import { carregarPix, declararContribuicao, type ContribuicaoComDoador, type Pix } from '../api';
 import { descreverQuantidade, interpretarQuantidade } from '../regras';
 import { estilosMeta } from './IndicadoresMeta';
+import { ComprovanteContribuicao } from './ComprovanteContribuicao';
+import { SeletorComprovante, type ComprovanteEscolhido } from './SeletorComprovante';
 
 export function PainelVoluntarioMeta({
   meta,
@@ -36,6 +39,7 @@ export function PainelVoluntarioMeta({
   const [copiado, setCopiado] = useState(false);
   const [quantidade, setQuantidade] = useState('');
   const [sucesso, setSucesso] = useState(false);
+  const [comprovante, setComprovante] = useState<ComprovanteEscolhido | null>(null);
   const acao = useAcao();
   const financeira = meta.tipo === 'FINANCEIRA';
 
@@ -67,7 +71,7 @@ export function PainelVoluntarioMeta({
       ? `Olá! Vi a meta "${meta.titulo}" no app e tenho uma dúvida sobre a doação.`
       : `Olá! Vi a meta "${meta.titulo}" no app e quero contribuir com material. Como combinamos a entrega?`;
     if (!(await abrirWhatsApp(numero, mensagem))) {
-      Alert.alert(
+      avisar(
         'Não foi possível abrir o WhatsApp',
         `Fale com a gestão pelo número ${mascararTelefone(numero)}.`,
       );
@@ -76,26 +80,22 @@ export function PainelVoluntarioMeta({
   function declarar() {
     const valor = interpretarQuantidade(quantidade);
     if (valor === null) {
-      Alert.alert('Valor inválido', 'Informe um valor positivo, com até duas casas decimais.');
+      avisar('Valor inválido', 'Informe um valor positivo, com até duas casas decimais.');
       return;
     }
-    Alert.alert(
+    confirmarAcao(
       'Informar doação?',
       `Você informa que transferiu ${descreverQuantidade(valor, meta)}. A gestão confere no extrato antes de somar ao total.`,
-      [
-        { text: 'Voltar', style: 'cancel' },
-        {
-          text: 'Informar',
-          onPress: () => {
-            void acao.executar(async () => {
-              await declararContribuicao(meta.id, usuarioId, valor);
-              setQuantidade('');
-              setSucesso(true);
-              await aoDeclarar();
-            });
-          },
-        },
-      ],
+      'Informar',
+      () => {
+        void acao.executar(async () => {
+          await declararContribuicao(meta.id, usuarioId, valor, comprovante?.base64 ?? null);
+          setQuantidade('');
+          setComprovante(null);
+          setSucesso(true);
+          await aoDeclarar();
+        });
+      },
     );
   }
 
@@ -147,6 +147,11 @@ export function PainelVoluntarioMeta({
             keyboardType="decimal-pad"
             placeholder="Ex.: 25,00"
           />
+          <SeletorComprovante
+            valor={comprovante}
+            aoMudar={setComprovante}
+            desabilitado={acao.ocupado}
+          />
           <Botao
             titulo="Informar doação"
             carregando={acao.ocupado}
@@ -190,6 +195,7 @@ export function PainelVoluntarioMeta({
             {rotuloStatusValidacao[c.status_validacao]} · {formatarDataHora(c.data_envio)}
           </Text>
           {c.observacao_validacao ? <Text style={tipo.apoio}>{c.observacao_validacao}</Text> : null}
+          {c.url_comprovante ? <ComprovanteContribuicao caminho={c.url_comprovante} /> : null}
         </CartaoFluxo>
       ))}
       <Botao titulo="Minhas contribuições" variante="contorno" onPress={minhas} />

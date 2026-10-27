@@ -39,6 +39,19 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
    local: `node --test tests/convidado.test.cjs`. Até ser aplicada, "Entrar como convidado"
    cria a sessão, mas o convidado não ficaria impedido de escrever pelo banco. Contas
    anônimas se acumulam em `auth.users`: ainda falta uma limpeza periódica (não há pg_cron).
+7. `20261026120000_dispositivos_push.sql`: tabela privada `dispositivos_push` e RPCs
+   `push_registrar_token` / `push_remover_token` (B29). Depende da reconciliação 02.
+   Convidado não registra token. Verificação local:
+   `node --test tests/dispositivos-push.test.cjs`. Até ser aplicada, o app só registra um
+   aviso no console ao tentar salvar o token; nada quebra.
+8. `20261026130000_notificacoes.sql`: tabela `notificacoes` com RLS, Realtime, RPCs de leitura
+   e gatilhos (candidatura nova/cancelada, presença, contribuição nova para a gestão; candidatura
+   decidida, atividade cancelada e contribuição conferida para o voluntário). Depende da
+   reconciliação 02; inclui quem está em modo gestor se `gestores` existir. Verificação local:
+   `node --test tests/notificacoes.test.cjs`. **Aplicada em 26/10/2026**: 5 gatilhos e a tabela na publicação `supabase_realtime` conferidos.
+9. `20261026140000_notificacoes_cancelamento_pendentes.sql` (**aplicada em 26/10/2026**): troca só o corpo
+   da função do gatilho de atividade cancelada, que passa a avisar também a candidatura PENDENTE. Depende
+   do item 8. Verificação local: `node --test tests/notificacoes.test.cjs`.
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 
@@ -65,6 +78,23 @@ inscrições, presenças e vínculos de habilidades continuam armazenados.
 Novas presenças usam check-in com código e carga horária prevista registrada.
 Presenças antigas não recebem check-in/horas retroativos. Propostas aprovadas
 continuam independentes do calendário.
+
+5. `20261023170000_comprovantes_storage.sql` (**aplicada em 23/10/2026**, B22): bucket privado `comprovantes`, RPC
+   `comprovante_caminho`, policies de Storage e restrição em `contribuicoes.url_comprovante`.
+   Verificação local: `node --test tests/comprovantes-storage.test.cjs`. Não depende do PIX.
+6. `20261023190000_comprovantes_formatos.sql` (**aplicada em 23/10/2026**, B22): o bucket passa a aceitar JPEG, PNG e
+   WebP, `comprovante_caminho(p_ext)` recebe a extensão, a gestão anexa comprovante ao
+   registrar doação e o doador lê o arquivo ligado à contribuição dele. Depende do item 5.
+   Verificação local: `node --test tests/comprovantes-formatos.test.cjs`.
+7. `20261023200000_arrecadacao_trigger.sql` (**pendente de aplicação**, B24): versiona o trigger que
+   recalcula `quantidade_arrecadada` (soma das APROVADA) em INSERT, UPDATE e DELETE. O remoto já
+   tem essa lógica; a migration é idempotente e só corrige totais divergentes. Verificação local:
+   `node --test tests/contribuicoes-metas.test.cjs`.
+8. `20261023210000_contribuicoes_conferencia.sql` (**pendente de aplicação**, B23): gatilho que só deixa
+   conferir contribuição PENDENTE (aprovada ou recusada não volta atrás), impede trocar meta, doador, valor,
+   comprovante e data de envio na conferência e exige motivo ao recusar. Depende do item 7. O app funciona
+   sem ela, mas a trava passa a valer só depois. Verificação local:
+   `node --test tests/contribuicoes-conferencia.test.cjs`.
 
 As novas tabelas recebem RLS e grants explícitos; funções privadas não ficam
 acessíveis ao cliente. Contas autenticadas leem o próprio perfil, e a gestão

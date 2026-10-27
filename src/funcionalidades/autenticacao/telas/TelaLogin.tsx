@@ -7,7 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
+  type TextInputInstance,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -22,8 +22,8 @@ export const fundoLogin = cores.superficie;
 export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
   const acesso = useAcesso();
   const { modo, etapa, verificado, campos, alterar, erro, aviso, ocupado } = acesso;
-  const campoEmail = useRef<TextInput>(null);
-  const campoSenha = useRef<TextInput>(null);
+  const campoEmail = useRef<TextInputInstance>(null);
+  const campoSenha = useRef<TextInputInstance>(null);
   const { height } = useWindowDimensions();
 
   const cadastrando = modo === 'cadastrar';

@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { listarHabilidades, salvarAtividade } from '../api';
+import { avisar } from '@/compartilhado/utils/confirmar';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import type { Atividade } from '../tipos';
 import type { Habilidade } from '@/compartilhado/tipos';
@@ -107,7 +100,7 @@ export function TelaFormAtividade({ atividade, onPronto, onCancelar }: Props) {
         try {
           await salvarAreasAtividade(id, areasOriginais, areas);
         } catch (falha) {
-          Alert.alert(
+          avisar(
             'Tarefa salva',
             `As áreas não foram atualizadas: ${mensagemErro(falha)} Edite a tarefa para tentar de novo.`,
           );

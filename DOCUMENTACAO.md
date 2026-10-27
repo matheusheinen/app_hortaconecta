@@ -34,7 +34,7 @@ Contrato, permissões e roteiro: [docs/mvp/FOTO_PERFIL.md](docs/mvp/FOTO_PERFIL.
 - **App:** React Native + Expo SDK 57, TypeScript, React Navigation 7. Antes de escrever código, consultar a documentação versionada: https://docs.expo.dev/versions/v57.0.0/ (ver `AGENTS.md`).
 - **Backend:** Supabase (BaaS) — Auth, PostgreSQL, Storage, Row Level Security
 - **Imagens:** `expo-image-manipulator` instalado para recortar e reduzir fotos de perfil antes do upload. O Diário ainda usa só `quality: 0.8` do `expo-image-picker`, sem redimensionar (B27 pendente).
-- **Notificações:** Expo Notifications (prioridade baixa, ainda não implementado) — falta no modelo uma coluna para o token do dispositivo (ex.: `usuarios.expo_push_token`)
+- **Notificações:** Expo Notifications (prioridade baixa) — tokens em `voluntariado_privado.dispositivos_push` (vários aparelhos por usuário), gravados pelas RPCs `push_registrar_token` e `push_remover_token`; o envio remoto não existe. As notificações do dia a dia vivem em `public.notificacoes` (gatilhos no banco, sino no app via Realtime)
 - **Integrações:** WhatsApp via deep link (`wa.me`), PIX estático (chave copia e cola, `expo-clipboard`), ViaCEP para endereço
 - **Check-in:** `expo-camera` (leitura de QR) e `react-native-qrcode-svg` (geração)
 - **Build/testes:** Expo Go, EAS Build; testes com `node --test` e PGlite (PostgreSQL em memória)
@@ -209,15 +209,15 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | B17 | Check-in por QR com token temporário | Homologação em aparelho |
 | B18 | WhatsApp no detalhe da atividade e da meta | Compartilhamento; número cadastrado pela gestão |
 | B21 | Cópia da chave PIX e registro da contribuição (PENDENTE) | Aplicar a reconciliação pendente (PIX na configuração) |
-| B22 | — | Upload de comprovante e bucket privado |
-| B23 | Fila de conferência com confirmar/recusar e registro de doação recebida | Visualização do comprovante, quando houver upload |
+| B22 | Anexo opcional do comprovante, bucket privado `comprovantes` e visualização pela gestão | Homologar com Storage real (migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026) |
+| B23 | Fila geral de conferência (todas as metas), confirmar/recusar com observação (motivo obrigatório ao recusar) e registro de doação recebida | Aplicar `20261023210000_contribuicoes_conferencia.sql` e homologar |
 | B24 | Total recalculado pelo trigger do banco | Homologação |
 | B25 | Publicação, edição e ocultação com revisão e imagem privada | Homologação com Storage real |
 | B26 | Feed só com publicações PUBLICADA | Regra específica para imagens de menores |
 | B30 | Perfil da gestão em seções (conta, institucional, WhatsApp, PIX) | Seção de PIX depende da reconciliação pendente |
 | B31 | Perfil em seções, busca de CEP e foto pessoal com troca/remoção; banco atualizado em 21/10 | Homologar seleção e envio de foto em aparelho |
 | B32 | Histórico de participação com carga prevista | Mensagem de impacto |
-| B33 | "Minhas contribuições" com situação de conferência | Homologação |
+| B33 | "Minhas contribuições" com etiqueta de situação da conferência e filtro por situação | Homologação em dispositivo |
 
 ## Cronograma
 

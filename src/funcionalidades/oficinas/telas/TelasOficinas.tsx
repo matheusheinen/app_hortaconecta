@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
-import { Alert, Text } from 'react-native';
+import { Text } from 'react-native';
+import { avisar, confirmarAcao } from '@/compartilhado/utils/confirmar';
 import { Botao, Campo, Aviso } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
@@ -95,18 +96,13 @@ export function TelaDetalheOficina({
     }
   }
   function confirmar(acao: 'APROVADA' | 'REJEITADA' | 'CANCELADA') {
-    Alert.alert(
+    confirmarAcao(
       acao === 'CANCELADA' ? 'Cancelar proposta?' : 'Registrar decisão?',
       'Esta ação encerra a edição da proposta.',
-      [
-        { text: 'Voltar', style: 'cancel' },
-        {
-          text: 'Confirmar',
-          onPress: () => {
-            void agir(acao);
-          },
-        },
-      ],
+      'Confirmar',
+      () => {
+        void agir(acao);
+      },
     );
   }
   return (
@@ -283,7 +279,7 @@ function Formulario({
       const id = await salvarOficina(proposta, campos);
       if (montado.current) {
         pronto(id);
-        Alert.alert('Proposta salva', 'Acompanhe a análise em Minhas oficinas.');
+        avisar('Proposta salva', 'Acompanhe a análise em Minhas oficinas.');
       }
     } catch (f) {
       if (montado.current) setErro(mensagemErro(f));

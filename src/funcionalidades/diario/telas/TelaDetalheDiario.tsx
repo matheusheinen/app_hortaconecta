@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
-import { Alert, Text } from 'react-native';
+import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
-import { confirmarExclusao } from '@/compartilhado/utils/confirmar';
+import { confirmarAcao, confirmarExclusao } from '@/compartilhado/utils/confirmar';
 import { tipo } from '@/compartilhado/tema';
 import { detalheDiario, excluirDiario, statusDiario } from '../api';
 import { DataPublicacao } from '../componentes/DataPublicacao';
@@ -66,20 +66,15 @@ export function TelaDetalheDiario({
                 variante="contorno"
                 carregando={acao.ocupado}
                 onPress={() =>
-                  Alert.alert(
+                  confirmarAcao(
                     'Alterar visibilidade?',
                     dados.status === 'PUBLICADA'
                       ? 'A publicação deixará de aparecer para a comunidade.'
                       : 'A publicação ficará visível para usuários autenticados.',
-                    [
-                      { text: 'Voltar', style: 'cancel' },
-                      {
-                        text: 'Confirmar',
-                        onPress: () => {
-                          mudarVisibilidade();
-                        },
-                      },
-                    ],
+                    'Confirmar',
+                    () => {
+                      mudarVisibilidade();
+                    },
                   )
                 }
               />

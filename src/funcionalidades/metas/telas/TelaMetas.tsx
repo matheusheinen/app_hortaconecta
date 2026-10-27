@@ -7,20 +7,34 @@ import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { formatarDataCurta, hojeIso } from '@/compartilhado/utils/datas';
 import { tipo } from '@/compartilhado/tema';
-import { listarMetas } from '../api';
+import { contarPendentes, listarMetas } from '../api';
 import { descreverProgresso, metaFinalizada, prazoVencido } from '../regras';
 import { EtiquetaMeta, ProgressoMeta } from '../componentes/IndicadoresMeta';
+
+/** Entrada da fila de conferência, com a contagem de pendentes quando ela carrega. */
+function BotaoFila({ fila }: { fila: () => void }) {
+  const { dados } = useConsulta(contarPendentes);
+  return (
+    <Botao
+      titulo={dados ? `Fila de conferência · ${dados}` : 'Fila de conferência'}
+      variante="contorno"
+      onPress={fila}
+    />
+  );
+}
 
 export const TelaMetas = memoTela(function TelaMetas({
   voltar,
   abrir,
   criar,
   minhas,
+  fila,
 }: {
   voltar: () => void;
   abrir: (id: number) => void;
   criar: () => void;
   minhas: () => void;
+  fila: () => void;
 }) {
   const { ehGestao, convidado } = useSessaoAtual();
   const { dados, erro, carregando, carregar } = useConsulta(listarMetas);
@@ -43,7 +57,10 @@ export const TelaMetas = memoTela(function TelaMetas({
           : 'Apoie a horta com uma doação em dinheiro (PIX) ou com materiais. Só contam no total as doações confirmadas pela gestão.'}
       </Text>
       {ehGestao ? (
-        <Botao titulo="Nova meta" onPress={criar} />
+        <>
+          <Botao titulo="Nova meta" onPress={criar} />
+          <BotaoFila fila={fila} />
+        </>
       ) : convidado ? null : (
         <Botao titulo="Minhas contribuições" variante="contorno" onPress={minhas} />
       )}

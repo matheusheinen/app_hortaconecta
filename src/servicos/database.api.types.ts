@@ -31,7 +31,27 @@ type FuncaoAplicativo<Nome extends PropertyKey, Funcao> = Funcao extends {
 // aplicada no remoto. Remover este bloco ao regenerar database.types.ts.
 type ColunasPix = { chave_pix: string | null; nome_beneficiario_pix: string | null };
 type Configuracao = Database['public']['Tables']['configuracao_instituicao'];
+// Reconciliação 20261026130000_notificacoes ainda não aplicada no remoto.
+// Remover este bloco ao regenerar database.types.ts.
+type NotificacaoLinha = {
+  id: number;
+  usuario_id: string;
+  tipo: string;
+  titulo: string;
+  corpo: string;
+  atividade_id: number | null;
+  meta_id: number | null;
+  lida_em: string | null;
+  criado_em: string;
+};
+type TabelaNotificacoes = {
+  Row: NotificacaoLinha;
+  Insert: Partial<NotificacaoLinha>;
+  Update: Partial<NotificacaoLinha>;
+  Relationships: [];
+};
 type TabelasAplicativo = Omit<Database['public']['Tables'], 'configuracao_instituicao'> & {
+  notificacoes: TabelaNotificacoes;
   configuracao_instituicao: Omit<Configuracao, 'Row' | 'Insert' | 'Update'> & {
     Row: Configuracao['Row'] & ColunasPix;
     Insert: Configuracao['Insert'] & Partial<ColunasPix>;
@@ -42,9 +62,15 @@ type TabelasAplicativo = Omit<Database['public']['Tables'], 'configuracao_instit
 // RPC da reconciliação 20261005170000_diario_excluir ainda não aplicada no
 // remoto. Remover este bloco ao regenerar database.types.ts.
 type FuncoesPendentes = {
+  // Reconciliação 20261023170000_comprovantes_storage, aplicada no remoto; remover ao regenerar database.types.ts.
+  comprovante_caminho: { Args: { p_ext: string }; Returns: string };
   diario_excluir_revisao: { Args: { p_id: number; p_revisao: number }; Returns: string | null };
   gestor_alternar_modo: { Args: { p_gestor: boolean }; Returns: string };
   gestor_pode_alternar_modo: { Args: Record<string, never>; Returns: boolean };
+  push_registrar_token: { Args: { p_token: string; p_plataforma: string }; Returns: undefined };
+  notificacoes_marcar_lida: { Args: { p_id: number }; Returns: undefined };
+  notificacoes_marcar_todas_lidas: { Args: Record<string, never>; Returns: undefined };
+  push_remover_token: { Args: { p_token: string }; Returns: undefined };
 };
 
 export type DatabaseAplicativo = Omit<Database, 'public'> & {

@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Aviso, Botao } from '@/compartilhado/componentes/Ui';
+import { SinoNotificacoes } from '@/funcionalidades/notificacoes/componentes/SinoNotificacoes';
 import { Icone } from '@/compartilhado/componentes/Icone';
 import { cores } from '@/compartilhado/tema';
 import type { AtividadeComVagas } from '@/funcionalidades/voluntariado/tipos';
@@ -26,6 +27,7 @@ export type AcoesInicio = {
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
+  aoNotificacoes: () => void;
   /** Ausente quando o recurso está fora do MVP (ver compartilhado/escopoMvp.ts). */
   aoIrParaCertificados?: () => void;
   aoIrParaOficinas?: () => void;
@@ -56,6 +58,7 @@ export function PainelInicioVoluntario({
   carregando,
   atualizar,
   aoPerfil,
+  aoNotificacoes,
   aoIrParaAtividades,
   aoIrParaMetas,
   aoIrParaDiario,
@@ -95,6 +98,7 @@ export function PainelInicioVoluntario({
               {nome.trim().split(/\s+/)[0] || 'Olá'} <Text style={estilos.aceno}>👋</Text>
             </Text>
           </View>
+          <SinoNotificacoes onPress={aoNotificacoes} />
           <Pressable
             onPress={aoPerfil}
             accessibilityRole="button"

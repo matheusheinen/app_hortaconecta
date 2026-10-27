@@ -12,9 +12,11 @@ import {
   TelaCertificados,
   TelaCertificado,
 } from '@/funcionalidades/certificados/telas/TelasCertificados';
+import { TelaNotificacoes } from '@/funcionalidades/notificacoes/telas/TelaNotificacoes';
 import { recursosPosMvp } from '@/compartilhado/escopoMvp';
 export type ParametrosInicio = {
   resumo: undefined;
+  notificacoes: undefined;
   certificados: undefined;
   certificado: { id: string };
   oficinas: undefined;
@@ -52,6 +54,7 @@ export function PilhaInicio({
             aoIrParaAtividades: atividades,
             aoIrParaMetas: materiais,
             aoIrParaDiario: diario,
+            aoNotificacoes: () => navigation.navigate('notificacoes'),
             aoIrParaCertificados: recursosPosMvp.certificados
               ? () => navigation.navigate('certificados')
               : undefined,
@@ -73,6 +76,9 @@ export function PilhaInicio({
             />
           );
         }}
+      </Pilha.Screen>
+      <Pilha.Screen name="notificacoes">
+        {({ navigation }) => <TelaNotificacoes voltar={() => navigation.goBack()} />}
       </Pilha.Screen>
       {recursosPosMvp.oficinas ? (
         <>
