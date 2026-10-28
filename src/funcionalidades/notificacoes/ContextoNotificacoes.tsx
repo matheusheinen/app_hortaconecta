@@ -1,12 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState, Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { assinarNotificacoes, contarNaoLidas, marcarNotificacaoLida } from './api';
 import { destinoNotificacao } from './destino';
 import { abrirDestino } from './navegacao';
 import { lerDadosDoToque } from './toque';
 import { mostrarAvisoLocal } from './push';
+import { obterNotificacoesDoSistema } from './sistema';
 
 type Valor = {
   naoLidas: number;
@@ -69,6 +69,8 @@ export function ProvedorNotificacoes({
   // Tocar no aviso do sistema abre o mesmo destino do sino e marca a notificação como lida.
   useEffect(() => {
     if (Platform.OS === 'web') return;
+    const Notifications = obterNotificacoesDoSistema();
+    if (!Notifications) return;
     const assinatura = Notifications.addNotificationResponseReceivedListener(resposta => {
       const dados = lerDadosDoToque(resposta.notification.request.content.data);
       if (!dados) return;

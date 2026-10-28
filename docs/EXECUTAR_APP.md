@@ -1,6 +1,6 @@
 # Executar o HortaConecta no Windows
 
-O projeto usa [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/) e Node.js 22.13 ou superior.
+O projeto usa [Expo SDK 58](https://docs.expo.dev/versions/v58.0.0/) e Node.js 22.13 ou superior.
 
 ## Primeira execução
 
@@ -42,7 +42,7 @@ Escolha o comando conforme a conexão do aparelho:
 npm.cmd run start:lan
 ```
 
-Abra o Expo Go compatível com o SDK 57 no celular e leia o QR code do terminal. Se o Wi-Fi bloquear a comunicação entre dispositivos, use o comando Cloudflare abaixo. LAN e localhost são opções oficiais da [Expo CLI](https://docs.expo.dev/more/expo-cli/#server-url).
+Abra o Expo Go compatível com o SDK 58 no celular e leia o QR code do terminal. Se o Wi-Fi bloquear a comunicação entre dispositivos, use o comando Cloudflare abaixo. LAN e localhost são opções oficiais da [Expo CLI](https://docs.expo.dev/more/expo-cli/#server-url).
 
 ## Conectar pela internet com Cloudflare
 
@@ -90,6 +90,7 @@ A equipe do Expo já [registrou limites da conta Ngrok compartilhada](https://gi
 | --- | --- | --- |
 | "Failed to fetch" no login; tela de carregamento demora ~30 s | Projeto Supabase fora do ar (pausado) ou URL errada no `.env` | Conferir no painel do Supabase se o projeto está ativo e restaurar; conferir a URL. O app espera até 30 s antes de desistir. |
 | `EADDRINUSE ... 8081` | Outro Expo já usa a porta | Encerrar o processo anterior ou usar `-- --port 8083`. |
+| `Cannot find native module 'ExpoTopicSubscriptionModule'` ao abrir no Expo Go Android | O pacote de notificações exige um módulo nativo ausente no Expo Go | A integração evita carregar esse pacote no Expo Go Android; reiniciar com `npm.cmd run start:cloudflare -- --clear` e abrir o novo QR code. O sino e a lista de notificações continuam disponíveis; avisos do sistema no Android exigem um build próprio. |
 | Mudanças no `.env` não aparecem | Variáveis `EXPO_PUBLIC_*` são lidas ao iniciar o Metro | Reiniciar o Expo, se necessário com `-- --clear`. |
 | Testes de banco falham com "diverge do catálogo auditado" | Arquivos SQL com CRLF no checkout | O `.gitattributes` exige LF; reextrair os arquivos (`git rm --cached -r . ; git reset --hard`) com a árvore limpa. |
 | Seção de PIX indisponível no perfil da gestão | Reconciliação `20261005150000` ainda não aplicada no Supabase | Ver [CONTRIBUICOES.md](mvp/CONTRIBUICOES.md). |
