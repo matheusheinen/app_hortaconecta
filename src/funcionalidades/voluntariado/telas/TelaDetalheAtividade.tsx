@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
-import { Alert, Text } from 'react-native';
+import { Text } from 'react-native';
+import { avisar, confirmarAcao } from '@/compartilhado/utils/confirmar';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
@@ -52,7 +53,7 @@ export function TelaDetalheAtividade({
     if (!whatsapp) return;
     const mensagem = `Olá! Tenho uma dúvida sobre a atividade "${titulo}" (${new Date(quando).toLocaleString('pt-BR')}).`;
     if (!(await abrirWhatsApp(whatsapp, mensagem))) {
-      Alert.alert(
+      avisar(
         'Não foi possível abrir o WhatsApp',
         `Fale com a gestão pelo número ${mascararTelefone(whatsapp)}.`,
       );
@@ -135,18 +136,14 @@ export function TelaDetalheAtividade({
                         variante="destrutivo"
                         desabilitado={ocupado}
                         onPress={() =>
-                          Alert.alert(
+                          confirmarAcao(
                             'Cancelar atividade',
                             'As candidaturas e presenças serão preservadas no histórico.',
-                            [
-                              { text: 'Manter', style: 'cancel' },
-                              {
-                                text: 'Cancelar atividade',
-                                style: 'destructive',
-                                onPress: () =>
-                                  executar(() => alterarStatusAtividade(atividadeId, 'CANCELADA')),
-                              },
-                            ],
+                            'Cancelar atividade',
+                            () => {
+                              void executar(() => alterarStatusAtividade(atividadeId, 'CANCELADA'));
+                            },
+                            true,
                           )
                         }
                       />
@@ -207,17 +204,14 @@ export function TelaDetalheAtividade({
                       variante="destrutivo"
                       carregando={ocupado}
                       onPress={() =>
-                        Alert.alert(
+                        confirmarAcao(
                           'Cancelar candidatura',
                           'O cancelamento é definitivo nesta etapa.',
-                          [
-                            { text: 'Manter', style: 'cancel' },
-                            {
-                              text: 'Cancelar candidatura',
-                              style: 'destructive',
-                              onPress: () => executar(() => cancelarCandidatura(i.id)),
-                            },
-                          ],
+                          'Cancelar candidatura',
+                          () => {
+                            void executar(() => cancelarCandidatura(i.id));
+                          },
+                          true,
                         )
                       }
                     />

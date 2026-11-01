@@ -1,5 +1,5 @@
 import type { SlotDisponibilidade } from '@/compartilhado/tipos';
-import type { StatusAtividade } from './tipos';
+import type { MinhaInscricao, StatusAtividade } from './tipos';
 
 /**
  * Aba da listagem. ENCERRADA só fecha as candidaturas: a atividade ainda
@@ -84,4 +84,32 @@ export function lerQrCheckin(texto: string, atividadeId: number): string {
     throw new Error('QR Code inválido ou de outra atividade.');
   }
   return valor.token;
+}
+
+/**
+ * Soma a carga PREVISTA registrada no check-in das presenças confirmadas. Registros antigos sem
+ * snapshot ficam fora do total e são contados à parte, como no resumo do Início.
+ */
+export function totalHorasParticipacao(itens: MinhaInscricao[]): {
+  horas: number;
+  participacoes: number;
+  semCarga: number;
+} {
+  const presencas = itens.filter(({ inscricao }) => inscricao.presenca_confirmada);
+  let horas = 0;
+  let semCarga = 0;
+  for (const { inscricao } of presencas) {
+    const carga = inscricao.carga_horaria_registrada;
+    if (carga !== null && Number.isFinite(carga) && carga > 0) horas += carga;
+    else semCarga++;
+  }
+  return { horas, participacoes: presencas.length, semCarga };
+}
+
+/** Mensagem exibida após cada participação confirmada. Sem título, usa a forma genérica. */
+export function mensagemImpacto(titulo?: string | null): string {
+  const nome = titulo?.trim();
+  return nome
+    ? `Obrigado por participar de "${nome}"! Seu tempo ajuda a manter a horta viva e a fortalecer a comunidade.`
+    : 'Obrigado por participar! Seu tempo ajuda a manter a horta viva e a fortalecer a comunidade.';
 }

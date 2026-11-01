@@ -1,4 +1,3 @@
-/** Contrato gerado do Supabase remoto após reconciliação, 30/09/2026. */
 export type Json =
   | string
   | number
@@ -11,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -750,6 +749,7 @@ export type Database = {
         Args: { p_id: number; p_revisao: number; p_status: string }
         Returns: undefined
       }
+      e_convidado: { Args: never; Returns: boolean }
       e_ong: { Args: { uid?: string }; Returns: boolean }
       gestao_salvar_perfil: { Args: { p_dados: Json }; Returns: boolean }
       oficinas_cancelar: {
@@ -782,6 +782,13 @@ export type Database = {
         Returns: number
       }
       perfil_completo: { Args: { uid?: string }; Returns: boolean }
+      perfil_foto_caminho: { Args: never; Returns: string }
+      perfil_foto_livre: { Args: { p_caminho: string }; Returns: boolean }
+      perfil_foto_propria: { Args: { p_caminho: string }; Returns: boolean }
+      perfil_foto_salvar: {
+        Args: { p_anterior: string; p_caminho: string; p_usuario_id: string }
+        Returns: boolean
+      }
       solicitar_exclusao_conta: { Args: never; Returns: undefined }
       voluntariado_arquivar_atividade: {
         Args: { p_arquivar: boolean; p_atividade: number }

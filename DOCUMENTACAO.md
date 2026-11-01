@@ -1,4 +1,3 @@
-
 # Horta Conecta
 
 Aplicativo mobile de voluntariado, apadrinhamento e transparência para a Horta Comunitária Guaporé (Centro Ocupacional Bruno José Campos, Guaporé/RS).
@@ -18,12 +17,24 @@ O app resolve três problemas da instituição: captação de voluntários (banc
 - **Verificação local:** `npx tsc --noEmit` sem erros e `npm test` com 117 testes aprovados.
 - **Documentação:** índice em [docs/INDICE.md](docs/INDICE.md). Os relatórios de `docs/` são registros datados; cada um abre com um bloco "Situação em 05/10/2026". Quando um relatório divergir deste arquivo, este arquivo prevalece.
 
+### Foto do perfil — implantação em 21/10/2026
+
+A foto pessoal foi implementada para voluntários e gestores no cabeçalho do perfil,
+com seleção, recorte quadrado, normalização JPEG até 512 px, substituição e remoção.
+É opcional e não interfere na elegibilidade. O armazenamento é privado.
+A reconciliação `supabase/reconciliacao/20261021120000_foto_perfil.sql` foi aplicada
+no HortaConecta como versão remota `20261021155604`. Bucket, funções, permissões e
+geração de caminho sob o papel autenticado foram verificados; os tipos foram
+regenerados. A homologação do seletor e do envio de uma foto em aparelho permanece
+necessária.
+Contrato, permissões e roteiro: [docs/mvp/FOTO_PERFIL.md](docs/mvp/FOTO_PERFIL.md).
+
 ## Stack
 
 - **App:** React Native + Expo SDK 57, TypeScript, React Navigation 7. Antes de escrever código, consultar a documentação versionada: https://docs.expo.dev/versions/v57.0.0/ (ver `AGENTS.md`).
 - **Backend:** Supabase (BaaS) — Auth, PostgreSQL, Storage, Row Level Security
-- **Imagens:** `expo-image-manipulator` (compressão local antes do upload) — **ainda não instalado**; hoje o Diário usa só `quality: 0.8` do `expo-image-picker` (B27).
-- **Notificações:** Expo Notifications (prioridade baixa, ainda não implementado) — falta no modelo uma coluna para o token do dispositivo (ex.: `usuarios.expo_push_token`)
+- **Imagens:** `expo-image-manipulator` instalado para recortar e reduzir fotos de perfil antes do upload. O Diário ainda usa só `quality: 0.8` do `expo-image-picker`, sem redimensionar (B27 pendente).
+- **Notificações:** Expo Notifications (prioridade baixa) — tokens em `voluntariado_privado.dispositivos_push` (vários aparelhos por usuário), gravados pelas RPCs `push_registrar_token` e `push_remover_token`; o envio remoto não existe. As notificações do dia a dia vivem em `public.notificacoes` (gatilhos no banco, sino no app via Realtime)
 - **Integrações:** WhatsApp via deep link (`wa.me`), PIX estático (chave copia e cola, `expo-clipboard`), ViaCEP para endereço
 - **Check-in:** `expo-camera` (leitura de QR) e `react-native-qrcode-svg` (geração)
 - **Build/testes:** Expo Go, EAS Build; testes com `node --test` e PGlite (PostgreSQL em memória)
@@ -197,18 +208,16 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | B16 | Triagem de candidatos com aprovação/recusa e motivo (RPC `voluntariado_decidir`) | Triagem de oficinas (fora do MVP); homologação |
 | B17 | Check-in por QR com token temporário | Homologação em aparelho |
 | B18 | WhatsApp no detalhe da atividade e da meta | Compartilhamento; número cadastrado pela gestão |
-| B21 | Cópia da chave PIX e registro da contribuição (PENDENTE); código e testes prontos | Aplicar no Supabase a migration `20261005150000_contribuicoes_metas_pix.sql`; sem ela o perfil da gestão não cadastra a chave |
-| B22 | — (só existe a coluna opcional `url_comprovante`; não há upload nem bucket) | Upload de comprovante, bucket privado e policies |
-| B23 | Fila de conferência com confirmar/recusar (só contribuição PENDENTE) e registro de doação recebida | Visualização do comprovante, quando houver upload (B22) |
-| B24 | Total recalculado pelo trigger `atualizar_arrecadacao_meta` (soma e subtrai conforme APROVADA), coberto por teste | Homologação em fluxo real |
-
-Conferência de 20/10/2026 dos cards "Em Andamento" do Trello (B16, B21–B24, todos com prazo 16/10 vencido), feita sobre o código do `main`: só o B22 não tem implementação; B21 depende da migration no remoto; B16, B23 e B24 estão implementados, restando o que a coluna "Falta" indica.
+| B21 | Cópia da chave PIX e registro da contribuição (PENDENTE) | Homologação (migration `20261005150000_contribuicoes_metas_pix.sql` aplicada em 23/10/2026) |
+| B22 | Anexo opcional do comprovante, bucket privado `comprovantes` e visualização pela gestão | Homologar com Storage real (migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026) |
+| B23 | Fila geral de conferência (todas as metas), confirmar/recusar com observação (motivo obrigatório ao recusar) e registro de doação recebida | Aplicar `20261023210000_contribuicoes_conferencia.sql` e homologar |
+| B24 | Total recalculado pelo trigger do banco | Homologação |
 | B25 | Publicação, edição e ocultação com revisão e imagem privada | Homologação com Storage real |
 | B26 | Feed só com publicações PUBLICADA | Regra específica para imagens de menores |
 | B30 | Perfil da gestão em seções (conta, institucional, WhatsApp, PIX) | Seção de PIX depende da reconciliação pendente |
-| B31 | Perfil do voluntário em seções com busca de CEP | Foto do usuário |
+| B31 | Perfil em seções, busca de CEP e foto pessoal com troca/remoção; banco atualizado em 21/10 | Homologar seleção e envio de foto em aparelho |
 | B32 | Histórico de participação com carga prevista | Mensagem de impacto |
-| B33 | "Minhas contribuições" com situação de conferência | Homologação |
+| B33 | "Minhas contribuições" com etiqueta de situação da conferência e filtro por situação | Homologação em dispositivo |
 
 ## Cronograma
 

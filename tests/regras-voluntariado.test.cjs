@@ -18,6 +18,8 @@ const {
   lerQrCheckin,
   atividadeFinalizada,
   abaDaAtividade,
+  totalHorasParticipacao,
+  mensagemImpacto,
 } = modulo.exports;
 
 test('datas rejeitam horário normalizado, datas inexistentes e aceitam ano bissexto', () => {
@@ -84,4 +86,22 @@ test('arquivada sai das abas e só a gestão a vê', () => {
     'arquivadas',
   );
   assert.equal(abaDaAtividade({ status: 'CANCELADA', arquivada_em: arquivada }, false), null);
+});
+
+test('histórico soma só carga registrada de presenças confirmadas e conta registros antigos à parte', () => {
+  const item = (presenca_confirmada, carga_horaria_registrada) => ({
+    atividade: {},
+    inscricao: { presenca_confirmada, carga_horaria_registrada },
+  });
+  assert.deepEqual(totalHorasParticipacao([]), { horas: 0, participacoes: 0, semCarga: 0 });
+  assert.deepEqual(
+    totalHorasParticipacao([item(true, 2.5), item(true, 1), item(true, null), item(false, 4)]),
+    { horas: 3.5, participacoes: 3, semCarga: 1 },
+  );
+});
+
+test('mensagem de impacto cita a atividade e tem forma genérica', () => {
+  assert.match(mensagemImpacto(' Mutirão '), /"Mutirão"/);
+  assert.doesNotMatch(mensagemImpacto(null), /"/);
+  assert.doesNotMatch(mensagemImpacto('  '), /"/);
 });

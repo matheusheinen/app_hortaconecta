@@ -137,7 +137,7 @@ test('Sessão: erro inicial, troca de conta, resposta antiga e falha/sucesso de 
   };
   const { useSessao } = carregar('src/funcionalidades/autenticacao/useSessao.ts', {
     react: react,
-    'react-native': { Alert: { alert: (...a) => alertas.push(a) } },
+    '@/compartilhado/utils/confirmar': { avisar: (...a) => alertas.push(a) },
     './api': carregar('src/funcionalidades/autenticacao/api.ts', {
       '@/servicos/supabase': { supabase },
     }),

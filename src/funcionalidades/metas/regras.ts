@@ -4,7 +4,7 @@
  * somando só contribuições APROVADA; aqui apenas se exibe e se valida a entrada.
  */
 import { hojeIso, interpretarData } from '@/compartilhado/utils/datas';
-import type { MetaFormulario } from './tipos';
+import type { MetaFormulario, StatusValidacao } from './tipos';
 
 type MetaBase = {
   tipo: 'FINANCEIRA' | 'MATERIAL';
@@ -115,4 +115,40 @@ export function validarMeta(entrada: EntradaMeta, nova: boolean, hoje = hojeIso(
     quantidade_meta: valor,
     data_limite: prazoIso,
   };
+}
+
+/**
+ * Observação da conferência. Aprovar aceita nota opcional; recusar exige o
+ * motivo, que o voluntário lê em "Minhas contribuições". O banco repete a regra.
+ */
+export function validarConferencia(aprovada: boolean, observacao: string): string | null {
+  const texto = observacao.trim();
+  if (texto.length > 500) throw new Error('A observação pode ter até 500 caracteres.');
+  if (!aprovada && texto.length < 3) throw new Error('Informe o motivo da recusa.');
+  return texto || null;
+}
+
+export type FiltroContribuicoes = 'TODAS' | StatusValidacao;
+
+/** Contagem por situação de conferência, para as abas de "Minhas contribuições". */
+export function contarPorSituacao(
+  contribuicoes: { status_validacao: StatusValidacao }[],
+): Record<FiltroContribuicoes, number> {
+  const contagem: Record<FiltroContribuicoes, number> = {
+    TODAS: contribuicoes.length,
+    PENDENTE: 0,
+    APROVADA: 0,
+    RECUSADA: 0,
+  };
+  for (const c of contribuicoes) contagem[c.status_validacao] += 1;
+  return contagem;
+}
+
+export function filtrarPorSituacao<T extends { status_validacao: StatusValidacao }>(
+  contribuicoes: T[],
+  filtro: FiltroContribuicoes,
+): T[] {
+  return filtro === 'TODAS'
+    ? contribuicoes
+    : contribuicoes.filter(c => c.status_validacao === filtro);
 }

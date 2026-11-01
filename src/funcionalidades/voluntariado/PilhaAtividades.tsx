@@ -10,12 +10,13 @@ import { TelaCheckin, TelaQrAtividade } from './telas/TelaCheckin';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { carregarDetalhe } from './api';
+import { voltarDe, type Origem } from '@/funcionalidades/notificacoes/navegacao';
 
 export type ParametrosPilhaAtividades = {
   lista: undefined;
   formulario: { atividadeId: number | null };
-  detalhe: { atividadeId: number };
-  candidatos: { atividadeId: number };
+  detalhe: { atividadeId: number; origem?: Origem };
+  candidatos: { atividadeId: number; origem?: Origem };
   checkin: { atividadeId: number };
   minhas: undefined;
   historico: undefined;
@@ -46,7 +47,7 @@ export function PilhaAtividades({ inicio, aoPerfil }: Props) {
         {({ navigation, route }) => (
           <TelaDetalheAtividade
             atividadeId={route.params.atividadeId}
-            voltar={() => navigation.goBack()}
+            voltar={() => voltarDe(route.params.origem, () => navigation.goBack())}
             editar={() =>
               navigation.navigate('formulario', { atividadeId: route.params.atividadeId })
             }
@@ -78,7 +79,7 @@ export function PilhaAtividades({ inicio, aoPerfil }: Props) {
             {({ navigation, route }) => (
               <TelaCandidatosAtividade
                 atividadeId={route.params.atividadeId}
-                voltar={() => navigation.goBack()}
+                voltar={() => voltarDe(route.params.origem, () => navigation.goBack())}
               />
             )}
           </Pilha.Screen>

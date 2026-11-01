@@ -80,15 +80,15 @@ aparecer no Início, com o rótulo "Oficina", caso exista uma atividade desse ti
 | Pendência | Backlog | Detalhe |
 | --- | --- | --- |
 | Aplicar a reconciliação `20261005150000_contribuicoes_metas_pix.sql` | B21, B30 | Move o PIX para `configuracao_instituicao`, exige meta aberta para o voluntário e exclui as tabelas de materiais. Depois, regenerar `database.types.ts` e remover o bloco `ColunasPix`. Ver [CONTRIBUICOES.md](CONTRIBUICOES.md). |
-| Upload de comprovante | B22 | Exige bucket privado, policies e exibição na fila de conferência (B23). Por ora o voluntário informa o valor e a gestão confere no extrato. |
+| Upload de comprovante | B22 | Código pronto: anexo opcional (JPEG, PNG ou WebP, até 5 MiB) em bucket privado `comprovantes`, visto pela gestão na fila de conferência. Migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026. |
 | Compressão local de imagens | B27 (RNF0005) | `expo-image-manipulator` ainda não está instalado; o Diário envia a imagem com `quality: 0.8`, sem redimensionar. |
 | Restrição de imagens de menores | B26 (RNF0003) | O feed mostra só publicações PUBLICADA; não há regra específica para imagens de crianças e adolescentes. |
 | Parametrização da instituição | B28 (RF0015) | Não há tela para editar nome, textos, cores e logo de `configuracao_instituicao`; só WhatsApp e PIX pelo perfil da gestão. |
 | Compartilhamento | B18 (RF0009) | WhatsApp pronto; compartilhamento de conteúdo não implementado. |
-| Foto do usuário | B31 (RF0002) | Perfil em seções pronto; foto não implementada. |
-| Mensagem de impacto | B33 (RF0008) | Histórico pronto; mensagem de impacto não implementada. |
+| Foto do usuário | B31 (RF0002) | Implementada e com reconciliação aplicada em 21/10; funções e permissões verificadas. Homologação de seleção/envio em aparelho pendente. Ver [FOTO_PERFIL.md](FOTO_PERFIL.md). |
+| Histórico e mensagem de impacto | B32 (RF0008) | Pronto: histórico com total de horas previstas acumuladas e mensagem de impacto no check-in e em cada participação (texto fixo no app, sem migration). |
 | Apresentação da instituição | B32 (RF0016) | Não implementada. |
-| Notificações push | B29 (RF0014) | Não implementadas; falta coluna para o token do dispositivo. |
+| Notificações | B29 (RF0014) | Notificações dentro do app: tabela `notificacoes` (RLS), gatilhos nos fluxos de voluntariado e contribuições, sino no Início e aviso do sistema com o app aberto, em tempo real pelo Supabase Realtime. Cada notificação leva ao lugar certo (gestão: lista de candidatos ou fila de conferência; voluntário: atividade ou Minhas contribuições) e o Voltar retorna à lista de notificações. Migration `20261026130000_notificacoes.sql` **aplicada em 26/10/2026** (5 gatilhos e Realtime conferidos); `20261026140000_notificacoes_cancelamento_pendentes.sql` (atividade cancelada avisa também candidatura pendente) **aplicada em 26/10/2026**. Push com o app fechado exige FCM/APNs e development build: a base (`dispositivos_push`, não aplicada) existe, mas o envio não foi feito e o registro remoto fica desligado (`EXPO_PUBLIC_PUSH_REMOTO`). |
 | Homologação | — | Android, login/JWT reais, Storage real, concorrência entre conexões independentes. |
 | Dependências | — | `npm audit` aponta 30 vulnerabilidades (19 altas), ainda não avaliadas. |
 | Política de `contribuicoes` | B23 (RNF0007) | A gestão pode alterar a quantidade de uma contribuição já aprovada (policy de UPDATE herdada). Avaliar se deve ser travado. |

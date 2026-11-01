@@ -4,12 +4,14 @@ import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { Icone, type NomeIcone } from '@/compartilhado/componentes/Icone';
+import { SinoNotificacoes } from '@/funcionalidades/notificacoes/componentes/SinoNotificacoes';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
 
 type Props = {
   aoIrParaAtividades: () => void;
   aoIrParaMetas: () => void;
   aoIrParaDiario: () => void;
+  aoNotificacoes: () => void;
   /** Ausente quando o recurso está fora do MVP (ver compartilhado/escopoMvp.ts). */
   aoIrParaCertificados?: () => void;
   aoIrParaOficinas?: () => void;
@@ -19,6 +21,7 @@ export const TelaInicioOng = memoTela(function TelaInicioOng({
   aoIrParaAtividades,
   aoIrParaMetas,
   aoIrParaDiario,
+  aoNotificacoes,
   aoIrParaOficinas,
   aoIrParaCertificados,
 }: Props) {
@@ -34,6 +37,7 @@ export const TelaInicioOng = memoTela(function TelaInicioOng({
             <Text style={estilos.nome}>{nome.trim() ? `Olá, ${nome.trim()}` : 'Olá!'}</Text>
             <Text style={tipo.apoio}>{configuracao?.nome_curto ?? 'Painel da gestão'}</Text>
           </View>
+          <SinoNotificacoes onPress={aoNotificacoes} />
           <Pressable
             onPress={sair}
             accessibilityRole="button"

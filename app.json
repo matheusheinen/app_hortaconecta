@@ -1,13 +1,14 @@
 {
   "expo": {
     "name": "Horta Conecta",
-    "slug": "app_hortaconecta",
+    "slug": "horta-conecta",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.hortaconecta.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -16,7 +17,9 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["android.permission.CAMERA"],
+      "package": "br.com.hortaconecta.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -34,10 +37,23 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Permita selecionar fotos das atividades para o Diário institucional.",
+          "photosPermission": "Permita selecionar sua foto de perfil e fotos das atividades para o Diário institucional.",
           "microphonePermission": false
         }
+      ],
+      "expo-status-bar",
+      [
+        "expo-notifications",
+        {
+          "enableRemoteNotifications": true
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3d3d3e18-ad82-471f-8e96-87b7b258a2a7"
+      }
+    },
+    "owner": "mezzomolucas"
   }
 }

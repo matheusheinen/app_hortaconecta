@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
-import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Switch, Text, View } from 'react-native';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { mensagemErro } from '@/compartilhado/utils/erros';
+import { avisar } from '@/compartilhado/utils/confirmar';
 import { Icone } from '@/compartilhado/componentes/Icone';
 
 export type ModoGestor = { ativo: boolean; alternar: (gestor: boolean) => Promise<void> };
@@ -20,7 +21,7 @@ export function CartaoModoGestor() {
     try {
       await modo.alternar(gestor);
     } catch (falha) {
-      Alert.alert('Não foi possível trocar o modo', mensagemErro(falha));
+      avisar('Não foi possível trocar o modo', mensagemErro(falha));
     } finally {
       setTrocando(false);
     }

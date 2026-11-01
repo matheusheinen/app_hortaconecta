@@ -6,9 +6,9 @@ import QRCode from 'react-native-qrcode-svg';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { tipo } from '@/compartilhado/tema';
-import { confirmarCheckin, gerarCheckin } from '../api';
+import { carregarDetalhe, confirmarCheckin, gerarCheckin } from '../api';
 import { mensagemErro } from '@/compartilhado/utils/erros';
-import { lerQrCheckin } from '../regras';
+import { lerQrCheckin, mensagemImpacto } from '../regras';
 import type { TokenCheckin } from '../tipos';
 
 export function TelaQrAtividade({
@@ -102,6 +102,7 @@ export function TelaCheckin({ atividadeId, voltar }: { atividadeId: number; volt
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [confirmado, setConfirmado] = useState(false);
+  const [titulo, setTitulo] = useState<string | null>(null);
   const [pausado, setPausado] = useState(false);
   const trava = useRef(false);
   const emFoco = useIsFocused();
@@ -124,6 +125,10 @@ export function TelaCheckin({ atividadeId, voltar }: { atividadeId: number; volt
       const token = lerQrCheckin(texto, atividadeId);
       await confirmarCheckin(atividadeId, token);
       setConfirmado(true);
+      // Só enfeita a mensagem: se falhar, a presença já confirmada segue valendo.
+      void carregarDetalhe(atividadeId)
+        .then(detalhe => setTitulo(detalhe.atividade.titulo))
+        .catch(() => undefined);
     } catch (falha) {
       setErro(mensagemErro(falha));
     } finally {
@@ -135,7 +140,8 @@ export function TelaCheckin({ atividadeId, voltar }: { atividadeId: number; volt
       {confirmado ? (
         <>
           <Text style={tipo.secao}>Presença confirmada!</Text>
-          <Text style={tipo.corpo}>Sua participação está disponível no histórico.</Text>
+          <Text style={tipo.corpo}>{mensagemImpacto(titulo)}</Text>
+          <Text style={tipo.apoio}>Sua participação está disponível no histórico.</Text>
           <Botao titulo="Voltar à atividade" onPress={voltar} />
         </>
       ) : (

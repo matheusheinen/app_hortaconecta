@@ -1,20 +1,17 @@
 import React, { useCallback } from 'react';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
-import { Alert, Text } from 'react-native';
+import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
+import { confirmarAcao } from '@/compartilhado/utils/confirmar';
 import { formatarDataCurta, hojeIso } from '@/compartilhado/utils/datas';
 import { tipo } from '@/compartilhado/tema';
 import type { Meta } from '../tipos';
-import {
-  alterarStatusMeta,
-  carregarMeta,
-  validarContribuicao,
-  type ContribuicaoComDoador,
-} from '../api';
-import { descreverQuantidade, prazoVencido, recebendoContribuicoes } from '../regras';
+import { alterarStatusMeta, carregarMeta } from '../api';
+import { prazoVencido, recebendoContribuicoes } from '../regras';
+import { useConferencia } from '../useConferencia';
 import { EtiquetaMeta, ProgressoMeta } from '../componentes/IndicadoresMeta';
 import { PainelGestaoMeta } from '../componentes/PainelGestaoMeta';
 import { PainelVoluntarioMeta } from '../componentes/PainelVoluntarioMeta';
@@ -40,40 +37,14 @@ export function TelaDetalheMeta({
   const hoje = hojeIso();
 
   function mudarStatus(status: Meta['status'], titulo: string, texto: string) {
-    Alert.alert(titulo, texto, [
-      { text: 'Voltar', style: 'cancel' },
-      {
-        text: 'Confirmar',
-        onPress: () => {
-          void acao.executar(async () => {
-            await alterarStatusMeta(id, status);
-            await carregar();
-          });
-        },
-      },
-    ]);
+    confirmarAcao(titulo, texto, 'Confirmar', () => {
+      void acao.executar(async () => {
+        await alterarStatusMeta(id, status);
+        await carregar();
+      });
+    });
   }
-  function conferir(c: ContribuicaoComDoador, aprovada: boolean) {
-    Alert.alert(
-      aprovada ? 'Confirmar contribuição?' : 'Recusar contribuição?',
-      aprovada
-        ? `Confirme só depois de conferir o recebimento de ${descreverQuantidade(c.quantidade_oferecida, meta!)}. O valor passa a contar no total.`
-        : 'A contribuição não entra no total. O voluntário verá a recusa.',
-      [
-        { text: 'Voltar', style: 'cancel' },
-        {
-          text: aprovada ? 'Confirmar' : 'Recusar',
-          style: aprovada ? 'default' : 'destructive',
-          onPress: () => {
-            void acao.executar(async () => {
-              await validarContribuicao(c.id, usuarioId, aprovada, null);
-              await carregar();
-            });
-          },
-        },
-      ],
-    );
-  }
+  const conferirContribuicao = useConferencia(acao, usuarioId, carregar);
 
   return (
     <TelaFluxo
@@ -104,7 +75,9 @@ export function TelaDetalheMeta({
               ocupado={acao.ocupado}
               editar={editar}
               registrar={registrar}
-              conferir={conferir}
+              conferir={(c, aprovada, observacao) =>
+                conferirContribuicao(c, meta, aprovada, observacao)
+              }
               mudarStatus={mudarStatus}
             />
           ) : convidado ? (

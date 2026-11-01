@@ -16,7 +16,8 @@ export type NomeIcone =
   | 'seta'
   | 'oficina'
   | 'certificado'
-  | 'sair';
+  | 'sair'
+  | 'sino';
 
 type Props = {
   nome: NomeIcone;
@@ -97,6 +98,11 @@ export function Icone({ nome, cor = cores.folha, tamanho = 24 }: Props) {
               <Rect x={3} y={3} width={18} height={14} rx={2} />
               <Path d="M7 7h10M7 11h4M14 17v5l3-2 3 2v-5" />
               <Circle cx={17} cy={14} r={3} />
+            </>
+          ) : null}
+          {nome === 'sino' ? (
+            <>
+              <Path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2ZM10 21h4" />
             </>
           ) : null}
           {nome === 'sair' ? (

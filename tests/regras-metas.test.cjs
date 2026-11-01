@@ -78,11 +78,35 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
     return b;
   };
   let respostaUpdate = { data: [{ id: 1 }], error: null };
+  const enviados = [],
+    removidos = [],
+    rpcs = [];
+  let falharInsert = false;
   const supabase = {
+    rpc: async (nome, args) => {
+      rpcs.push([nome, args]);
+      return {
+        data: nome === 'comprovante_caminho' ? `uid/novo.${args.p_ext}` : null,
+        error: null,
+      };
+    },
+    storage: {
+      from: bucket => ({
+        upload: async (caminho, arquivo, opcoes) => {
+          enviados.push({ bucket, caminho, bytes: arquivo.byteLength, opcoes });
+          return { error: null };
+        },
+        remove: async caminhos => {
+          removidos.push(...caminhos);
+          return { error: null };
+        },
+      }),
+    },
     from: tabela => ({
       insert: valores => {
         const r = { tabela, op: 'insert', valores, filtros: [] };
         chamadas.push(r);
+        if (falharInsert) return Promise.resolve({ error: new Error('meta encerrada') });
         return builder(r);
       },
       update: valores => {
@@ -94,6 +118,7 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
   };
   const metas = carregar('src/funcionalidades/metas/api.ts', {
     '@/servicos/supabase': { supabase },
+    './comprovante': carregar('src/funcionalidades/metas/comprovante.ts'),
   });
   await metas.declararContribuicao(7, 'v', 25.5);
   assert.deepEqual(chamadas.at(-1).valores, {
@@ -101,6 +126,39 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
     usuario_id: 'v',
     quantidade_oferecida: 25.5,
   });
+  assert.deepEqual(enviados, []);
+  const jpeg = Buffer.from([255, 216, 255, 224, 0, 1]).toString('base64');
+  await metas.declararContribuicao(7, 'v', 10, jpeg);
+  assert.deepEqual(enviados, [
+    {
+      bucket: 'comprovantes',
+      caminho: 'uid/novo.jpg',
+      bytes: 6,
+      opcoes: { contentType: 'image/jpeg', upsert: false, cacheControl: '60' },
+    },
+  ]);
+  assert.deepEqual(chamadas.at(-1).valores, {
+    meta_id: 7,
+    usuario_id: 'v',
+    quantidade_oferecida: 10,
+    url_comprovante: 'uid/novo.jpg',
+  });
+  assert.deepEqual(rpcs.at(-1), ['comprovante_caminho', { p_ext: 'jpg' }]);
+  // PNG vai com a extensão e o tipo certos.
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0]).toString('base64');
+  await metas.declararContribuicao(7, 'v', 10, png);
+  assert.deepEqual(rpcs.at(-1), ['comprovante_caminho', { p_ext: 'png' }]);
+  assert.equal(enviados.at(-1).opcoes.contentType, 'image/png');
+  enviados.length = 0;
+  falharInsert = true;
+  await assert.rejects(metas.declararContribuicao(7, 'v', 10, jpeg), /meta encerrada/);
+  assert.deepEqual(removidos, ['uid/novo.jpg']);
+  await assert.rejects(metas.declararContribuicao(7, 'v', 10, 'não-é-base64!'), /imagem/i);
+  const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>').toString('base64');
+  const antesDoSvg = enviados.length;
+  await assert.rejects(metas.declararContribuicao(7, 'v', 10, svg), /Formato não aceito/);
+  assert.equal(enviados.length, antesDoSvg);
+  falharInsert = false;
   await metas.registrarRecebimento({
     metaId: 7,
     doadorId: 'v',
@@ -108,6 +166,17 @@ test('Metas: escritas enviam o contrato esperado pela RLS', async () => {
     quantidade: 3,
     observacao: null,
   });
+  assert.equal('url_comprovante' in chamadas.at(-1).valores, false);
+  await metas.registrarRecebimento({
+    metaId: 7,
+    doadorId: 'v',
+    gestaoId: 'g',
+    quantidade: 3,
+    observacao: null,
+    comprovanteBase64: jpeg,
+  });
+  assert.equal(chamadas.at(-1).valores.url_comprovante, 'uid/novo.jpg');
+  assert.equal(chamadas.at(-1).valores.status_validacao, 'APROVADA');
   const lancamento = chamadas.at(-1).valores;
   assert.equal(lancamento.status_validacao, 'APROVADA');
   assert.equal(lancamento.validado_por, 'g');
@@ -163,4 +232,40 @@ test('Metas: o formulário valida os campos e devolve os dados prontos para salv
   assert.throws(erro({}), /hoje ou uma data futura/);
   // Ao editar, o prazo já vencido continua aceito.
   assert.equal(regras.validarMeta(entrada, false, '2026-10-20').data_limite, '2026-10-10');
+});
+
+test('Conferência: aprovar aceita nota opcional; recusar exige motivo', () => {
+  assert.equal(regras.validarConferencia(true, ''), null);
+  assert.equal(regras.validarConferencia(true, '  Conferido no extrato '), 'Conferido no extrato');
+  assert.equal(regras.validarConferencia(false, ' Valor não consta '), 'Valor não consta');
+  assert.throws(() => regras.validarConferencia(false, ''), /motivo da recusa/);
+  assert.throws(() => regras.validarConferencia(false, ' a '), /motivo da recusa/);
+  assert.throws(() => regras.validarConferencia(true, 'x'.repeat(501)), /500 caracteres/);
+});
+
+test('Minhas contribuições: conta e filtra por situação da conferência', () => {
+  const lista = [
+    { id: 1, status_validacao: 'PENDENTE' },
+    { id: 2, status_validacao: 'APROVADA' },
+    { id: 3, status_validacao: 'APROVADA' },
+    { id: 4, status_validacao: 'RECUSADA' },
+  ];
+  assert.deepEqual(regras.contarPorSituacao(lista), {
+    TODAS: 4,
+    PENDENTE: 1,
+    APROVADA: 2,
+    RECUSADA: 1,
+  });
+  assert.deepEqual(regras.contarPorSituacao([]), {
+    TODAS: 0,
+    PENDENTE: 0,
+    APROVADA: 0,
+    RECUSADA: 0,
+  });
+  assert.equal(regras.filtrarPorSituacao(lista, 'TODAS').length, 4);
+  assert.deepEqual(
+    regras.filtrarPorSituacao(lista, 'APROVADA').map(c => c.id),
+    [2, 3],
+  );
+  assert.equal(regras.filtrarPorSituacao(lista, 'RECUSADA')[0].id, 4);
 });

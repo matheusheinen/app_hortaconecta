@@ -188,6 +188,67 @@ test('Contribuições por metas sobre o remoto reconciliado (dados sintéticos)'
       },
     );
 
+    await t.test(
+      'total arrecadado recalcula ao recusar, reverter e excluir; pendente não soma (B24)',
+      async () => {
+        const total = async () =>
+          Number(
+            await scalar(
+              'SELECT quantidade_arrecadada AS value FROM public.metas_demandas WHERE id=$1',
+              [meta],
+            ),
+          );
+        assert.equal(await total(), 9);
+        await role(null, 'owner');
+        await db.exec(
+          fs.readFileSync('supabase/reconciliacao/20261023200000_arrecadacao_trigger.sql', 'utf8'),
+        );
+        assert.equal(await total(), 9, 'migration é idempotente sobre o remoto');
+        await role(g);
+        const aberta = await scalar(
+          "INSERT INTO public.metas_demandas(titulo,descricao,tipo,quantidade_meta) VALUES('Aberta B24','Teste','FINANCEIRA',100) RETURNING id AS value",
+        );
+        await role(v);
+        const c = await scalar(
+          'INSERT INTO public.contribuicoes(meta_id,usuario_id,quantidade_oferecida) VALUES($1,$2,40) RETURNING id AS value',
+          [aberta, v],
+        );
+        const totalAberta = async () =>
+          Number(
+            await scalar(
+              'SELECT quantidade_arrecadada AS value FROM public.metas_demandas WHERE id=$1',
+              [aberta],
+            ),
+          );
+        assert.equal(await totalAberta(), 0, 'PENDENTE não soma');
+        await role(g);
+        await db.query(
+          "UPDATE public.contribuicoes SET status_validacao='APROVADA',validado_por=$2,validado_em=now() WHERE id=$1",
+          [c, g],
+        );
+        assert.equal(await totalAberta(), 40);
+        await db.query(
+          "UPDATE public.contribuicoes SET status_validacao='RECUSADA',validado_por=$2,validado_em=now() WHERE id=$1",
+          [c, g],
+        );
+        assert.equal(await totalAberta(), 0, 'reverter aprovação desfaz a soma');
+        await db.query(
+          "UPDATE public.contribuicoes SET status_validacao='APROVADA',validado_por=$2,validado_em=now() WHERE id=$1",
+          [c, g],
+        );
+        assert.equal(await totalAberta(), 40);
+        await db.query('DELETE FROM public.contribuicoes WHERE id=$1', [c]);
+        assert.equal(await totalAberta(), 0, 'excluir contribuição aprovada desfaz a soma');
+        assert.equal(await total(), 9, 'outra meta não é afetada');
+        await role(v);
+        await db
+          .query('UPDATE public.metas_demandas SET quantidade_arrecadada=999 WHERE id=$1', [aberta])
+          .catch(() => {});
+        await role(null, 'owner');
+        assert.equal(await totalAberta(), 0, 'voluntário não grava o total direto');
+      },
+    );
+
     await t.test('PIX: só a gestão altera; voluntário não', async () => {
       await role(g);
       assert.equal(
