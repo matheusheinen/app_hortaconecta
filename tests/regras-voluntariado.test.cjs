@@ -17,6 +17,7 @@ const {
   disponibilidadeValida,
   lerQrCheckin,
   atividadeFinalizada,
+  abaDaAtividade,
   totalHorasParticipacao,
   mensagemImpacto,
 } = modulo.exports;
@@ -73,6 +74,18 @@ test('aba de finalizadas: realizada, cancelada e recusada; encerrada ainda acont
     assert.equal(atividadeFinalizada(status), true, status);
   for (const status of ['PENDENTE_APROVACAO', 'ABERTA', 'ENCERRADA'])
     assert.equal(atividadeFinalizada(status), false, status);
+});
+
+test('arquivada sai das abas e só a gestão a vê', () => {
+  const arquivada = '2026-10-19T12:00:00Z';
+  assert.equal(abaDaAtividade({ status: 'ABERTA', arquivada_em: null }, false), 'abertas');
+  assert.equal(abaDaAtividade({ status: 'ENCERRADA', arquivada_em: null }, true), 'abertas');
+  assert.equal(abaDaAtividade({ status: 'REALIZADA', arquivada_em: null }, false), 'finalizadas');
+  assert.equal(
+    abaDaAtividade({ status: 'REALIZADA', arquivada_em: arquivada }, true),
+    'arquivadas',
+  );
+  assert.equal(abaDaAtividade({ status: 'CANCELADA', arquivada_em: arquivada }, false), null);
 });
 
 test('histórico soma só carga registrada de presenças confirmadas e conta registros antigos à parte', () => {

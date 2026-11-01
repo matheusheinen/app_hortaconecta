@@ -155,12 +155,14 @@ export type Database = {
         Row: {
           atualizado_em: string
           chamada: string | null
+          chave_pix: string | null
           cidade: string
           cor_acento: string | null
           cor_primaria: string | null
           email_contato: string | null
           endereco: string | null
           id: number
+          nome_beneficiario_pix: string | null
           nome_completo: string
           nome_curto: string
           site: string | null
@@ -173,12 +175,14 @@ export type Database = {
         Insert: {
           atualizado_em?: string
           chamada?: string | null
+          chave_pix?: string | null
           cidade: string
           cor_acento?: string | null
           cor_primaria?: string | null
           email_contato?: string | null
           endereco?: string | null
           id?: number
+          nome_beneficiario_pix?: string | null
           nome_completo: string
           nome_curto: string
           site?: string | null
@@ -191,12 +195,14 @@ export type Database = {
         Update: {
           atualizado_em?: string
           chamada?: string | null
+          chave_pix?: string | null
           cidade?: string
           cor_acento?: string | null
           cor_primaria?: string | null
           email_contato?: string | null
           endereco?: string | null
           id?: number
+          nome_beneficiario_pix?: string | null
           nome_completo?: string
           nome_curto?: string
           site?: string | null
@@ -746,32 +752,6 @@ export type Database = {
       e_convidado: { Args: never; Returns: boolean }
       e_ong: { Args: { uid?: string }; Returns: boolean }
       gestao_salvar_perfil: { Args: { p_dados: Json }; Returns: boolean }
-      gestor_alternar_modo: { Args: { p_gestor: boolean }; Returns: string }
-      gestor_pode_alternar_modo: { Args: never; Returns: boolean }
-      materiais_contribuir: {
-        Args: { p_quantidade: number; p_solicitacao: number }
-        Returns: number
-      }
-      materiais_decidir: {
-        Args: { p_contribuicao: number; p_status: string }
-        Returns: undefined
-      }
-      materiais_detalhe: { Args: { p_solicitacao: number }; Returns: Json }
-      materiais_listar: { Args: never; Returns: Json }
-      materiais_minhas: { Args: never; Returns: Json }
-      materiais_salvar: {
-        Args: {
-          p_descricao: string
-          p_id: number
-          p_nome: string
-          p_quantidade: number
-        }
-        Returns: number
-      }
-      materiais_status: {
-        Args: { p_solicitacao: number; p_status: string }
-        Returns: undefined
-      }
       oficinas_cancelar: {
         Args: { p_id: number; p_revisao: number }
         Returns: undefined

@@ -15,7 +15,8 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
 
 **Pendente de aplicação** (decisão de 05/10/2026), depois dos dois acima:
 
-3. `20261005150000_contribuicoes_metas_pix.sql`: PIX em `configuracao_instituicao`,
+3. `20261005150000_contribuicoes_metas_pix.sql` (**aplicada em 23/10/2026**; as tabelas de
+   materiais já não existiam no remoto, então não houve perda de dados): PIX em `configuracao_instituicao`,
    voluntário só contribui em meta aberta e **exclusão** de `solicitacoes_materiais`,
    `contribuicoes_materiais` e funções `materiais_*`, com os dados. Ver
    [CONTRIBUICOES.md](../../docs/mvp/CONTRIBUICOES.md). Verificação local:
@@ -52,6 +53,13 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
 9. `20261026140000_notificacoes_cancelamento_pendentes.sql` (**aplicada em 26/10/2026**): troca só o corpo
    da função do gatilho de atividade cancelada, que passa a avisar também a candidatura PENDENTE. Depende
    do item 8. Verificação local: `node --test tests/notificacoes.test.cjs`.
+10. `20261019120000_atividades_arquivar.sql`: coluna `atividades.arquivada_em` e RPC
+   `voluntariado_arquivar_atividade`, para a gestão arquivar atividades finalizadas
+   (realizada, cancelada ou recusada) e restaurá-las; nada é apagado. Depende da
+   reconciliação 02. Verificação local: `node --test tests/atividades-arquivar.test.cjs`.
+   Até ser aplicada, o botão "Arquivar" falha com erro de função inexistente e a aba
+   "Arquivadas" fica vazia (sem a coluna, nenhuma atividade vem arquivada).
+
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).
 

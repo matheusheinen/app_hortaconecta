@@ -3,12 +3,16 @@ import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
-import { excluirAtividade as excluirAtividadeApi, listarAtividades } from '../api';
+import {
+  arquivarAtividade,
+  excluirAtividade as excluirAtividadeApi,
+  listarAtividades,
+} from '../api';
 import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { rotuloStatusAtividade, type Atividade } from '../tipos';
 import { AbasFiltro, Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
-import { atividadeFinalizada } from '../regras';
+import { abaDaAtividade, type AbaAtividades } from '../regras';
 import { mensagemErro } from '@/compartilhado/utils/erros';
 import { confirmarExclusao } from '@/compartilhado/utils/confirmar';
 
@@ -31,11 +35,26 @@ export const TelaAtividades = memoTela(function TelaAtividades({
 }: Props) {
   const { ehGestao, convidado } = useSessaoAtual();
   const { dados, carregando, erro, carregar } = useConsulta(listarAtividades);
-  const [aba, setAba] = useState<'abertas' | 'finalizadas'>('abertas');
-  const abertas = (dados ?? []).filter(a => !atividadeFinalizada(a.status));
-  // Finalizadas: a mais recente primeiro.
-  const finalizadas = (dados ?? []).filter(a => atividadeFinalizada(a.status)).reverse();
-  const visiveis = aba === 'abertas' ? abertas : finalizadas;
+  const [aba, setAba] = useState<AbaAtividades>('abertas');
+  const porAba = (alvo: AbaAtividades) =>
+    (dados ?? []).filter(a => abaDaAtividade(a, ehGestao) === alvo);
+  const abertas = porAba('abertas');
+  // Finalizadas e arquivadas: a mais recente primeiro.
+  const finalizadas = porAba('finalizadas').reverse();
+  const arquivadas = porAba('arquivadas').reverse();
+  const visiveis = aba === 'abertas' ? abertas : aba === 'finalizadas' ? finalizadas : arquivadas;
+
+  async function arquivar(atividade: Atividade, arquivada: boolean) {
+    try {
+      await arquivarAtividade(atividade.id, arquivada);
+      await carregar();
+    } catch (falha) {
+      avisar(
+        arquivada ? 'Não foi possível arquivar' : 'Não foi possível restaurar',
+        mensagemErro(falha),
+      );
+    }
+  }
 
   function excluirAtividade(atividade: Atividade) {
     const mensagem = `"${atividade.titulo}" será removida. Atividades com candidaturas devem ser canceladas nos detalhes para preservar o histórico.`;
@@ -85,15 +104,26 @@ export const TelaAtividades = memoTela(function TelaAtividades({
             rotulo: 'Finalizadas',
             quantidade: dados ? finalizadas.length : undefined,
           },
+          ...(ehGestao
+            ? [
+                {
+                  valor: 'arquivadas' as const,
+                  rotulo: 'Arquivadas',
+                  quantidade: dados ? arquivadas.length : undefined,
+                },
+              ]
+            : []),
         ]}
       />
       {dados && !visiveis.length ? (
         <Text style={tipo.apoio}>
-          {aba === 'finalizadas'
-            ? 'Nenhuma atividade realizada, cancelada ou recusada.'
-            : ehGestao
-              ? 'Nenhuma tarefa aberta. Publique uma para a comunidade se candidatar.'
-              : 'Nenhuma tarefa aberta no momento. Quando a horta publicar, ela aparece aqui.'}
+          {aba === 'arquivadas'
+            ? 'Nenhuma atividade arquivada.'
+            : aba === 'finalizadas'
+              ? 'Nenhuma atividade realizada, cancelada ou recusada.'
+              : ehGestao
+                ? 'Nenhuma tarefa aberta. Publique uma para a comunidade se candidatar.'
+                : 'Nenhuma tarefa aberta no momento. Quando a horta publicar, ela aparece aqui.'}
         </Text>
       ) : null}
       {visiveis.map(a => (
@@ -123,6 +153,17 @@ export const TelaAtividades = memoTela(function TelaAtividades({
               <View style={{ flex: 1 }}>
                 <Botao titulo="Editar" variante="contorno" onPress={() => onEditar(a)} />
               </View>
+              {aba !== 'abertas' ? (
+                <View style={{ flex: 1 }}>
+                  <Botao
+                    titulo={aba === 'arquivadas' ? 'Restaurar' : 'Arquivar'}
+                    variante="contorno"
+                    onPress={() => {
+                      void arquivar(a, aba !== 'arquivadas');
+                    }}
+                  />
+                </View>
+              ) : null}
               <View style={{ flex: 1 }}>
                 <Botao titulo="Excluir" variante="destrutivo" onPress={() => excluirAtividade(a)} />
               </View>

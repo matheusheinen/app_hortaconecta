@@ -26,6 +26,11 @@ export const esquemaAtividade = esquemaDe<Atividade>()(
     carga_horaria: z.number(),
     vagas_totais: z.number(),
     criado_em: z.string(),
+    // Coluna da migration 20261019120000: se ainda não foi aplicada, a RPC não a traz.
+    arquivada_em: z
+      .string()
+      .nullish()
+      .transform(valor => valor ?? null),
   }),
 );
 

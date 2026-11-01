@@ -65,7 +65,7 @@ PostgreSQL no Supabase, mais `auth.users` (gerenciada pelo Supabase Auth). Tabel
 | --- | --- |
 | `habilidades` | `id` (PK), `nome_habilidade` (único), `categoria` |
 | `usuario_habilidades` | `usuario_id` (FK), `habilidade_id` (FK) — PK composta |
-| `atividades` | `id` (PK), `titulo`, `descricao`, `tipo` (`TAREFA_ONG` / `OFICINA_AUTORAL`), `autor_id` (FK), `data_hora_prevista`, `vagas_totais`, `vagas_ocupadas` (só APROVADA), `carga_horaria`, `status`, `criado_em`, `atualizado_em` |
+| `atividades` | `id` (PK), `titulo`, `descricao`, `tipo` (`TAREFA_ONG` / `OFICINA_AUTORAL`), `autor_id` (FK), `data_hora_prevista`, `vagas_totais`, `vagas_ocupadas` (só APROVADA), `carga_horaria`, `status`, `arquivada_em` (data em que a gestão arquivou a atividade; vazia se não foi arquivada), `criado_em`, `atualizado_em` |
 | `atividade_habilidades` | `atividade_id` (FK), `habilidade_id` (FK) — PK composta; áreas da tarefa, usadas nas sugestões |
 | `inscricoes_atividades` | `id` (PK), `atividade_id` (FK), `usuario_id` (FK), `data_inscricao`, `status_inscricao`, `presenca_confirmada`, `decidido_em`, `decidido_por`, `motivo_decisao`, `checkin_em`, `carga_horaria_registrada` |
 
@@ -205,10 +205,10 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | ID | O que existe na branch | Falta |
 | --- | --- | --- |
 | B15 | Propostas de oficina com decisão da gestão | Oculto no app: fora do MVP por decisão de 05/10 |
-| B16 | Triagem de candidatos com aprovação/recusa e motivo | Triagem de oficinas (fora do MVP); homologação |
+| B16 | Triagem de candidatos com aprovação/recusa e motivo (RPC `voluntariado_decidir`) | Triagem de oficinas (fora do MVP); homologação |
 | B17 | Check-in por QR com token temporário | Homologação em aparelho |
 | B18 | WhatsApp no detalhe da atividade e da meta | Compartilhamento; número cadastrado pela gestão |
-| B21 | Cópia da chave PIX e registro da contribuição (PENDENTE) | Aplicar a reconciliação pendente (PIX na configuração) |
+| B21 | Cópia da chave PIX e registro da contribuição (PENDENTE) | Homologação (migration `20261005150000_contribuicoes_metas_pix.sql` aplicada em 23/10/2026) |
 | B22 | Anexo opcional do comprovante, bucket privado `comprovantes` e visualização pela gestão | Homologar com Storage real (migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026) |
 | B23 | Fila geral de conferência (todas as metas), confirmar/recusar com observação (motivo obrigatório ao recusar) e registro de doação recebida | Aplicar `20261023210000_contribuicoes_conferencia.sql` e homologar |
 | B24 | Total recalculado pelo trigger do banco | Homologação |
