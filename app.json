@@ -19,7 +19,8 @@
       },
       "predictiveBackGestureEnabled": false,
       "permissions": ["android.permission.CAMERA"],
-      "package": "br.com.hortaconecta.app"
+      "package": "br.com.hortaconecta.app",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -51,9 +52,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "3d3d3e18-ad82-471f-8e96-87b7b258a2a7"
+        "projectId": "627ab6c3-dc85-4d2f-aa47-2287b70ea80e"
       }
     },
-    "owner": "mezzomolucas"
+    "owner": "hortaconecta"
   }
 }

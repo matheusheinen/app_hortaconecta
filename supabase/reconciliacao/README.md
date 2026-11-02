@@ -59,6 +59,12 @@ Versões no histórico remoto: `20260930142505` e `20260930142520`, respectivame
    reconciliação 02. Verificação local: `node --test tests/atividades-arquivar.test.cjs`.
    Até ser aplicada, o botão "Arquivar" falha com erro de função inexistente e a aba
    "Arquivadas" fica vazia (sem a coluna, nenhuma atividade vem arquivada).
+11. `20261101120000_notificacoes_entregues.sql` (B29, push remoto): catálogo de tipos e canais,
+   preferências por categoria, fila `notificacoes_entregues` e RPCs das Edge Functions; o tipo de
+   `notificacoes` passa a ser chave estrangeira do catálogo. Depende dos itens 7 e 9. Pré-requisitos:
+   pg_net e pg_cron ligados e segredos no Vault (ver [NOTIFICACOES.md](../../docs/mvp/NOTIFICACOES.md)).
+   Verificação local: `node --test tests/notificacoes-entregues.test.cjs`. **Itens 7 e 11 aplicados em 02/11/2026**,
+   com segredos no Vault e Edge Functions publicadas; teste com token falso conferido.
 
 Não reaplicar: as pré-condições rejeitam objetos já instalados. Ver
 [resultado, verificação e limites](../../docs/reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md).

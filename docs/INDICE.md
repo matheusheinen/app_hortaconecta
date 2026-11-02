@@ -33,6 +33,7 @@ relatório divergir do DOCUMENTACAO.md, vale o DOCUMENTACAO.md.
 | [Diário de Transparência](mvp/DIARIO.md) | RF0013, RNF0003, RNF0005 | B25–B27 |
 | [Correções do MVP](mvp/CORRECOES_MVP.md) | RNF0007, RNF0010, RNF0011 | — |
 | [Foto do perfil (21/10/2026)](mvp/FOTO_PERFIL.md) | RF0002 | B31 |
+| [Notificações: no app e push (01/11/2026)](mvp/NOTIFICACOES.md) | RF0014 | B29 |
 
 ## Implementado, fora do MVP por enquanto
 

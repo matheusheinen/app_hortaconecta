@@ -5,7 +5,7 @@ import { assinarNotificacoes, contarNaoLidas, marcarNotificacaoLida } from './ap
 import { destinoNotificacao } from './destino';
 import { abrirDestino } from './navegacao';
 import { lerDadosDoToque } from './toque';
-import { mostrarAvisoLocal } from './push';
+import { mostrarAvisoLocal, pushRemotoRegistrado } from './push';
 import { obterNotificacoesDoSistema } from './sistema';
 
 type Valor = {
@@ -50,8 +50,9 @@ export function ProvedorNotificacoes({
     const parar = assinarNotificacoes(usuarioId, notificacao => {
       setNaoLidas(atual => atual + 1);
       setVersao(atual => atual + 1);
-      // No navegador não há aviso do sistema; o sino já mostra a novidade.
-      if (Platform.OS !== 'web') void mostrarAvisoLocal(notificacao);
+      // No navegador não há aviso do sistema; o sino já mostra a novidade. Com push remoto,
+      // o aviso já chega pelo próprio push.
+      if (Platform.OS !== 'web' && !pushRemotoRegistrado()) void mostrarAvisoLocal(notificacao);
     });
     // Ao voltar do segundo plano, o canal pode ter perdido eventos.
     const app = AppState.addEventListener('change', estado => {
@@ -71,15 +72,40 @@ export function ProvedorNotificacoes({
     if (Platform.OS === 'web') return;
     const Notifications = obterNotificacoesDoSistema();
     if (!Notifications) return;
-    const assinatura = Notifications.addNotificationResponseReceivedListener(resposta => {
-      const dados = lerDadosDoToque(resposta.notification.request.content.data);
-      if (!dados) return;
-      abrirDestino(destinoNotificacao(dados, ehGestao));
+    let ativo = true;
+    let espera: ReturnType<typeof setTimeout> | undefined;
+    const tratadas = new Set<number>();
+    const tratar = (conteudo: unknown) => {
+      const dados = lerDadosDoToque(conteudo);
+      if (!dados || tratadas.has(dados.notificacaoId)) return;
+      tratadas.add(dados.notificacaoId);
+      const destino = destinoNotificacao(dados, ehGestao);
+      // Com o app fechado, o toque chega antes de o navegador montar: tenta por até 5 s.
+      const abrir = (restantes: number) => {
+        if (!ativo || abrirDestino(destino) || restantes <= 0) return;
+        espera = setTimeout(() => abrir(restantes - 1), 250);
+      };
+      abrir(20);
       void marcarNotificacaoLida(dados.notificacaoId)
         .then(recarregar)
         .catch(() => {});
-    });
-    return () => assinatura.remove();
+    };
+    const assinatura = Notifications.addNotificationResponseReceivedListener(resposta =>
+      tratar(resposta.notification.request.content.data),
+    );
+    // Toque que abriu o app do zero (push remoto com o app fechado).
+    void Notifications.getLastNotificationResponseAsync?.()
+      .then(resposta => {
+        if (!resposta) return;
+        tratar(resposta.notification.request.content.data);
+        return Notifications.clearLastNotificationResponseAsync?.();
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+      if (espera) clearTimeout(espera);
+      assinatura.remove();
+    };
   }, [ehGestao, recarregar]);
 
   const valor = useMemo(() => ({ naoLidas, versao, recarregar }), [naoLidas, versao, recarregar]);

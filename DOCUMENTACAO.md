@@ -192,7 +192,7 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 | B26 | Feed do diário com restrição de imagens de menores | RF0013 | Média | 6h | Em planejamento |
 | B27 | Compressão local de imagens | RNF0005 | Média | 6h | Em planejamento |
 | B28 | Configuração e parametrização da instituição | RF0015 | Média | 8h | Em planejamento |
-| B29 | Notificações push (Expo) | RF0014 | Baixa | 10h | Em planejamento |
+| B29 | Notificações push (Expo) | RF0014 | Baixa | 10h | Em andamento: no app concluído; push remoto no ar no servidor (02/11), falta teste em Android real ([NOTIFICACOES.md](docs/mvp/NOTIFICACOES.md)) |
 | B30 | Tela de perfil da ONG (dados cadastrais, PIX e WhatsApp) | RF0015 | Alta | 4h | Em planejamento |
 | B31 | Edição de perfil e foto do usuário | RF0002 | Média | 5h | Em planejamento |
 | B32 | Histórico de participação e mensagem de impacto | RF0008 | Média | 6h | Em planejamento |
