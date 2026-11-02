@@ -6,6 +6,7 @@ import { Aviso, Botao } from '@/compartilhado/componentes/Ui';
 import { Icone } from '@/compartilhado/componentes/Icone';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { CartaoModoGestor } from '@/funcionalidades/modoGestor/ModoGestor';
+import { CartaoPreferenciasNotificacoes } from '@/funcionalidades/notificacoes/componentes/CartaoPreferenciasNotificacoes';
 import { FotoPerfil } from './FotoPerfil';
 
 /** Tela inicial do perfil: cabeçalho, resumo de status e lista de seções. */
@@ -49,6 +50,7 @@ export function HubPerfil({
       {erro ? <Botao titulo="Tentar novamente" onPress={carregar} /> : null}
       {carregando && !erro ? <ActivityIndicator color={cores.folha} /> : null}
       {children}
+      <CartaoPreferenciasNotificacoes />
       <CartaoModoGestor />
     </ScrollView>
   );

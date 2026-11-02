@@ -74,6 +74,26 @@ npm.cmd run start:local
 
 No terminal do Expo, pressione **w** para abrir o navegador ou **a** para abrir o emulador Android configurado. O modo localhost atende aos clientes no próprio computador. Para um celular físico, escolha LAN ou Cloudflare.
 
+## Development build (push com o app fechado)
+
+O Expo Go não recebe push remoto no Android. Para testar o push, use o development build do
+projeto `@hortaconecta/horta-conecta` no EAS, com o login da conta da equipe
+(`npx eas-cli whoami` deve mostrar `hortaconecta`).
+
+```powershell
+# A pasta extraída do .zip não é repositório git: EAS_NO_VCS faz o EAS enviar a pasta mesmo assim
+$env:EAS_NO_VCS=1; npx eas-cli build --profile development --platform android
+```
+
+- O build leva de 15 a 20 minutos e termina com um link/QR code para instalar o APK **num celular
+  Android**. Responda **no** a "Install and run on an emulator?" se o computador não tiver o Android
+  Studio, ou o comando termina com `spawn adb ENOENT` (o APK continua válido).
+- Com o APK instalado, rode `npx expo start --dev-client` (com `EXPO_PUBLIC_PUSH_REMOTO=true` no
+  `.env`) e abra o app instalado, não o Expo Go.
+- Sem git, o EAS respeita o `.gitignore` e o `.env` não vai junto. Isso não importa no development
+  build, porque o JavaScript vem do Metro local, que lê o `.env`.
+- Configuração do push (Firebase, Vault, Edge Functions): [NOTIFICACOES.md](mvp/NOTIFICACOES.md).
+
 ## Quando o túnel Ngrok falhar
 
 ```powershell
@@ -93,4 +113,6 @@ A equipe do Expo já [registrou limites da conta Ngrok compartilhada](https://gi
 | `Cannot find native module 'ExpoTopicSubscriptionModule'` ao abrir no Expo Go Android | O pacote de notificações exige um módulo nativo ausente no Expo Go | A integração evita carregar esse pacote no Expo Go Android; reiniciar com `npm.cmd run start:cloudflare -- --clear` e abrir o novo QR code. O sino e a lista de notificações continuam disponíveis; avisos do sistema no Android exigem um build próprio. |
 | Mudanças no `.env` não aparecem | Variáveis `EXPO_PUBLIC_*` são lidas ao iniciar o Metro | Reiniciar o Expo, se necessário com `-- --clear`. |
 | Testes de banco falham com "diverge do catálogo auditado" | Arquivos SQL com CRLF no checkout | O `.gitattributes` exige LF; reextrair os arquivos (`git rm --cached -r . ; git reset --hard`) com a árvore limpa. |
+| EAS Build falha em "Install dependencies" com `fatal: not in a git directory` | O script `prepare` rodava `git config` sem tolerar a ausência de git | Corrigido em 02/11/2026 (`... \|\| exit 0`); se reaparecer, conferir o `prepare` no `package.json`. |
+| EAS pede para escolher conta ou recusa o projeto | Login com conta pessoal; o projeto pertence a `hortaconecta` | `npx eas-cli logout` e `npx eas-cli login` com a conta da equipe. |
 | Seção de PIX indisponível no perfil da gestão | Reconciliação `20261005150000` ainda não aplicada no Supabase | Ver [CONTRIBUICOES.md](mvp/CONTRIBUICOES.md). |

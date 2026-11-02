@@ -42,7 +42,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "prepare": "git config core.hooksPath scripts/git-hooks",
+    "prepare": "git config core.hooksPath scripts/git-hooks || exit 0",
     "typecheck": "tsc --noEmit",
     "test": "node --test --test-concurrency=1 tests/*.test.cjs",
     "start": "expo start",
