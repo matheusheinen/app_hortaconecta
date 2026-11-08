@@ -20,6 +20,10 @@ export type DadosPerfilOng = {
   whatsapp: string | null;
   chave_pix: string | null;
   nome_beneficiario_pix: string | null;
+  /** B28: nome e logotipo exibidos no app (`configuracao_instituicao`). */
+  nome_curto: string;
+  nome_completo: string;
+  url_logo: string | null;
 };
 
 export type PerfilOngCarregado = DadosPerfilOng & {
@@ -27,9 +31,14 @@ export type PerfilOngCarregado = DadosPerfilOng & {
   pixDisponivel: boolean;
 };
 
-export type SecaoPerfilOng = 'conta' | 'institucional' | 'whatsapp' | 'recebimento';
+export type SecaoPerfilOng = 'identidade' | 'conta' | 'institucional' | 'whatsapp' | 'recebimento';
 
 export const SECOES_PERFIL_ONG: { chave: SecaoPerfilOng; titulo: string; resumo: string }[] = [
+  {
+    chave: 'identidade',
+    titulo: 'Nome e logotipo da instituição',
+    resumo: 'Como a instituição aparece no início do app para voluntários e convidados.',
+  },
   {
     chave: 'conta',
     titulo: 'Conta e apresentação',
@@ -53,9 +62,18 @@ export const SECOES_PERFIL_ONG: { chave: SecaoPerfilOng; titulo: string; resumo:
 ];
 
 const preenchido = (valor: string | null) => !!valor && valor.trim() !== '';
-const CAMPOS_INSTITUICAO = ['whatsapp', 'chave_pix', 'nome_beneficiario_pix'] as const;
+const CAMPOS_INSTITUICAO = [
+  'whatsapp',
+  'chave_pix',
+  'nome_beneficiario_pix',
+  'nome_curto',
+  'nome_completo',
+  'url_logo',
+] as const;
 
 export function secaoOngCompleta(secao: SecaoPerfilOng, dados: DadosPerfilOng): boolean {
+  if (secao === 'identidade')
+    return dados.nome_curto.trim().length >= 2 && dados.nome_completo.trim().length >= 3;
   if (secao === 'conta') return dados.nome.trim().length >= 2;
   if (secao === 'institucional') return preenchido(dados.cnpj) && preenchido(dados.razao_social);
   if (secao === 'recebimento') return preenchido(dados.chave_pix);
@@ -74,7 +92,10 @@ export async function carregarPerfilOng(usuarioId: string): Promise<PerfilOngCar
       .select('cnpj, razao_social, data_criacao, responsavel_legal')
       .eq('usuario_id', usuarioId)
       .maybeSingle(),
-    supabase.from('configuracao_instituicao').select('whatsapp').maybeSingle(),
+    supabase
+      .from('configuracao_instituicao')
+      .select('whatsapp, nome_curto, nome_completo, url_logo')
+      .maybeSingle(),
     supabase
       .from('configuracao_instituicao')
       .select('chave_pix, nome_beneficiario_pix')
@@ -94,6 +115,9 @@ export async function carregarPerfilOng(usuarioId: string): Promise<PerfilOngCar
     data_criacao: ong.data?.data_criacao ?? null,
     responsavel_legal: ong.data?.responsavel_legal ?? null,
     whatsapp: instituicao.data?.whatsapp ?? null,
+    nome_curto: instituicao.data?.nome_curto ?? '',
+    nome_completo: instituicao.data?.nome_completo ?? '',
+    url_logo: instituicao.data?.url_logo ?? null,
     chave_pix: pixDisponivel ? (pix.data?.chave_pix ?? null) : null,
     nome_beneficiario_pix: pixDisponivel ? (pix.data?.nome_beneficiario_pix ?? null) : null,
     pixDisponivel,

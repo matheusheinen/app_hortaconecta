@@ -3,6 +3,7 @@ import { ScrollView, Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, estilosFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
+import { LogoInstituicao } from '@/compartilhado/componentes/LogoInstituicao';
 import { cores, tipo } from '@/compartilhado/tema';
 
 type AcoesConvidado = { criarConta: () => void };
@@ -22,6 +23,7 @@ export function TelaInicioConvidado({
       style={{ flex: 1, backgroundColor: cores.superficie }}
       contentContainerStyle={estilosFluxo.conteudo}
     >
+      <LogoInstituicao url={configuracao?.url_logo} tamanho={72} />
       <Text style={tipo.titulo} accessibilityRole="header">
         {configuracao?.nome_curto ?? 'Horta Conecta'}
       </Text>
