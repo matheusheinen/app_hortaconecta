@@ -57,6 +57,10 @@ export function codigoRecuperacaoValido(codigo: string) {
 
 // As validações lançam a mensagem para o usuário, como no resto do app.
 
+/** RNF0011: senha nova com pelo menos 8 caracteres. O login não confere, para não barrar contas antigas. */
+export const SENHA_MINIMA = 8;
+const MENSAGEM_SENHA_CURTA = `A senha precisa ter ao menos ${SENHA_MINIMA} caracteres.`;
+
 export function validarEntrada(
   modo: ModoAcesso,
   campos: { nome: string; email: string; senha: string },
@@ -64,6 +68,8 @@ export function validarEntrada(
   if (!campos.email.trim() || !campos.senha) throw new Error('Informe e-mail e senha.');
   if (modo === 'cadastrar' && campos.nome.trim().length < 2)
     throw new Error('Informe seu nome completo.');
+  if (modo === 'cadastrar' && campos.senha.length < SENHA_MINIMA)
+    throw new Error(MENSAGEM_SENHA_CURTA);
 }
 
 export function validarEmailRecuperacao(email: string): void {
@@ -78,7 +84,7 @@ export function validarNovaSenha(campos: {
 }): void {
   if (!campos.codigoConfirmado && !codigoRecuperacaoValido(campos.codigo))
     throw new Error('Informe o código recebido por e-mail.');
-  if (campos.senha.length < 6) throw new Error('A senha precisa ter ao menos 6 caracteres.');
+  if (campos.senha.length < SENHA_MINIMA) throw new Error(MENSAGEM_SENHA_CURTA);
 }
 
 /** Texto do botão principal em cada fase. */

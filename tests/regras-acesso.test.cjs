@@ -18,7 +18,7 @@ modulo._compile(
 const regras = modulo.exports;
 
 test('Acesso: login e cadastro exigem e-mail, senha e, no cadastro, o nome', () => {
-  const campos = { nome: '', email: 'a@b.com', senha: 'segredo' };
+  const campos = { nome: '', email: 'a@b.com', senha: 'segredo1' };
   assert.doesNotThrow(() => regras.validarEntrada('entrar', campos));
   assert.throws(() => regras.validarEntrada('entrar', { ...campos, email: ' ' }), {
     message: 'Informe e-mail e senha.',
@@ -30,18 +30,24 @@ test('Acesso: login e cadastro exigem e-mail, senha e, no cadastro, o nome', () 
     message: 'Informe seu nome completo.',
   });
   assert.doesNotThrow(() => regras.validarEntrada('cadastrar', { ...campos, nome: 'Ana' }));
+  assert.throws(
+    () => regras.validarEntrada('cadastrar', { ...campos, nome: 'Ana', senha: '1234567' }),
+    /8 caracteres/,
+  );
+  // Login de conta antiga com senha de 6 ou 7 caracteres continua liberado.
+  assert.doesNotThrow(() => regras.validarEntrada('entrar', { ...campos, senha: '123456' }));
   assert.throws(() => regras.validarEmailRecuperacao('  '), /e-mail da conta/);
 });
 
 test('Acesso: nova senha pede código de 6 a 10 dígitos, dispensado depois de confirmado', () => {
-  const base = { codigo: '123456', senha: 'segredo', codigoConfirmado: false };
+  const base = { codigo: '123456', senha: 'segredo1', codigoConfirmado: false };
   assert.doesNotThrow(() => regras.validarNovaSenha(base));
   assert.throws(() => regras.validarNovaSenha({ ...base, codigo: '12345' }), /código/);
   assert.throws(() => regras.validarNovaSenha({ ...base, codigo: 'abcdef' }), /código/);
   assert.doesNotThrow(() =>
     regras.validarNovaSenha({ ...base, codigo: '', codigoConfirmado: true }),
   );
-  assert.throws(() => regras.validarNovaSenha({ ...base, senha: '12345' }), /6 caracteres/);
+  assert.throws(() => regras.validarNovaSenha({ ...base, senha: '1234567' }), /8 caracteres/);
 });
 
 test('Acesso: a máquina de estados segue o fluxo e ignora eventos fora de hora', () => {
