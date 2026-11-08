@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Text } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
-import { OpcaoMarcavel } from '@/funcionalidades/perfil/componentes/PerfilSecoes';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { mensagemErro } from '@/compartilhado/utils/erros';
@@ -11,6 +10,7 @@ import { detalheDiario, salvarDiario } from '../api';
 import { imagemJpeg } from '../regras';
 import type { Publicacao } from '../tipos';
 import { ImagemDiario } from '../componentes/ImagemDiario';
+import { OpcaoMarcavel } from '@/funcionalidades/perfil/componentes/PerfilSecoes';
 
 export function TelaFormDiario({ id, voltar }: { id: number | null; voltar: () => void }) {
   const { dados, erro, carregando, carregar } = useConsulta(
@@ -57,12 +57,16 @@ function Formulario({
   const [ocupado, setOcupado] = useState(false);
   const trava = useRef(false),
     montado = useRef(true);
-  // Imagem nova: a gestão precisa avaliar de novo (B26).
-  useEffect(() => {
-    if (!foto) return;
-    setComMenores(false);
-    setAutorizacao(false);
-  }, [foto]);
+  // Imagem nova: a gestão precisa avaliar de novo (B26). Ajuste durante a
+  // renderização, como recomenda o React, em vez de um efeito.
+  const [fotoAvaliada, setFotoAvaliada] = useState(foto);
+  if (foto !== fotoAvaliada) {
+    setFotoAvaliada(foto);
+    if (foto) {
+      setComMenores(false);
+      setAutorizacao(false);
+    }
+  }
   useEffect(() => {
     montado.current = true;
     return () => {
@@ -186,23 +190,21 @@ function Formulario({
       {foto || caminho ? (
         <>
           <Text style={tipo.corpo}>A imagem mostra crianças ou adolescentes?</Text>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <OpcaoMarcavel
-              rotulo="Não"
-              rotuloAcessivel="A imagem não mostra crianças ou adolescentes"
-              ativa={!comMenores}
-              onPress={() => {
-                setComMenores(false);
-                setAutorizacao(false);
-              }}
-            />
-            <OpcaoMarcavel
-              rotulo="Sim"
-              rotuloAcessivel="A imagem mostra crianças ou adolescentes"
-              ativa={comMenores}
-              onPress={() => setComMenores(true)}
-            />
-          </View>
+          <OpcaoMarcavel
+            rotulo="Não"
+            rotuloAcessivel="A imagem não mostra crianças ou adolescentes"
+            ativa={!comMenores}
+            onPress={() => {
+              setComMenores(false);
+              setAutorizacao(false);
+            }}
+          />
+          <OpcaoMarcavel
+            rotulo="Sim"
+            rotuloAcessivel="A imagem mostra crianças ou adolescentes"
+            ativa={comMenores}
+            onPress={() => setComMenores(true)}
+          />
           {comMenores ? (
             <>
               <OpcaoMarcavel
