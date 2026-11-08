@@ -6,6 +6,7 @@ import { cores, espaco, tipo } from '@/compartilhado/tema';
 import { Icone, type NomeIcone } from '@/compartilhado/componentes/Icone';
 import { SinoNotificacoes } from '@/funcionalidades/notificacoes/componentes/SinoNotificacoes';
 import { useConfiguracaoInstituicao } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
+import { LogoInstituicao } from '@/compartilhado/componentes/LogoInstituicao';
 
 type Props = {
   aoIrParaAtividades: () => void;
@@ -32,6 +33,7 @@ export const TelaInicioOng = memoTela(function TelaInicioOng({
     <ScrollView style={estilos.tela} contentContainerStyle={estilos.conteudo}>
       <View style={estilos.painel}>
         <View style={estilos.cabecalho}>
+          <LogoInstituicao url={configuracao?.url_logo} tamanho={44} />
           <View style={estilos.saudacao}>
             <Text style={estilos.sobretitulo}>BEM-VINDO À GESTÃO</Text>
             <Text style={estilos.nome}>{nome.trim() ? `Olá, ${nome.trim()}` : 'Olá!'}</Text>
