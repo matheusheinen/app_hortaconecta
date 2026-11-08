@@ -224,6 +224,7 @@ function telasVoluntario(contexto, buscarCep = async () => null) {
         { react },
       ),
       '../apiVoluntario': { buscarCep },
+      '../componentes/SolicitarExclusao': { SolicitarExclusao: () => null },
     },
   );
   return { telas, reiniciar };
