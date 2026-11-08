@@ -11,9 +11,9 @@ O app resolve três problemas da instituição: captação de voluntários (banc
 ## Estado atual (07/11/2026)
 
 - **Branch principal:** `main` (último merge em 31/10/2026). Ninguém commita direto nela; tudo entra por PR (ver [CONTRIBUTING.md](CONTRIBUTING.md)).
-- **PRs abertos, aguardando revisão:** #16 (B29, push remoto), #17 (B27), #18 (B18), #19 (B34), #20 (B26) e #21 (B28). Os seis se integram sem conflito em qualquer ordem.
+- **PRs abertos, aguardando revisão:** #16 (B29, push remoto), #17 (B27), #18 (B18), #19 (B34), #20 (B26), #21 (B28), #23 (senha mínima), #24 (Diário paginado), #25 (`npm audit fix`) e #22 (esta documentação, para integrar por último). Os de código se integram sem conflito em qualquer ordem.
 - **Escopo do MVP:** voluntariado, contribuições por metas (dinheiro e materiais) e Diário. Propostas de oficinas e certificados estão implementados, mas **fora do MVP por enquanto**: ocultos no app por `src/compartilhado/escopoMvp.ts`, com código, testes e banco preservados. Referência: [docs/mvp/ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md).
-- **Supabase (`hnawclapixopwjyrpxpq`):** a ordem e a situação de cada reconciliação estão no [README da reconciliação](supabase/reconciliacao/README.md). Pendentes de aplicação: `20261023200000_arrecadacao_trigger.sql` e depois `20261023210000_contribuicoes_conferencia.sql` (B23), e `20261108120000_diario_menores.sql` (B26), que deve ser aplicada **junto com o merge do PR #20**: sem ela, salvar publicação no Diário falha.
+- **Supabase (`hnawclapixopwjyrpxpq`):** a ordem e a situação de cada reconciliação estão no [README da reconciliação](supabase/reconciliacao/README.md). Pendentes de aplicação: `20261023200000_arrecadacao_trigger.sql` e depois `20261023210000_contribuicoes_conferencia.sql` (B23), `20261108120000_diario_menores.sql` (B26), que deve ser aplicada **junto com o merge do PR #20** (sem ela, salvar publicação no Diário falha), e `20261108130000_diario_paginacao.sql` (PR #24; sem ela o Diário carrega inteiro, sem erro). Para conferir o que já está aplicado, rodar [docs/reconciliacao/VERIFICAR_RECONCILIACOES.sql](docs/reconciliacao/VERIFICAR_RECONCILIACOES.sql) no SQL Editor (só leitura).
 - **Verificação local:** `npm run typecheck`, `npm run lint` e `npm test` sem erros; 269 testes na `main` e 314 com os PRs #16 a #21.
 - **Documentação:** índice em [docs/INDICE.md](docs/INDICE.md). Os relatórios de `docs/` são registros datados; quando um relatório divergir deste arquivo, este arquivo prevalece. A documentação entregue à disciplina fica no Google Docs da equipe.
 
@@ -213,9 +213,9 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 
 ### Pendências fora do backlog
 
-- **Senha mínima:** o RNF0011 pede 8 caracteres, mas o app (`autenticacao/regras.ts`) e o Supabase Auth aceitam 6.
-- **Paginação:** o RF0013 e o RNF0005 pedem paginação das listas longas; o Diário e as demais listas carregam todos os registros de uma vez.
-- **Dependências:** `npm audit` aponta 16 alertas, quase todos em ferramentas de build do Expo; `npm audit fix` resolve a maioria sem mudar versões maiores.
+- **Senha mínima:** o RNF0011 pede 8 caracteres. O PR #23 ajusta o app; falta mudar no painel do Supabase (Authentication → Providers → Email → Minimum password length = 8).
+- **Paginação:** o PR #24 pagina o feed do Diário (RF0013 e RNF0005), com a migration `20261108130000_diario_paginacao.sql`. As demais listas continuam inteiras: são filtradas por abas no app e ficam na casa das dezenas de registros.
+- **Dependências:** o PR #25 roda `npm audit fix` e reduz os alertas de 16 para 5 moderados, que estão no `@expo/cli` e só somem voltando ao Expo 52. Depois dele, gerar de novo o development build.
 - **Publicação na Google Play:** política de privacidade, página web para pedir a exclusão da conta (exigida pela Google Play além da opção no app), formulário de Segurança dos dados e, se a conta de desenvolvedor for pessoal e criada depois de 13/11/2023, teste fechado com pelo menos 12 testadores por 14 dias seguidos antes de pedir acesso à produção.
 
 ## Cronograma
