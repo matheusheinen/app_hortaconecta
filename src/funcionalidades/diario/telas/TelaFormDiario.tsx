@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Image, Text } from 'react-native';
+import { Image, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
+import { OpcaoMarcavel } from '@/funcionalidades/perfil/componentes/PerfilSecoes';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { mensagemErro } from '@/compartilhado/utils/erros';
@@ -50,6 +51,8 @@ function Formulario({
   const [status, setStatus] = useState<'PUBLICADA' | 'OCULTA'>(p?.status ?? 'PUBLICADA');
   const [caminho, setCaminho] = useState(p?.imagem_caminho ?? null);
   const [foto, setFoto] = useState<{ uri: string; base64: string } | null>(null);
+  const [comMenores, setComMenores] = useState(p?.imagem_com_menores ?? false);
+  const [autorizacao, setAutorizacao] = useState(p?.autorizacao_responsaveis ?? false);
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const trava = useRef(false),
@@ -78,6 +81,9 @@ function Formulario({
       if (!asset.base64) throw new Error('Não foi possível ler a imagem. Escolha outra foto.');
       imagemJpeg(asset.base64);
       setFoto({ uri: asset.uri, base64: asset.base64 });
+      // Imagem nova: a gestão precisa avaliar de novo (B26).
+      setComMenores(false);
+      setAutorizacao(false);
     } catch (f) {
       if (montado.current) setErro(mensagemErro(f));
     } finally {
@@ -99,6 +105,8 @@ function Formulario({
         status,
         imagem: caminho,
         base64: foto?.base64 ?? null,
+        comMenores,
+        autorizacao,
       });
       if (montado.current) voltar();
     } catch (f) {
@@ -167,8 +175,45 @@ function Formulario({
           onPress={() => {
             setFoto(null);
             setCaminho(null);
+            setComMenores(false);
+            setAutorizacao(false);
           }}
         />
+      ) : null}
+      {foto || caminho ? (
+        <>
+          <Text style={tipo.corpo}>A imagem mostra crianças ou adolescentes?</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <OpcaoMarcavel
+              rotulo="Não"
+              rotuloAcessivel="A imagem não mostra crianças ou adolescentes"
+              ativa={!comMenores}
+              onPress={() => {
+                setComMenores(false);
+                setAutorizacao(false);
+              }}
+            />
+            <OpcaoMarcavel
+              rotulo="Sim"
+              rotuloAcessivel="A imagem mostra crianças ou adolescentes"
+              ativa={comMenores}
+              onPress={() => setComMenores(true)}
+            />
+          </View>
+          {comMenores ? (
+            <>
+              <OpcaoMarcavel
+                rotulo="Tenho a autorização dos responsáveis para publicar esta imagem"
+                ativa={autorizacao}
+                onPress={() => setAutorizacao(!autorizacao)}
+              />
+              <Text style={tipo.apoio}>
+                Guarde a autorização assinada com a instituição. Sem ela, remova a imagem e publique
+                só o relato.
+              </Text>
+            </>
+          ) : null}
+        </>
       ) : null}
       <Text style={tipo.corpo}>
         Visibilidade:{' '}

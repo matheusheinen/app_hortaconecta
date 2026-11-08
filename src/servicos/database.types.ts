@@ -280,10 +280,12 @@ export type Database = {
           atividade_id: number | null
           atualizado_em: string
           autor_id: string
+          autorizacao_responsaveis: boolean
           data_publicacao: string
           descricao_curta: string | null
           id: number
           imagem_caminho: string | null
+          imagem_com_menores: boolean
           revisao: number
           status: string
           texto: string | null
@@ -294,10 +296,12 @@ export type Database = {
           atividade_id?: number | null
           atualizado_em?: string
           autor_id: string
+          autorizacao_responsaveis?: boolean
           data_publicacao?: string
           descricao_curta?: string | null
           id?: never
           imagem_caminho?: string | null
+          imagem_com_menores?: boolean
           revisao?: number
           status?: string
           texto?: string | null
@@ -308,10 +312,12 @@ export type Database = {
           atividade_id?: number | null
           atualizado_em?: string
           autor_id?: string
+          autorizacao_responsaveis?: boolean
           data_publicacao?: string
           descricao_curta?: string | null
           id?: never
           imagem_caminho?: string | null
+          imagem_com_menores?: boolean
           revisao?: number
           status?: string
           texto?: string | null
@@ -732,8 +738,10 @@ export type Database = {
       }
       diario_salvar_revisao: {
         Args: {
+          p_autorizacao_responsaveis: boolean
           p_id: number
           p_imagem: string
+          p_imagem_com_menores: boolean
           p_revisao: number
           p_status: string
           p_texto: string

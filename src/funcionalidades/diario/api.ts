@@ -2,7 +2,7 @@ import { supabase } from '@/servicos/supabase';
 import { validarResposta } from '@/compartilhado/esquemas';
 import type { Publicacao } from './tipos';
 import { esquemaListaPublicacoes, esquemaPublicacao } from './esquemas';
-import { salvarDiarioComImagem, validarPublicacao } from './regras';
+import { salvarDiarioComImagem, validarMenores, validarPublicacao } from './regras';
 export const BUCKET_DIARIO = 'diario-imagens';
 export async function listarDiario(): Promise<Publicacao[]> {
   const { data, error } = await supabase.rpc('diario_listar');
@@ -26,8 +26,12 @@ export async function salvarDiario(dados: {
   status: 'PUBLICADA' | 'OCULTA';
   imagem: string | null;
   base64: string | null;
+  comMenores: boolean;
+  autorizacao: boolean;
 }): Promise<number> {
   validarPublicacao(dados.titulo, dados.texto);
+  const temImagem = dados.base64 !== null || dados.imagem !== null;
+  validarMenores(temImagem, dados.comMenores, dados.autorizacao);
   return salvarDiarioComImagem(
     dados.base64,
     dados.imagem,
@@ -53,6 +57,8 @@ export async function salvarDiario(dados: {
         p_texto: dados.texto.trim(),
         p_status: dados.status,
         p_imagem: caminho,
+        p_imagem_com_menores: caminho !== null && dados.comMenores,
+        p_autorizacao_responsaveis: caminho !== null && dados.comMenores && dados.autorizacao,
       });
       if (error) throw error;
       if (data === null)

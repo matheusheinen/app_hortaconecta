@@ -103,6 +103,14 @@ continuam independentes do calendário.
    comprovante e data de envio na conferência e exige motivo ao recusar. Depende do item 7. O app funciona
    sem ela, mas a trava passa a valer só depois. Verificação local:
    `node --test tests/contribuicoes-conferencia.test.cjs`.
+9. `20261108120000_diario_menores.sql` (**pendente de aplicação**, B26): colunas
+   `diario_transparencia.imagem_com_menores` e `autorizacao_responsaveis`, com a restrição
+   `diario_menores_com_autorizacao`, e a RPC `diario_salvar_revisao` de 8 parâmetros, que só
+   aceita imagem com crianças ou adolescentes quando a gestão declara a autorização dos
+   responsáveis. A versão de 6 parâmetros deixa de ser chamável pelo app. Depende da
+   reconciliação 02. Verificação local: `node --test tests/diario-menores.test.cjs`. **Aplicar
+   junto com o merge do PR do B26**: até ser aplicada, salvar publicação no Diário falha com
+   erro de função inexistente (a leitura continua funcionando).
 
 As novas tabelas recebem RLS e grants explícitos; funções privadas não ficam
 acessíveis ao cliente. Contas autenticadas leem o próprio perfil, e a gestão
