@@ -60,6 +60,11 @@ export function TelaDetalheDiario({
           </Text>
           {gestao ? (
             <>
+              {dados.imagem_com_menores ? (
+                <Text style={tipo.apoio}>
+                  Imagem com crianças ou adolescentes · autorização dos responsáveis declarada.
+                </Text>
+              ) : null}
               <Botao titulo="Editar publicação" onPress={editar} desabilitado={acao.ocupado} />
               <Botao
                 titulo={dados.status === 'PUBLICADA' ? 'Ocultar publicação' : 'Publicar novamente'}

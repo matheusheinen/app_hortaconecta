@@ -9,6 +9,18 @@ export function validarPublicacao(titulo: string, texto: string) {
     throw new Error('Informe título de 3 a 120 caracteres e texto de 1 a 20.000 caracteres.');
   }
 }
+/**
+ * B26: imagem com crianças ou adolescentes só é publicada com a autorização dos
+ * responsáveis. O banco repete a regra (diario_menores_com_autorizacao).
+ */
+export function validarMenores(temImagem: boolean, comMenores: boolean, autorizacao: boolean) {
+  if (temImagem && comMenores && !autorizacao) {
+    throw new Error(
+      'Imagem com crianças ou adolescentes só pode ser publicada com a autorização dos responsáveis. Confirme a autorização ou remova a imagem.',
+    );
+  }
+}
+
 export function imagemJpeg(base64: string): ArrayBuffer {
   if (!base64 || base64.length > Math.ceil(LIMITE_IMAGEM_DIARIO / 3) * 4) {
     throw new Error('Escolha uma imagem de até 5 MiB.');
