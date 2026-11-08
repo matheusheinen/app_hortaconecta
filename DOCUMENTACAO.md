@@ -13,7 +13,7 @@ O app resolve três problemas da instituição: captação de voluntários (banc
 - **Branch principal:** `main` (último merge em 31/10/2026). Ninguém commita direto nela; tudo entra por PR (ver [CONTRIBUTING.md](CONTRIBUTING.md)).
 - **PRs abertos, aguardando revisão:** #16 (B29, push remoto), #17 (B27), #18 (B18), #19 (B34), #20 (B26), #21 (B28), #23 (senha mínima), #24 (Diário paginado), #25 (`npm audit fix`) e #22 (esta documentação, para integrar por último). Os de código se integram sem conflito em qualquer ordem.
 - **Escopo do MVP:** voluntariado, contribuições por metas (dinheiro e materiais) e Diário. Propostas de oficinas e certificados estão implementados, mas **fora do MVP por enquanto**: ocultos no app por `src/compartilhado/escopoMvp.ts`, com código, testes e banco preservados. Referência: [docs/mvp/ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md).
-- **Supabase (`hnawclapixopwjyrpxpq`):** a ordem e a situação de cada reconciliação estão no [README da reconciliação](supabase/reconciliacao/README.md). Pendentes de aplicação: `20261023200000_arrecadacao_trigger.sql` e depois `20261023210000_contribuicoes_conferencia.sql` (B23), `20261108120000_diario_menores.sql` (B26), que deve ser aplicada **junto com o merge do PR #20** (sem ela, salvar publicação no Diário falha), e `20261108130000_diario_paginacao.sql` (PR #24; sem ela o Diário carrega inteiro, sem erro). Para conferir o que já está aplicado, rodar [docs/reconciliacao/VERIFICAR_RECONCILIACOES.sql](docs/reconciliacao/VERIFICAR_RECONCILIACOES.sql) no SQL Editor (só leitura).
+- **Supabase (`hnawclapixopwjyrpxpq`):** todas as reconciliações de `supabase/reconciliacao/` estão aplicadas, inclusive as do B23, do B26 e da paginação do Diário (conferido em 07/11/2026 com [docs/reconciliacao/VERIFICAR_RECONCILIACOES.sql](docs/reconciliacao/VERIFICAR_RECONCILIACOES.sql), consulta só de leitura). Como a do B26 fecha a RPC antiga de salvar no Diário, a `main` só volta a salvar publicações depois do merge do PR #20.
 - **Verificação local:** `npm run typecheck`, `npm run lint` e `npm test` sem erros; 269 testes na `main` e 314 com os PRs #16 a #21.
 - **Documentação:** índice em [docs/INDICE.md](docs/INDICE.md). Os relatórios de `docs/` são registros datados; quando um relatório divergir deste arquivo, este arquivo prevalece. A documentação entregue à disciplina fica no Google Docs da equipe.
 
@@ -160,7 +160,7 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 
 ## Backlog e situação atual
 
-34 itens, 168 horas estimadas. Situação em 07/11/2026: 26 concluídos (118h), 7 em homologação (47h) e 1 em planejamento (3h). "Concluído" quer dizer integrado à `main` e coberto por testes; a homologação de todo o MVP em Android fica para a Sprint final.
+34 itens, 168 horas estimadas. Situação em 07/11/2026: 27 concluídos (126h), 6 em homologação (39h) e 1 em planejamento (3h). "Concluído" quer dizer integrado à `main` e coberto por testes; a homologação de todo o MVP em Android fica para a Sprint final.
 
 | ID | Funcionalidade | Requisito | Prioridade | Estimativa | Situação |
 | --- | --- | --- | --- | --- | --- |
@@ -186,7 +186,7 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 | B20 | Mural de metas com progresso | RF0010 | Alta | 4h | Concluído |
 | B21 | Chave PIX copia e cola e registro da contribuição | RF0011 | Alta | 6h | Concluído |
 | B22 | Upload de comprovante e armazenamento privado | RF0011 | Alta | 6h | Concluído |
-| B23 | Fila e validação manual de comprovantes | RF0012 | Média | 8h | Em homologação |
+| B23 | Fila e validação manual de comprovantes | RF0012 | Média | 8h | Concluído |
 | B24 | Atualização automática do total arrecadado | RF0012 | Alta | 3h | Concluído |
 | B25 | Publicação no diário de transparência | RF0013 | Média | 6h | Concluído |
 | B26 | Feed do diário com restrição de imagens de menores | RF0013 | Média | 6h | Em homologação (PR #20) |
@@ -204,8 +204,7 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 | ID | Falta |
 | --- | --- |
 | B18 | Revisar e integrar o PR #18 |
-| B23 | Aplicar `20261023200000_arrecadacao_trigger.sql` e depois `20261023210000_contribuicoes_conferencia.sql`; conferir que recusar sem motivo dá erro |
-| B26 | Aplicar `20261108120000_diario_menores.sql` no mesmo momento do merge do PR #20 |
+| B26 | Integrar o PR #20 o quanto antes: a migration já está no banco e a `main` não salva publicações até o merge |
 | B27 | Revisar e integrar o PR #17 |
 | B28 | Revisar e integrar o PR #21; cores e textos de apresentação ficam como evolução futura |
 | B29 | Testar o push com o app fechado num Android real (development build) e integrar o PR #16 |
