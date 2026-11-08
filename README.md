@@ -4,7 +4,7 @@ Aplicativo mobile de voluntariado, apadrinhamento e transparência para a Horta
 Comunitária Guaporé (Guaporé/RS). Projeto de extensão da UNIVATES, Engenharia
 de Software, 2026/2.
 
-React Native + Expo SDK 57, TypeScript e Supabase.
+React Native + Expo SDK 58, TypeScript e Supabase.
 
 ## Começando
 
