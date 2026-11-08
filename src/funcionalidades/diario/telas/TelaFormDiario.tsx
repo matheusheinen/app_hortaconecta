@@ -57,6 +57,12 @@ function Formulario({
   const [ocupado, setOcupado] = useState(false);
   const trava = useRef(false),
     montado = useRef(true);
+  // Imagem nova: a gestão precisa avaliar de novo (B26).
+  useEffect(() => {
+    if (!foto) return;
+    setComMenores(false);
+    setAutorizacao(false);
+  }, [foto]);
   useEffect(() => {
     montado.current = true;
     return () => {
@@ -81,9 +87,6 @@ function Formulario({
       if (!asset.base64) throw new Error('Não foi possível ler a imagem. Escolha outra foto.');
       imagemJpeg(asset.base64);
       setFoto({ uri: asset.uri, base64: asset.base64 });
-      // Imagem nova: a gestão precisa avaliar de novo (B26).
-      setComMenores(false);
-      setAutorizacao(false);
     } catch (f) {
       if (montado.current) setErro(mensagemErro(f));
     } finally {
