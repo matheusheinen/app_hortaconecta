@@ -36,3 +36,23 @@ export async function salvarDiarioComImagem(
   const caminho = base64 === null ? caminhoAtual : await enviar(imagemJpeg(base64));
   return salvar(caminho);
 }
+
+/** Maior lado da imagem enviada ao Diário, em pixels. */
+export const LADO_MAXIMO_DIARIO = 1600;
+/** Qualidade do JPEG gerado no aparelho (0 a 1). */
+export const QUALIDADE_IMAGEM_DIARIO = 0.75;
+
+/**
+ * Tamanho final da imagem do Diário: mantém a proporção e reduz o maior lado a
+ * LADO_MAXIMO_DIARIO. Imagens menores não são ampliadas.
+ */
+export function dimensoesDiario(largura: number, altura: number) {
+  if (!(largura > 0) || !(altura > 0)) {
+    throw new Error('Não foi possível ler a imagem selecionada. Escolha outra foto.');
+  }
+  const escala = Math.min(1, LADO_MAXIMO_DIARIO / Math.max(largura, altura));
+  return {
+    width: Math.max(1, Math.round(largura * escala)),
+    height: Math.max(1, Math.round(altura * escala)),
+  };
+}
