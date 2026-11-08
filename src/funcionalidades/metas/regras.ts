@@ -152,3 +152,26 @@ export function filtrarPorSituacao<T extends { status_validacao: StatusValidacao
     ? contribuicoes
     : contribuicoes.filter(c => c.status_validacao === filtro);
 }
+
+/** Texto enviado pelo botão "Compartilhar meta" (B18). */
+export function textoCompartilharMeta(
+  meta: Pick<
+    MetaBase,
+    'tipo' | 'unidade_medida' | 'quantidade_meta' | 'quantidade_arrecadada' | 'data_limite'
+  > & { titulo: string; descricao: string | null },
+): string {
+  const linhas = [`🌱 Ajude a Horta Conecta: ${meta.titulo}`];
+  const descricao = meta.descricao?.trim();
+  if (descricao) linhas.push(resumir(descricao, 200));
+  linhas.push(`Já arrecadamos ${descreverProgresso(meta)} (${percentualMeta(meta)}%).`);
+  if (meta.data_limite) {
+    const [ano, mes, dia] = meta.data_limite.slice(0, 10).split('-');
+    linhas.push(`Prazo: ${dia}/${mes}/${ano}.`);
+  }
+  linhas.push('Saiba como contribuir pelo app Horta Conecta.');
+  return linhas.join('\n\n');
+}
+
+function resumir(texto: string, limite: number): string {
+  return texto.length <= limite ? texto : `${texto.slice(0, limite - 1).trimEnd()}…`;
+}
