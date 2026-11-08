@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, Text } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Aviso, Botao, Campo } from '@/compartilhado/componentes/Ui';
 import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { mensagemErro } from '@/compartilhado/utils/erros';
 import { tipo } from '@/compartilhado/tema';
 import { detalheDiario, salvarDiario } from '../api';
-import { imagemJpeg } from '../regras';
+import { selecionarImagemDiario } from '../imagemDiario';
 import type { Publicacao } from '../tipos';
 import { ImagemDiario } from '../componentes/ImagemDiario';
 import { OpcaoMarcavel } from '@/funcionalidades/perfil/componentes/PerfilSecoes';
@@ -79,18 +78,9 @@ function Formulario({
     setOcupado(true);
     setErro(null);
     try {
-      const resultado = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        quality: 0.8,
-        base64: true,
-        exif: false,
-        allowsMultipleSelection: false,
-      });
-      if (resultado.canceled || !montado.current) return;
-      const asset = resultado.assets[0];
-      if (!asset.base64) throw new Error('Não foi possível ler a imagem. Escolha outra foto.');
-      imagemJpeg(asset.base64);
-      setFoto({ uri: asset.uri, base64: asset.base64 });
+      const imagem = await selecionarImagemDiario();
+      if (!imagem || !montado.current) return;
+      setFoto(imagem);
     } catch (f) {
       if (montado.current) setErro(mensagemErro(f));
     } finally {
@@ -153,7 +143,8 @@ function Formulario({
         style={{ minHeight: 160, textAlignVertical: 'top' }}
       />
       <Text style={tipo.apoio}>
-        Imagem opcional, até 5 MiB. Publique registros institucionais das atividades.
+        Imagem opcional. Ela é reduzida e comprimida no aparelho antes do envio. Publique registros
+        institucionais das atividades.
       </Text>
       {foto ? (
         <Image
