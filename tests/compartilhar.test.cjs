@@ -22,7 +22,7 @@ function carregar(arquivo, dependencias = {}) {
 const metas = carregar('src/funcionalidades/metas/regras.ts', {
   '@/compartilhado/utils/datas': carregar('src/compartilhado/utils/datas.ts'),
 });
-const diario = carregar('src/funcionalidades/diario/regras.ts');
+const diario = carregar('src/funcionalidades/diario/compartilhar.ts');
 const nbsp = texto => texto.replace(/ /g, ' ');
 
 test('Compartilhar (B18): meta financeira com progresso, prazo e convite', () => {

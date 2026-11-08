@@ -9,7 +9,7 @@ import { confirmarAcao, confirmarExclusao } from '@/compartilhado/utils/confirma
 import { compartilharTexto } from '@/compartilhado/utils/compartilhar';
 import { tipo } from '@/compartilhado/tema';
 import { detalheDiario, excluirDiario, statusDiario } from '../api';
-import { textoCompartilharPublicacao } from '../regras';
+import { textoCompartilharPublicacao } from '../compartilhar';
 import { DataPublicacao } from '../componentes/DataPublicacao';
 import { ImagemDiario } from '../componentes/ImagemDiario';
 
