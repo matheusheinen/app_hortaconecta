@@ -13,6 +13,36 @@ export async function listarDiario(): Promise<Publicacao[]> {
     'Não foi possível carregar as publicações.',
   );
 }
+/** Publicações por página no feed do Diário (RF0013). */
+export const TAMANHO_PAGINA_DIARIO = 20;
+
+/**
+ * Uma página do feed, da mais nova para a mais antiga (RF0013). Pede uma
+ * publicação a mais para saber se há outra página. Sem a RPC no banco
+ * (PGRST202, migration 20261108130000 ainda não aplicada), cai para a lista inteira.
+ */
+export async function listarDiarioPagina(
+  antes: { data: string; id: number } | null,
+): Promise<{ itens: Publicacao[]; temMais: boolean }> {
+  const { data, error } = await supabase.rpc('diario_listar_pagina', {
+    p_antes_data: antes?.data ?? null,
+    p_antes_id: antes?.id ?? null,
+    p_limite: TAMANHO_PAGINA_DIARIO + 1,
+  });
+  if (error?.code === 'PGRST202') {
+    return antes ? { itens: [], temMais: false } : { itens: await listarDiario(), temMais: false };
+  }
+  if (error) throw error;
+  const lista = validarResposta(
+    esquemaListaPublicacoes,
+    data,
+    'Não foi possível carregar as publicações.',
+  );
+  return {
+    itens: lista.slice(0, TAMANHO_PAGINA_DIARIO),
+    temMais: lista.length > TAMANHO_PAGINA_DIARIO,
+  };
+}
 export async function detalheDiario(id: number): Promise<Publicacao> {
   const { data, error } = await supabase.rpc('diario_detalhe', { p_id: id });
   if (error) throw error;
