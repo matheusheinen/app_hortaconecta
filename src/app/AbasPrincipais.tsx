@@ -16,6 +16,7 @@ import { PilhaDiario } from '@/funcionalidades/diario/PilhaDiario';
 import { cores } from '@/compartilhado/tema';
 import { useSessaoAtual } from '@/funcionalidades/autenticacao/ContextoSessao';
 import { Icone, type NomeIcone } from '@/compartilhado/componentes/Icone';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ParametrosDiario = {
   lista: undefined;
@@ -43,6 +44,7 @@ const iconesAbas: Record<keyof ParametrosAbasPrincipais, NomeIcone> = {
 
 export function opcoesAbasPrincipais(
   nome: keyof ParametrosAbasPrincipais,
+  insetInferior = 0,
 ): BottomTabNavigationOptions {
   return {
     headerShown: false,
@@ -57,7 +59,9 @@ export function opcoesAbasPrincipais(
       backgroundColor: cores.fundo,
       borderTopColor: cores.linha,
       borderTopWidth: 1,
-      minHeight: 64,
+      height: 64 + insetInferior,
+      paddingTop: 4,
+      paddingBottom: insetInferior + 4,
       elevation: 0,
       shadowOpacity: 0,
     },
@@ -67,8 +71,9 @@ export function opcoesAbasPrincipais(
 /** Os dois perfis compartilham os destinos e os rótulos refletem seu papel. */
 export function AbasPrincipais() {
   const { ehGestao } = useSessaoAtual();
+  const { bottom } = useSafeAreaInsets();
   return (
-    <Abas.Navigator screenOptions={({ route }) => opcoesAbasPrincipais(route.name)}>
+    <Abas.Navigator screenOptions={({ route }) => opcoesAbasPrincipais(route.name, bottom)}>
       <Abas.Screen name="inicio" options={{ tabBarLabel: 'Início' }}>
         {({ navigation }) => (
           <PilhaInicio

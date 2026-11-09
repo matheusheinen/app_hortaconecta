@@ -12,6 +12,7 @@ import {
   TelaInicioConvidado,
   TelaPerfilConvidado,
 } from '@/funcionalidades/convidado/TelasConvidado';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ParametrosAbasConvidado = {
   inicio: undefined;
@@ -29,8 +30,9 @@ const Abas = createBottomTabNavigator<ParametrosAbasConvidado>();
  */
 export function AbasConvidado() {
   const { sair } = useSessaoAtual();
+  const { bottom } = useSafeAreaInsets();
   return (
-    <Abas.Navigator screenOptions={({ route }) => opcoesAbasPrincipais(route.name)}>
+    <Abas.Navigator screenOptions={({ route }) => opcoesAbasPrincipais(route.name, bottom)}>
       <Abas.Screen name="inicio" options={{ tabBarLabel: 'Início' }}>
         {({ navigation }) => (
           <TelaInicioConvidado

@@ -79,20 +79,36 @@ export const TelaAtividades = memoTela(function TelaAtividades({
       carregando={carregando}
       atualizar={carregar}
     >
-      <Text style={tipo.corpo}>
+      <Text style={[tipo.corpo, estilos.descricaoPagina]}>
         {ehGestao
-          ? 'Publique tarefas para a comunidade, acompanhe as candidaturas e registre a presença no dia.'
+          ? 'Publique tarefas e oficinas, acompanhe as inscrições e registre a presença.'
           : convidado
-            ? 'Veja as tarefas da horta. Para se candidatar, crie uma conta.'
-            : 'Candidate-se às tarefas da horta e acompanhe suas participações. As horas confirmadas viram certificado.'}
+            ? 'Veja mutirões e oficinas e descubra quando acontecem. Entre para se inscrever.'
+            : 'Encontre mutirões e oficinas, veja quando acontecem e inscreva-se para participar.'}
       </Text>
       {ehGestao ? (
-        <Botao titulo="Publicar tarefa" onPress={onNova} />
+        <AcaoPrimaria simbolo="＋" titulo="Nova atividade" onPress={onNova} />
       ) : convidado ? null : (
-        <>
-          <Botao titulo="Minhas candidaturas" onPress={onMinhas} />
-          <Botao titulo="Histórico de participação" variante="contorno" onPress={onHistorico} />
-        </>
+        <View style={estilos.acessosRapidos}>
+          <Pressable
+            onPress={onMinhas}
+            accessibilityRole="button"
+            accessibilityLabel="Minhas inscrições"
+            style={estilos.atalhoCurto}
+          >
+            <Text style={estilos.iconeAtalho}>✓</Text>
+            <Text style={estilos.tituloAtalho}>Minhas inscrições</Text>
+          </Pressable>
+          <Pressable
+            onPress={onHistorico}
+            accessibilityRole="button"
+            accessibilityLabel="Histórico de participação"
+            style={estilos.atalhoCurto}
+          >
+            <Text style={estilos.iconeAtalho}>◷</Text>
+            <Text style={estilos.tituloAtalho}>Meu histórico</Text>
+          </Pressable>
+        </View>
       )}
       <AbasFiltro
         valor={aba}
@@ -120,10 +136,10 @@ export const TelaAtividades = memoTela(function TelaAtividades({
           {aba === 'arquivadas'
             ? 'Nenhuma atividade arquivada.'
             : aba === 'finalizadas'
-              ? 'Nenhuma atividade realizada, cancelada ou recusada.'
+              ? '✓  Nenhuma atividade finalizada por enquanto.'
               : ehGestao
                 ? 'Nenhuma tarefa aberta. Publique uma para a comunidade se candidatar.'
-                : 'Nenhuma tarefa aberta no momento. Quando a horta publicar, ela aparece aqui.'}
+                : '🌱  Nenhuma atividade aberta por enquanto.'}
         </Text>
       ) : null}
       {visiveis.map(a => (
@@ -135,38 +151,47 @@ export const TelaAtividades = memoTela(function TelaAtividades({
             accessibilityLabel={`Ver detalhes de ${a.titulo}`}
             style={estilos.detalhe}
           >
-            <Text style={estilos.etiqueta}>
-              {a.tipo === 'OFICINA_AUTORAL' ? 'OFICINA' : 'TAREFA'} ·{' '}
-              {rotuloStatusAtividade[a.status].toUpperCase()}
-            </Text>
-            <Text style={tipo.secao}>{a.titulo}</Text>
-            <Text style={tipo.corpo} numberOfLines={3}>
+            <View style={estilos.topoCartao}>
+              <View style={estilos.etiquetaTipo}>
+                <Text style={estilos.etiquetaTipoTexto}>
+                  {a.tipo === 'OFICINA_AUTORAL' ? '✦ Oficina' : '🌱 Tarefa'}
+                </Text>
+              </View>
+              <Text style={estilos.status}>{rotuloStatusAtividade[a.status]}</Text>
+            </View>
+            <Text style={estilos.tituloAtividade}>{a.titulo}</Text>
+            <Text style={[tipo.corpo, estilos.descricaoAtividade]} numberOfLines={3}>
               {a.descricao}
             </Text>
-            <Text style={tipo.apoio}>
-              {formatarData(a.data_hora_prevista)} · {a.vagas_totais}{' '}
-              {a.vagas_totais === 1 ? 'vaga' : 'vagas'} · {a.carga_horaria}h
-            </Text>
+            <View style={estilos.detalhesAtividade}>
+              <View style={estilos.itemDetalhe}>
+                <Text style={estilos.iconeDetalhe}>📅</Text>
+                <Text style={estilos.textoDetalhe}>{formatarData(a.data_hora_prevista)}</Text>
+              </View>
+              <View style={estilos.itemDetalhe}>
+                <Text style={estilos.textoDetalhe}>
+                  👥 {a.vagas_totais} {a.vagas_totais === 1 ? 'vaga' : 'vagas'} · ⏱{' '}
+                  {a.carga_horaria}h
+                </Text>
+              </View>
+            </View>
           </Pressable>
           {ehGestao ? (
             <View style={estilos.acoes}>
-              <View style={{ flex: 1 }}>
-                <Botao titulo="Editar" variante="contorno" onPress={() => onEditar(a)} />
-              </View>
+              <AcaoMini simbolo="✎" titulo="Editar" onPress={() => onEditar(a)} />
               {aba !== 'abertas' ? (
-                <View style={{ flex: 1 }}>
-                  <Botao
-                    titulo={aba === 'arquivadas' ? 'Restaurar' : 'Arquivar'}
-                    variante="contorno"
-                    onPress={() => {
-                      void arquivar(a, aba !== 'arquivadas');
-                    }}
-                  />
-                </View>
+                <AcaoMini
+                  simbolo={aba === 'arquivadas' ? '↶' : '↓'}
+                  titulo={aba === 'arquivadas' ? 'Restaurar' : 'Arquivar'}
+                  onPress={() => void arquivar(a, aba !== 'arquivadas')}
+                />
               ) : null}
-              <View style={{ flex: 1 }}>
-                <Botao titulo="Excluir" variante="destrutivo" onPress={() => excluirAtividade(a)} />
-              </View>
+              <AcaoMini
+                simbolo="×"
+                titulo="Excluir"
+                destrutivo
+                onPress={() => excluirAtividade(a)}
+              />
             </View>
           ) : null}
         </CartaoFluxo>
@@ -196,7 +221,122 @@ function formatarData(iso: string) {
 }
 
 const estilos = StyleSheet.create({
-  etiqueta: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, color: cores.tintaSuave },
+  descricaoPagina: { marginBottom: espaco.xs },
+  acessosRapidos: { flexDirection: 'row', gap: espaco.sm, marginBottom: espaco.xs },
+  atalhoCurto: {
+    minHeight: 44,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: espaco.sm,
+    paddingHorizontal: espaco.sm,
+    paddingVertical: espaco.sm,
+    borderRadius: 12,
+    backgroundColor: cores.mint,
+  },
+  iconeAtalho: { color: cores.folha, fontSize: 15, fontWeight: '800' },
+  tituloAtalho: { color: cores.folha, fontSize: 12, fontWeight: '700' },
   detalhe: { gap: espaco.sm },
-  acoes: { flexDirection: 'row', gap: espaco.sm, marginTop: espaco.xs },
+  topoCartao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: espaco.sm,
+  },
+  etiquetaTipo: {
+    backgroundColor: cores.folhaClara,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  etiquetaTipoTexto: { color: cores.folha, fontSize: 10, fontWeight: '800', letterSpacing: 0.8 },
+  status: {
+    color: cores.tintaSuave,
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'right',
+    flexShrink: 1,
+  },
+  tituloAtividade: { color: cores.tinta, fontSize: 19, lineHeight: 25, fontWeight: '700' },
+  descricaoAtividade: { color: cores.tintaMedia },
+  detalhesAtividade: { gap: espaco.sm },
+  itemDetalhe: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
+  iconeDetalhe: { width: 20, fontSize: 14 },
+  textoDetalhe: { color: cores.tintaSuave, fontSize: 13, flexShrink: 1 },
+  acoes: { flexDirection: 'row', flexWrap: 'wrap', gap: espaco.sm, marginTop: espaco.xs },
+  botaoAcao: {
+    minHeight: 44,
+    borderRadius: 12,
+    paddingHorizontal: espaco.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: espaco.sm,
+    backgroundColor: cores.folha,
+  },
+  botaoAcaoTexto: { color: cores.fundo, fontSize: 14, fontWeight: '700' },
+  acaoMini: {
+    minHeight: 34,
+    borderRadius: 9,
+    backgroundColor: cores.mint,
+    paddingHorizontal: espaco.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espaco.xs,
+  },
+  acaoMiniTexto: { color: cores.folha, fontSize: 12, fontWeight: '700' },
+  acaoMiniPerigo: { backgroundColor: cores.beterrabaClara },
+  acaoMiniTextoPerigo: { color: cores.beterraba },
 });
+
+function AcaoPrimaria({
+  simbolo,
+  titulo,
+  onPress,
+}: {
+  simbolo: string;
+  titulo: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={titulo}
+      style={({ pressed }) => [estilos.botaoAcao, pressed && { opacity: 0.72 }]}
+    >
+      <Text style={estilos.botaoAcaoTexto}>{simbolo}</Text>
+      <Text style={estilos.botaoAcaoTexto}>{titulo}</Text>
+    </Pressable>
+  );
+}
+
+function AcaoMini({
+  simbolo,
+  titulo,
+  onPress,
+  destrutivo = false,
+}: {
+  simbolo: string;
+  titulo: string;
+  onPress: () => void;
+  destrutivo?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={titulo}
+      style={({ pressed }) => [
+        estilos.acaoMini,
+        destrutivo && estilos.acaoMiniPerigo,
+        pressed && { opacity: 0.72 },
+      ]}
+    >
+      <Text style={[estilos.acaoMiniTexto, destrutivo && estilos.acaoMiniTextoPerigo]}>
+        {simbolo} {titulo}
+      </Text>
+    </Pressable>
+  );
+}

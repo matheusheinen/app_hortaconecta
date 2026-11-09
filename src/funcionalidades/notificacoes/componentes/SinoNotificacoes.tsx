@@ -1,23 +1,46 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icone } from '@/compartilhado/componentes/Icone';
 import { cores } from '@/compartilhado/tema';
 import { useNotificacoes } from '../ContextoNotificacoes';
+import { marcarTodasLidas } from '../api';
 
 /** Botão do sino com o contador de não lidas. Fica no cabeçalho do Início. */
 export function SinoNotificacoes({ onPress }: { onPress: () => void }) {
-  const { naoLidas } = useNotificacoes();
+  const { naoLidas, recarregar } = useNotificacoes();
+  const [marcando, setMarcando] = useState(false);
+
+  async function abrirNotificacoes() {
+    if (marcando) return;
+    setMarcando(true);
+    onPress();
+    try {
+      await marcarTodasLidas();
+    } catch {
+      // A tela de notificações continua acessível e permite tentar novamente.
+    } finally {
+      await recarregar();
+      setMarcando(false);
+    }
+  }
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => void abrirNotificacoes()}
+      disabled={marcando}
       accessibilityRole="button"
       accessibilityLabel={
         naoLidas ? `Notificações, ${naoLidas} não lida${naoLidas > 1 ? 's' : ''}` : 'Notificações'
       }
+      accessibilityState={{ busy: marcando, disabled: marcando }}
       style={({ pressed }) => [estilos.botao, pressed && estilos.pressionado]}
     >
-      <Icone nome="sino" tamanho={22} />
-      {naoLidas > 0 ? (
+      {marcando ? (
+        <ActivityIndicator size="small" color={cores.folha} />
+      ) : (
+        <Icone nome="sino" tamanho={22} />
+      )}
+      {!marcando && naoLidas > 0 ? (
         <View style={estilos.selo}>
           <Text style={estilos.seloTexto}>{naoLidas > 9 ? '9+' : naoLidas}</Text>
         </View>

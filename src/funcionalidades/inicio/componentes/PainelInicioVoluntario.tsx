@@ -93,10 +93,11 @@ export function PainelInicioVoluntario({
       <View style={estilos.coluna}>
         <View style={estilos.cabecalho}>
           <View style={estilosInicio.flex}>
-            <Text style={estilos.boasVindas}>QUE BOM TER VOCÊ AQUI!</Text>
             <Text accessibilityRole="header" style={estilos.nome}>
-              {nome.trim().split(/\s+/)[0] || 'Olá'} <Text style={estilos.aceno}>👋</Text>
+              {nome.trim() ? `Olá, ${nome.trim().split(/\s+/)[0]}` : 'Olá!'}{' '}
+              <Text style={estilos.aceno}>🌱</Text>
             </Text>
+            <Text style={estilos.boasVindas}>O que acontece na horta, num só lugar.</Text>
           </View>
           <SinoNotificacoes onPress={aoNotificacoes} />
           <Pressable
@@ -141,7 +142,7 @@ export function PainelInicioVoluntario({
           </Pressable>
         ) : null}
 
-        <CabecalhoSecao titulo="EM DESTAQUE" acao="Ver todas" onPress={aoIrParaAtividades} />
+        <CabecalhoSecao titulo="Atividades abertas" acao="Ver todas" onPress={aoIrParaAtividades} />
         {resumo?.destaques.map(({ atividade, vagasDisponiveis }, indice) => (
           <CartaoAtividadeInicio
             key={atividade.id}
@@ -154,15 +155,15 @@ export function PainelInicioVoluntario({
         {resumo && resumo.destaques.length === 0 ? (
           <EstadoVazio
             icone="folha"
-            titulo="Novas oportunidades em breve"
-            texto="As próximas atividades abertas aparecerão aqui."
+            titulo="Sem atividades abertas"
+            texto="As próximas oportunidades aparecem aqui."
           />
         ) : null}
 
         {resumo && sugestoesExtras.length ? (
           <>
             <CabecalhoSecao
-              titulo="SUGERIDAS PARA VOCÊ"
+              titulo="Sugestões para você"
               acao="Ver todas"
               onPress={aoIrParaAtividades}
             />
@@ -182,7 +183,7 @@ export function PainelInicioVoluntario({
           </>
         ) : null}
 
-        <CabecalhoSecao titulo="PRECISAMOS DE" acao="Ver todas" onPress={aoIrParaMetas} />
+        <CabecalhoSecao titulo="A horta precisa" acao="Ver metas" onPress={aoIrParaMetas} />
         {meta ? (
           <CartaoMetaInicio meta={meta} abrir={abrirMeta} />
         ) : resumo ? (
@@ -193,7 +194,7 @@ export function PainelInicioVoluntario({
           />
         ) : null}
 
-        <CabecalhoSecao titulo="DIÁRIO" acao="Ver mais" onPress={aoIrParaDiario} />
+        <CabecalhoSecao titulo="Novidades da horta" acao="Ler mais" onPress={aoIrParaDiario} />
         {publicacao ? (
           <CartaoDiarioInicio publicacao={publicacao} abrir={abrirPublicacao} />
         ) : resumo ? (
@@ -208,7 +209,6 @@ export function PainelInicioVoluntario({
           aoIrParaOficinas={aoIrParaOficinas}
           aoIrParaCertificados={aoIrParaCertificados}
         />
-        <Text style={estilos.assinatura}>Pequenas ações. Um impacto que cresce.</Text>
       </View>
     </ScrollView>
   );
@@ -219,13 +219,7 @@ const estilos = StyleSheet.create({
   conteudo: { paddingHorizontal: 20, paddingTop: 22, paddingBottom: 28, alignItems: 'center' },
   coluna: { width: '100%', maxWidth: 560 },
   cabecalho: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
-  boasVindas: {
-    fontSize: 10,
-    fontWeight: '500',
-    letterSpacing: 0.9,
-    color: cores.folha,
-    marginBottom: 5,
-  },
+  boasVindas: { fontSize: 12, color: cores.tintaSuave, marginTop: 2 },
   nome: {
     fontSize: 24,
     lineHeight: 30,
@@ -245,7 +239,6 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   explicacaoSugestoes: { marginTop: -6, marginBottom: 10 },
-  assinatura: { fontSize: 11, color: cores.tintaSuave, textAlign: 'center', marginTop: 24 },
   feedback: { marginTop: 18 },
   carregando: {
     flexDirection: 'row',

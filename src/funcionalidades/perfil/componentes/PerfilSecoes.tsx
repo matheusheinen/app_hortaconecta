@@ -17,6 +17,7 @@ export function HubPerfil({
   erro,
   carregando,
   carregar,
+  antesModoGestor,
   children,
 }: {
   nome: string;
@@ -25,6 +26,7 @@ export function HubPerfil({
   erro: string | null;
   carregando: boolean;
   carregar: () => void;
+  antesModoGestor?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -34,15 +36,17 @@ export function HubPerfil({
           <Text style={tipo.titulo} accessibilityRole="header">
             Meu perfil
           </Text>
-          <Text style={tipo.apoio}>Gerencie sua foto e seus dados.</Text>
+          <Text style={tipo.apoio}>Foto, dados e preferências da sua conta.</Text>
         </View>
         <Pressable
           onPress={sair}
-          hitSlop={12}
+          hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel="Sair da conta"
+          style={({ pressed }) => [estilos.sair, pressed && estilos.acaoPressionada]}
         >
-          <Text style={[tipo.apoio, { color: cores.folha, fontWeight: '600' }]}>Sair</Text>
+          <Icone nome="sair" tamanho={15} cor={cores.folha} />
+          <Text style={estilos.sairTexto}>Sair</Text>
         </Pressable>
       </View>
       <FotoPerfil nome={nome} papel={papel} />
@@ -51,6 +55,7 @@ export function HubPerfil({
       {carregando && !erro ? <ActivityIndicator color={cores.folha} /> : null}
       {children}
       <CartaoPreferenciasNotificacoes />
+      {antesModoGestor}
       <CartaoModoGestor />
     </ScrollView>
   );
@@ -80,6 +85,9 @@ export function StatusPerfil({
       >
         <View style={[estilos.barraPreenchida, { width: `${(feitas / total) * 100}%` }]} />
       </View>
+      <Text style={estilos.contagem}>
+        {feitas} de {total} seções completas
+      </Text>
     </View>
   );
 }
@@ -87,11 +95,13 @@ export function StatusPerfil({
 export function CartaoSecao({
   titulo,
   resumo,
+  simbolo,
   completa,
   onPress,
 }: {
   titulo: string;
   resumo: string;
+  simbolo: string;
   completa: boolean;
   onPress: () => void;
 }) {
@@ -100,18 +110,29 @@ export function CartaoSecao({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${titulo}. ${completa ? 'Completo' : 'Pendente'}.`}
-      style={({ pressed }) => [estilos.secao, pressed && { opacity: 0.8 }]}
+      accessibilityHint="Abre esta seção do perfil para edição."
+      style={({ pressed }) => [estilos.secao, pressed && estilos.acaoPressionada]}
     >
+      <View style={estilos.simboloSecao}>
+        <Text style={estilos.simboloTexto}>{simbolo}</Text>
+      </View>
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={estilos.secaoTitulo}>{titulo}</Text>
         <Text style={tipo.apoio}>{resumo}</Text>
       </View>
-      <View style={[estilos.chip, completa ? estilos.chipOk : estilos.chipPendente]}>
-        <Text style={[estilos.chipTexto, { color: completa ? cores.folha : cores.terra }]}>
-          {completa ? 'Completo' : 'Pendente'}
+      <View style={[estilos.statusPill, completa ? estilos.statusFeito : estilos.statusFalta]}>
+        <Text
+          style={[
+            estilos.statusTexto,
+            completa ? estilos.secaoStatusOk : estilos.secaoStatusPendente,
+          ]}
+        >
+          {completa ? '✓ Feito' : 'Falta'}
         </Text>
       </View>
-      <Icone nome="seta" tamanho={16} cor={cores.tintaSuave} />
+      <View style={estilos.setaSecao}>
+        <Icone nome="seta" tamanho={14} cor={cores.tintaSuave} />
+      </View>
     </Pressable>
   );
 }
@@ -201,27 +222,61 @@ const estilos = StyleSheet.create({
     alignSelf: 'center',
   },
   cabecalho: { flexDirection: 'row', alignItems: 'flex-start', gap: espaco.md },
-  status: { borderRadius: 18, padding: espaco.md, gap: espaco.sm, borderWidth: 1 },
+  sair: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espaco.xs,
+    paddingHorizontal: espaco.sm,
+    paddingVertical: espaco.xs + 2,
+    borderRadius: 18,
+    backgroundColor: cores.mint,
+  },
+  sairTexto: { fontSize: 12, fontWeight: '700', color: cores.folha },
+  acaoPressionada: { opacity: 0.78 },
+  status: { borderRadius: 14, padding: 12, gap: espaco.sm, borderWidth: 1 },
   statusOk: { backgroundColor: cores.folhaClara, borderColor: cores.folhaLinha },
   statusPendente: { backgroundColor: cores.areia, borderColor: cores.areiaLinha },
-  statusTitulo: { fontSize: 16, fontWeight: '700', color: cores.tinta },
-  barra: { height: 8, borderRadius: 4, backgroundColor: cores.fundo, overflow: 'hidden' },
-  barraPreenchida: { height: 8, borderRadius: 4, backgroundColor: cores.folha },
+  statusTitulo: { fontSize: 15, fontWeight: '700', color: cores.tinta },
+  barra: { height: 5, borderRadius: 3, backgroundColor: cores.fundo, overflow: 'hidden' },
+  barraPreenchida: { height: 5, borderRadius: 3, backgroundColor: cores.folha },
+  contagem: { ...tipo.apoio, fontSize: 11 },
   secao: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: espaco.sm,
     backgroundColor: cores.fundo,
-    borderRadius: 18,
-    padding: espaco.md,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    minHeight: 72,
     borderWidth: 1,
     borderColor: cores.linha,
+    boxShadow: '0px 2px 4px rgba(28, 67, 48, 0.06)',
   },
-  secaoTitulo: { fontSize: 15, fontWeight: '700', color: cores.tinta },
-  chip: { borderRadius: 12, paddingHorizontal: espaco.sm, paddingVertical: 3 },
-  chipOk: { backgroundColor: cores.folhaClara },
-  chipPendente: { backgroundColor: cores.areia },
-  chipTexto: { fontSize: 12, fontWeight: '700' },
+  simboloSecao: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    backgroundColor: cores.folhaClara,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  simboloTexto: { fontSize: 17 },
+  secaoTitulo: { fontSize: 14, fontWeight: '700', color: cores.tinta },
+  statusPill: { borderRadius: 14, paddingHorizontal: 8, paddingVertical: 5 },
+  statusFeito: { backgroundColor: cores.folhaFundo, borderColor: cores.folhaLinha, borderWidth: 1 },
+  statusFalta: { backgroundColor: cores.areia, borderColor: cores.areiaLinha, borderWidth: 1 },
+  statusTexto: { fontSize: 10, fontWeight: '700' },
+  secaoStatusOk: { color: cores.folha },
+  secaoStatusPendente: { color: cores.terra },
+  setaSecao: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: cores.superficie,
+  },
   opcao: {
     borderWidth: 1.5,
     borderColor: cores.linha,

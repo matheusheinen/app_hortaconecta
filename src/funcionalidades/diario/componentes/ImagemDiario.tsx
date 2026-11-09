@@ -5,7 +5,7 @@ import { urlImagemDiario } from '../api';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { tipo } from '@/compartilhado/tema';
 
-export function ImagemDiario({ caminho }: { caminho: string }) {
+export function ImagemDiario({ caminho, altura = 220 }: { caminho: string; altura?: number }) {
   const [falhou, setFalhou] = useState(false);
   const [abrindo, setAbrindo] = useState(true);
   const { dados, erro, carregando, carregar } = useConsulta(
@@ -40,9 +40,9 @@ export function ImagemDiario({ caminho }: { caminho: string }) {
         <Image
           key={dados}
           source={{ uri: dados }}
-          style={{ height: 220, width: '100%', borderRadius: 10 }}
+          style={{ height: altura, width: '100%', borderRadius: 10 }}
           resizeMode="cover"
-          accessibilityLabel="Imagem da atividade institucional"
+          accessibilityLabel="Imagem da publicação"
           onLoadEnd={aoCarregar}
           onError={aoFalhar}
         />

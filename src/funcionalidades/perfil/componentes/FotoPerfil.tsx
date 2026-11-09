@@ -74,15 +74,15 @@ export function FotoPerfil({ nome, papel }: { nome: string; papel: string }) {
         </View>
         <View style={estilos.identificacao}>
           <Text style={estilos.nome}>{nome}</Text>
-          <Text style={estilos.papel}>{papel}</Text>
-          <Text style={tipo.apoio}>Sua foto de perfil é opcional.</Text>
+          <Text style={[estilos.papel, estilos.papelTexto]}>{papel}</Text>
+          <Text style={[tipo.apoio, estilos.dicaOpcional]}>Sua foto de perfil é opcional.</Text>
         </View>
       </View>
       <View style={estilos.acoes}>
         <View style={estilos.acao}>
           <Botao
             titulo={temFoto ? 'Alterar foto' : 'Adicionar foto'}
-            variante="contorno"
+            variante="primario"
             carregando={ocupado}
             desabilitado={carregando}
             onPress={() => {
@@ -144,7 +144,7 @@ const estilos = StyleSheet.create({
     borderColor: cores.linha,
     backgroundColor: cores.fundo,
   },
-  identidade: { flexDirection: 'row', alignItems: 'center', gap: espaco.md },
+  identidade: { alignItems: 'center', gap: espaco.md },
   avatar: {
     width: 88,
     height: 88,
@@ -166,11 +166,17 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.75)',
   },
-  identificacao: { flex: 1, gap: espaco.xs, minWidth: 0 },
-  nome: { fontSize: 20, fontWeight: '700', color: cores.tinta },
+  identificacao: { alignItems: 'center', gap: espaco.xs, minWidth: 0 },
+  nome: { fontSize: 20, fontWeight: '700', color: cores.tinta, textAlign: 'center' },
+  papelTexto: { textAlign: 'center' },
+  dicaOpcional: { textAlign: 'center' },
   papel: { ...tipo.apoio, color: cores.folha, fontWeight: '600' },
-  acoes: { flexDirection: 'row', flexWrap: 'wrap', gap: espaco.sm },
-  acao: { flex: 1, minWidth: 130 },
-  aviso: { ...tipo.apoio, color: cores.folha },
-  dica: { ...tipo.apoio, fontSize: 12 },
+  acoes: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: espaco.sm,
+  },
+  acao: { width: '100%', maxWidth: 280 },
+  aviso: { ...tipo.apoio, color: cores.folha, textAlign: 'center' },
+  dica: { ...tipo.apoio, fontSize: 12, textAlign: 'center' },
 });

@@ -1,7 +1,7 @@
 import { supabase } from '@/servicos/supabase';
 import { validarResposta } from '@/compartilhado/esquemas';
-import type { Publicacao } from './tipos';
-import { esquemaListaPublicacoes, esquemaPublicacao } from './esquemas';
+import type { AutorPublicacao, Publicacao } from './tipos';
+import { esquemaAutoresPublicacao, esquemaListaPublicacoes, esquemaPublicacao } from './esquemas';
 import { salvarDiarioComImagem, validarMenores, validarPublicacao } from './regras';
 export const BUCKET_DIARIO = 'diario-imagens';
 export async function listarDiario(): Promise<Publicacao[]> {
@@ -48,6 +48,32 @@ export async function detalheDiario(id: number): Promise<Publicacao> {
   if (error) throw error;
   return validarResposta(esquemaPublicacao, data, 'Publicação não encontrada ou indisponível.');
 }
+
+/** Dados mínimos dos autores visíveis no Diário, com URLs temporárias para suas fotos. */
+export async function listarAutoresDiario(ids: string[]): Promise<AutorPublicacao[]> {
+  if (!ids.length) return [];
+  const { data, error } = await supabase.rpc('diario_autores', { p_autores: ids });
+  if (error) throw error;
+  const autores = validarResposta(
+    esquemaAutoresPublicacao,
+    data,
+    'Não foi possível carregar os autores das publicações.',
+  );
+  return Promise.all(
+    autores.map(async autor => {
+      if (!autor.foto_perfil) return { ...autor, foto_url: null };
+      try {
+        const { data: imagem, error: erroImagem } = await supabase.storage
+          .from('perfil-fotos')
+          .createSignedUrl(autor.foto_perfil, 300);
+        return { ...autor, foto_url: erroImagem ? null : (imagem?.signedUrl ?? null) };
+      } catch {
+        return { ...autor, foto_url: null };
+      }
+    }),
+  );
+}
+
 export async function salvarDiario(dados: {
   revisao?: number | null;
   id: number | null;

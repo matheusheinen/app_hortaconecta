@@ -35,9 +35,9 @@ export const TelaInicioOng = memoTela(function TelaInicioOng({
         <View style={estilos.cabecalho}>
           <LogoInstituicao url={configuracao?.url_logo} tamanho={44} />
           <View style={estilos.saudacao}>
-            <Text style={estilos.sobretitulo}>BEM-VINDO À GESTÃO</Text>
+            <Text style={estilos.sobretitulo}>Gestão da horta</Text>
             <Text style={estilos.nome}>{nome.trim() ? `Olá, ${nome.trim()}` : 'Olá!'}</Text>
-            <Text style={tipo.apoio}>{configuracao?.nome_curto ?? 'Painel da gestão'}</Text>
+            <Text style={tipo.apoio}>{configuracao?.nome_curto ?? 'Painel da horta'}</Text>
           </View>
           <SinoNotificacoes onPress={aoNotificacoes} />
           <Pressable
@@ -50,31 +50,28 @@ export const TelaInicioOng = memoTela(function TelaInicioOng({
           </Pressable>
         </View>
 
-        {configuracao?.chamada ? (
-          <View style={estilos.chamada}>
-            <Icone nome="folha" tamanho={22} />
-            <Text style={[tipo.apoio, estilos.chamadaTexto]}>{configuracao.chamada}</Text>
-          </View>
-        ) : null}
+        <Text style={estilos.introducao}>
+          Organize atividades, confira doações e compartilhe as novidades da horta.
+        </Text>
 
-        <Text style={estilos.secao}>SUA COMUNIDADE</Text>
+        <Text style={estilos.secao}>Acessos rápidos</Text>
         <View style={estilos.acoes}>
           <CartaoGestao
             titulo="Atividades"
-            resumo="Publique tarefas e acompanhe candidaturas."
+            resumo="Publicar e acompanhar inscrições."
             icone="pessoas"
             onPress={aoIrParaAtividades}
           />
           <CartaoGestao
             titulo="Metas e doações"
-            resumo="Metas em dinheiro ou de materiais, com conferência das contribuições."
+            resumo="Metas, doações e conferências."
             icone="caixa"
             onPress={aoIrParaMetas}
           />
           {aoIrParaCertificados ? (
             <CartaoGestao
               titulo="Certificados"
-              resumo="Acompanhe os certificados emitidos."
+              resumo="Presenças e certificados."
               icone="certificado"
               onPress={aoIrParaCertificados}
             />
@@ -82,14 +79,14 @@ export const TelaInicioOng = memoTela(function TelaInicioOng({
           {aoIrParaOficinas ? (
             <CartaoGestao
               titulo="Oficinas"
-              resumo="Conheça as propostas da comunidade."
+              resumo="Propostas da comunidade."
               icone="oficina"
               onPress={aoIrParaOficinas}
             />
           ) : null}
           <CartaoGestao
             titulo="Diário de Transparência"
-            resumo="Compartilhe os avanços e as histórias da ONG."
+            resumo="Relatos e novidades da horta."
             icone="livro"
             onPress={aoIrParaDiario}
           />
@@ -141,7 +138,7 @@ const estilos = StyleSheet.create({
     marginBottom: espaco.lg,
   },
   saudacao: { flex: 1, gap: 4 },
-  sobretitulo: { fontSize: 11, fontWeight: '600', letterSpacing: 0.7, color: cores.folha },
+  sobretitulo: { fontSize: 12, fontWeight: '600', color: cores.folha },
   nome: { fontSize: 24, fontWeight: '700', color: cores.tinta, letterSpacing: -0.4 },
   sair: {
     width: 44,
@@ -153,22 +150,12 @@ const estilos = StyleSheet.create({
     borderColor: cores.linha,
     backgroundColor: cores.fundo,
   },
-  chamada: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: espaco.md,
-    borderRadius: 18,
-    backgroundColor: cores.folhaClara,
-    marginBottom: espaco.lg,
-  },
-  chamadaTexto: { flex: 1, color: cores.folha },
+  introducao: { ...tipo.corpo, marginBottom: espaco.md },
   secao: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '700',
-    letterSpacing: 0.5,
     color: cores.tinta,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   acoes: { gap: 12 },
   cartao: {
@@ -176,21 +163,21 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     backgroundColor: cores.fundo,
-    borderRadius: 18,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: cores.linha,
-    padding: espaco.md,
+    padding: 12,
   },
   icone: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     backgroundColor: cores.folhaClara,
     alignItems: 'center',
     justifyContent: 'center',
   },
   textoCartao: { flex: 1, gap: 4 },
-  tituloCartao: { fontSize: 16, fontWeight: '700', color: cores.tinta },
+  tituloCartao: { fontSize: 15, fontWeight: '700', color: cores.tinta },
   resumoCartao: { fontSize: 12, lineHeight: 18, color: cores.tintaSuave },
   pressionado: { opacity: 0.75 },
 });
