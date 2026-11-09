@@ -7,3 +7,5 @@ src/servicos/database.types.ts
 docs/
 supabase/
 *.md
+# Gerado pelo Firebase (baixado do console): manter como veio.
+google-services.json

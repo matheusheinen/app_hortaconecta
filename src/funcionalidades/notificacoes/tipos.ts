@@ -20,3 +20,14 @@ export type Notificacao = {
   lida_em: string | null;
   criado_em: string;
 };
+
+/** Categorias do catálogo (voluntariado_privado.notificacoes_tipos). */
+export type CategoriaNotificacao = 'VOLUNTARIADO' | 'CONTRIBUICOES';
+/** Canais fora do app. Só aparecem os ligados no servidor (hoje, push). */
+export type CanalNotificacao = 'push' | 'email' | 'whatsapp';
+
+export type PreferenciaNotificacao = {
+  categoria: CategoriaNotificacao;
+  canal: CanalNotificacao;
+  ativo: boolean;
+};

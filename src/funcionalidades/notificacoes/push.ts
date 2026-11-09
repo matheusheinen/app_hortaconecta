@@ -11,6 +11,16 @@ const CANAL_PADRAO = 'padrao';
 
 /** Token deste aparelho já enviado ao servidor; usado para removê-lo ao sair da conta. */
 let tokenRegistrado: string | null = null;
+/** Ouvinte de troca de token (o sistema pode renovar o token do aparelho). */
+let ouvinteToken: { remove: () => void } | null = null;
+
+/**
+ * Com o push remoto ativo, o próprio push mostra o aviso do sistema; o aviso local disparado
+ * pelo Realtime duplicaria a notificação.
+ */
+export function pushRemotoRegistrado(): boolean {
+  return tokenRegistrado !== null;
+}
 
 function plataforma(): 'ios' | 'android' | null {
   return Platform.OS === 'ios' || Platform.OS === 'android' ? Platform.OS : null;
@@ -86,6 +96,17 @@ export async function registrarDispositivoPush(): Promise<string | null> {
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
     await registrarTokenPush(token, sistema);
     tokenRegistrado = token;
+    // O ouvinte entrega o token nativo (FCM/APNs); o servidor precisa do token Expo, então
+    // pede de novo e registra se mudou.
+    ouvinteToken ??= Notifications.addPushTokenListener(() => {
+      void Notifications.getExpoPushTokenAsync({ projectId })
+        .then(async ({ data: novo }) => {
+          if (!tokenRegistrado || novo === tokenRegistrado) return;
+          await registrarTokenPush(novo, sistema);
+          tokenRegistrado = novo;
+        })
+        .catch(falha => console.warn('Notificações: não foi possível renovar o token.', falha));
+    });
     return token;
   } catch (falha) {
     console.warn('Notificações: não foi possível registrar o aparelho.', falha);
@@ -98,6 +119,8 @@ export async function desregistrarDispositivoPush(): Promise<void> {
   const token = tokenRegistrado;
   if (!token) return;
   tokenRegistrado = null;
+  ouvinteToken?.remove();
+  ouvinteToken = null;
   try {
     await removerTokenPush(token);
   } catch (falha) {

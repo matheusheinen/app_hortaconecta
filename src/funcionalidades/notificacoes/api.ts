@@ -1,5 +1,10 @@
 import { supabase } from '@/servicos/supabase';
-import type { Notificacao } from './tipos';
+import type {
+  CanalNotificacao,
+  CategoriaNotificacao,
+  Notificacao,
+  PreferenciaNotificacao,
+} from './tipos';
 
 export type PlataformaPush = 'ios' | 'android';
 
@@ -70,4 +75,26 @@ export function assinarNotificacoes(
   return () => {
     void supabase.removeChannel(canal);
   };
+}
+
+// --- Preferências por categoria e canal ---
+
+/** Uma linha por categoria × canal ligado no servidor, já com o padrão aplicado. */
+export async function listarPreferencias(): Promise<PreferenciaNotificacao[]> {
+  const { data, error } = await supabase.rpc('notificacoes_preferencias');
+  if (error) throw error;
+  return (Array.isArray(data) ? data : []) as PreferenciaNotificacao[];
+}
+
+export async function salvarPreferencia(
+  categoria: CategoriaNotificacao,
+  canal: CanalNotificacao,
+  ativo: boolean,
+): Promise<void> {
+  const { error } = await supabase.rpc('notificacoes_salvar_preferencia', {
+    p_categoria: categoria,
+    p_canal: canal,
+    p_ativo: ativo,
+  });
+  if (error) throw error;
 }

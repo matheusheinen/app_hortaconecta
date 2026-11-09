@@ -184,38 +184,40 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 | B18 | Integração com WhatsApp e compartilhamento | RF0009 | Média | 6h | Em homologação (PR #18) |
 | B19 | Gestão de metas pela ONG | RF0010 | Alta | 5h | Concluído |
 | B20 | Mural de metas com progresso | RF0010 | Alta | 4h | Concluído |
-| B21 | Chave PIX copia e cola e registro da contribuição | RF0011 | Alta | 6h | Concluído |
-| B22 | Upload de comprovante e armazenamento privado | RF0011 | Alta | 6h | Concluído |
-| B23 | Fila e validação manual de comprovantes | RF0012 | Média | 8h | Concluído |
-| B24 | Atualização automática do total arrecadado | RF0012 | Alta | 3h | Concluído |
-| B25 | Publicação no diário de transparência | RF0013 | Média | 6h | Concluído |
-| B26 | Feed do diário com restrição de imagens de menores | RF0013 | Média | 6h | Em homologação (PR #20) |
-| B27 | Compressão local de imagens | RNF0005 | Média | 6h | Em homologação (PR #17) |
-| B28 | Configuração e parametrização da instituição | RF0015 | Média | 8h | Em homologação (PR #21) |
-| B29 | Notificações push (Expo) | RF0014 | Baixa | 10h | Em homologação (PR #16) |
-| B30 | Tela de perfil da ONG (dados cadastrais, PIX e WhatsApp) | RF0015 | Alta | 4h | Concluído |
-| B31 | Edição de perfil e foto do usuário | RF0002 | Média | 5h | Concluído |
-| B32 | Histórico de participação e mensagem de impacto | RF0008 | Média | 6h | Concluído |
-| B33 | Tela "Minhas contribuições" com situação de validação | RF0011 | Média | 4h | Concluído |
-| B34 | Solicitação de exclusão de dados pelo voluntário | RNF0004 | Alta | 3h | Em homologação (PR #19) |
+| B21 | Chave PIX copia e cola e registro da contribuição | RF0011 | Alta | 6h | Em desenvolvimento |
+| B22 | Upload de comprovante e armazenamento privado | RF0011 | Alta | 6h | Em desenvolvimento |
+| B23 | Fila e validação manual de comprovantes | RF0012 | Média | 8h | Em desenvolvimento |
+| B24 | Atualização automática do total arrecadado | RF0012 | Alta | 3h | Em desenvolvimento |
+| B25 | Publicação no diário de transparência | RF0013 | Média | 6h | Em planejamento |
+| B26 | Feed do diário com restrição de imagens de menores | RF0013 | Média | 6h | Em planejamento |
+| B27 | Compressão local de imagens | RNF0005 | Média | 6h | Em planejamento |
+| B28 | Configuração e parametrização da instituição | RF0015 | Média | 8h | Em planejamento |
+| B29 | Notificações push (Expo) | RF0014 | Baixa | 10h | Em andamento: no app concluído; push remoto no ar no servidor (02/11), falta teste em Android real ([NOTIFICACOES.md](docs/mvp/NOTIFICACOES.md)) |
+| B30 | Tela de perfil da ONG (dados cadastrais, PIX e WhatsApp) | RF0015 | Alta | 4h | Em planejamento |
+| B31 | Edição de perfil e foto do usuário | RF0002 | Média | 5h | Em planejamento |
+| B32 | Histórico de participação e mensagem de impacto | RF0008 | Média | 6h | Em planejamento |
+| B33 | Tela "Minhas contribuições" com situação de validação | RF0011 | Média | 4h | Em planejamento |
 
-### O que falta nos itens em homologação
+### Implementado na branch `integracao/mvp` (aguardando revisão da equipe)
 
-| ID | Falta |
-| --- | --- |
-| B18 | Revisar e integrar o PR #18 |
-| B26 | Integrar o PR #20 o quanto antes: a migration já está no banco e a `main` não salva publicações até o merge |
-| B27 | Revisar e integrar o PR #17 |
-| B28 | Revisar e integrar o PR #21; cores e textos de apresentação ficam como evolução futura |
-| B29 | Testar o push com o app fechado num Android real (development build) e integrar o PR #16 |
-| B34 | Revisar e integrar o PR #19; a gestão ainda não tem tela para listar os pedidos de exclusão |
+A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integração já contém código para itens ainda marcados como em desenvolvimento ou planejamento; a equipe decide se atualiza a situação após revisar e homologar.
 
-### Pendências fora do backlog
-
-- **Senha mínima:** o RNF0011 pede 8 caracteres. O PR #23 ajusta o app; falta mudar no painel do Supabase (Authentication → Providers → Email → Minimum password length = 8).
-- **Paginação:** o PR #24 pagina o feed do Diário (RF0013 e RNF0005), com a migration `20261108130000_diario_paginacao.sql`. As demais listas continuam inteiras: são filtradas por abas no app e ficam na casa das dezenas de registros.
-- **Dependências:** o PR #25 roda `npm audit fix` e reduz os alertas de 16 para 5 moderados, que estão no `@expo/cli` e só somem voltando ao Expo 52. Depois dele, gerar de novo o development build.
-- **Publicação na Google Play:** política de privacidade, página web para pedir a exclusão da conta (exigida pela Google Play além da opção no app), formulário de Segurança dos dados e, se a conta de desenvolvedor for pessoal e criada depois de 13/11/2023, teste fechado com pelo menos 12 testadores por 14 dias seguidos antes de pedir acesso à produção.
+| ID | O que existe na branch | Falta |
+| --- | --- | --- |
+| B15 | Propostas de oficina com decisão da gestão | Oculto no app: fora do MVP por decisão de 05/10 |
+| B16 | Triagem de candidatos com aprovação/recusa e motivo (RPC `voluntariado_decidir`) | Triagem de oficinas (fora do MVP); homologação |
+| B17 | Check-in por QR com token temporário | Homologação em aparelho |
+| B18 | WhatsApp no detalhe da atividade e da meta | Compartilhamento; número cadastrado pela gestão |
+| B21 | Cópia da chave PIX e registro da contribuição (PENDENTE) | Homologação (migration `20261005150000_contribuicoes_metas_pix.sql` aplicada em 23/10/2026) |
+| B22 | Anexo opcional do comprovante, bucket privado `comprovantes` e visualização pela gestão | Homologar com Storage real (migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026) |
+| B23 | Fila geral de conferência (todas as metas), confirmar/recusar com observação (motivo obrigatório ao recusar) e registro de doação recebida | Aplicar `20261023210000_contribuicoes_conferencia.sql` e homologar |
+| B24 | Total recalculado pelo trigger do banco | Homologação |
+| B25 | Publicação, edição e ocultação com revisão e imagem privada | Homologação com Storage real |
+| B26 | Feed só com publicações PUBLICADA | Regra específica para imagens de menores |
+| B30 | Perfil da gestão em seções (conta, institucional, WhatsApp, PIX) | Seção de PIX depende da reconciliação pendente |
+| B31 | Perfil em seções, busca de CEP e foto pessoal com troca/remoção; banco atualizado em 21/10 | Homologar seleção e envio de foto em aparelho |
+| B32 | Histórico de participação com carga prevista | Mensagem de impacto |
+| B33 | "Minhas contribuições" com etiqueta de situação da conferência e filtro por situação | Homologação em dispositivo |
 
 ## Cronograma
 

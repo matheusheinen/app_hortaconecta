@@ -32,12 +32,18 @@ const aviso = {
 };
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-function ambiente(os, expoGo, permissaoInicial = { granted: true, canAskAgain: true }) {
+function ambiente(
+  os,
+  expoGo,
+  permissaoInicial = { granted: true, canAskAgain: true },
+  { ultimaResposta = null, tokens = ['ExpoPushToken[teste]'] } = {},
+) {
   const chamadas = [];
   const efeitos = [];
   const estados = [];
   let importsNativos = 0;
-  let handler, resposta, receber, alterarEstado;
+  let handler, resposta, receber, alterarEstado, trocarToken;
+  let ultima = ultimaResposta;
   let permissao = permissaoInicial;
   const nativo = {
     AndroidImportance: { DEFAULT: 3 },
@@ -58,7 +64,17 @@ function ambiente(os, expoGo, permissaoInicial = { granted: true, canAskAgain: t
     scheduleNotificationAsync: async valor => chamadas.push(['agendar', valor]),
     getExpoPushTokenAsync: async opcoes => {
       chamadas.push(['token', opcoes]);
-      return { data: 'ExpoPushToken[teste]' };
+      return { data: tokens.length > 1 ? tokens.shift() : tokens[0] };
+    },
+    addPushTokenListener: executar => {
+      chamadas.push(['ouvirToken']);
+      trocarToken = executar;
+      return { remove: () => chamadas.push(['removerToken']) };
+    },
+    getLastNotificationResponseAsync: async () => ultima,
+    clearLastNotificationResponseAsync: async () => {
+      chamadas.push(['limparUltima']);
+      ultima = null;
     },
     addNotificationResponseReceivedListener: executar => {
       chamadas.push(['ouvirToque']);
@@ -156,6 +172,7 @@ function ambiente(os, expoGo, permissaoInicial = { granted: true, canAskAgain: t
     receber: notificacao => receber(notificacao),
     responder: dados => resposta({ notification: { request: { content: { data: dados } } } }),
     ativar: () => alterarEstado('active'),
+    trocarToken: () => trocarToken({ type: 'android', data: 'fcm-novo' }),
   };
 }
 
@@ -294,4 +311,55 @@ test('build Android: toque navega, marca como lida e remove listener ao desmonta
   assert.deepEqual(a.estados, [2, 0]);
   desmontar();
   assert.ok(a.chamadas.some(c => c[0] === 'removerToque'));
+});
+
+test('toque que abriu o app do zero navega uma vez e limpa a última resposta', async () => {
+  const dados = { notificacaoId: 9, tipo: aviso.tipo, atividade_id: 7, meta_id: null };
+  const a = ambiente('android', false, undefined, {
+    ultimaResposta: { notification: { request: { content: { data: dados } } } },
+  });
+  const desmontar = a.montar();
+  await tick();
+  await tick();
+  a.responder(dados); // o mesmo toque pode chegar também pelo ouvinte
+  await tick();
+  assert.equal(a.chamadas.filter(c => c[0] === 'abrir').length, 1);
+  assert.deepEqual(
+    a.chamadas.filter(c => c[0] === 'lida'),
+    [['lida', 9]],
+  );
+  assert.ok(a.chamadas.some(c => c[0] === 'limparUltima'));
+  desmontar();
+});
+
+test('push remoto registrado: o Realtime não duplica o aviso do sistema', async () => {
+  const a = ambiente('android', false);
+  assert.equal(await a.push.registrarDispositivoPush(), 'ExpoPushToken[teste]');
+  const desmontar = a.montar();
+  a.receber(aviso);
+  await tick();
+  assert.ok(!a.chamadas.some(c => c[0] === 'agendar'));
+  desmontar();
+  await a.push.desregistrarDispositivoPush();
+  assert.ok(a.chamadas.some(c => c[0] === 'removerToken'));
+});
+
+test('token renovado pelo sistema é registrado de novo', async () => {
+  const a = ambiente('android', false, undefined, {
+    tokens: ['ExpoPushToken[velho]', 'ExpoPushToken[novo]'],
+  });
+  await a.push.registrarDispositivoPush();
+  a.trocarToken();
+  await tick();
+  await tick();
+  assert.deepEqual(
+    a.chamadas.filter(c => c[0] === 'registrar').map(c => c[1]),
+    ['ExpoPushToken[velho]', 'ExpoPushToken[novo]'],
+  );
+  assert.equal(a.chamadas.filter(c => c[0] === 'ouvirToken').length, 1);
+  await a.push.desregistrarDispositivoPush();
+  assert.deepEqual(
+    a.chamadas.filter(c => c[0] === 'desregistrar'),
+    [['desregistrar', 'ExpoPushToken[novo]']],
+  );
 });

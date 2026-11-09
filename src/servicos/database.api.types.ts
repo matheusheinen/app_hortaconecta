@@ -66,6 +66,15 @@ type FuncoesPendentes = {
   notificacoes_marcar_lida: { Args: { p_id: number }; Returns: undefined };
   notificacoes_marcar_todas_lidas: { Args: Record<string, never>; Returns: undefined };
   push_remover_token: { Args: { p_token: string }; Returns: undefined };
+  // Reconciliação 20261101120000_notificacoes_entregues (B29); remover ao regenerar database.types.ts.
+  notificacoes_preferencias: {
+    Args: Record<string, never>;
+    Returns: { categoria: string; canal: string; ativo: boolean }[];
+  };
+  notificacoes_salvar_preferencia: {
+    Args: { p_categoria: string; p_canal: string; p_ativo: boolean };
+    Returns: undefined;
+  };
 };
 
 export type DatabaseAplicativo = Omit<Database, 'public'> & {
