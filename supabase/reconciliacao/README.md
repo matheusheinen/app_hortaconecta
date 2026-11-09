@@ -123,3 +123,10 @@ mocks: a aprovação local não confirma o serviço Storage, JWT/Data API nem An
 O ensaio em `docs/reconciliacao/VALIDACAO_COMPATIBILIDADE_REMOTA.sql` exercita
 as funções e a RLS reais com dados fictícios e reverte os registros no final;
 sequências de identidade podem avançar.
+
+**Feed do Diário paginado (RF0013, aplicada; conferida em 07/11/2026):**
+`20261108130000_diario_paginacao.sql` cria a RPC `diario_listar_pagina(p_antes_data, p_antes_id, p_limite)`,
+que devolve uma página do Diário a partir do cursor da última publicação carregada, com as mesmas
+regras de leitura (RLS) de `diario_listar`, mantida para o resumo do Início. Depende da reconciliação 02.
+Verificação local: `node --test tests/diario-paginacao.test.cjs`. Sem ela, o app carregaria o Diário
+inteiro, como antes, sem erro.

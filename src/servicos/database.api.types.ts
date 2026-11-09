@@ -52,6 +52,11 @@ type TabelasAplicativo = Database['public']['Tables'] & {
 // RPC da reconciliação 20261005170000_diario_excluir ainda não aplicada no
 // remoto. Remover este bloco ao regenerar database.types.ts.
 type FuncoesPendentes = {
+  // Reconciliação 20261108130000_diario_paginacao; remover ao regenerar database.types.ts.
+  diario_listar_pagina: {
+    Args: { p_antes_data: string | null; p_antes_id: number | null; p_limite: number };
+    Returns: Database['public']['Functions']['diario_listar']['Returns'];
+  };
   // Reconciliação 20261023170000_comprovantes_storage, aplicada no remoto; remover ao regenerar database.types.ts.
   comprovante_caminho: { Args: { p_ext: string }; Returns: string };
   diario_excluir_revisao: { Args: { p_id: number; p_revisao: number }; Returns: string | null };
