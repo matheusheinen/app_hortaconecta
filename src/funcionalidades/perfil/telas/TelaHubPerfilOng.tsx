@@ -1,8 +1,15 @@
 import React from 'react';
-import { Text } from 'react-native';
-import { CartaoSecao, HubPerfil, StatusPerfil, estilosPerfil } from '../componentes/PerfilSecoes';
+import { CartaoSecao, HubPerfil, StatusPerfil } from '../componentes/PerfilSecoes';
 import { useContextoPerfilOng } from '../ContextoPerfilOng';
 import { SECOES_PERFIL_ONG, secaoOngCompleta, type SecaoPerfilOng } from '../apiOng';
+
+const simbolos: Record<SecaoPerfilOng, string> = {
+  identidade: '🌱',
+  conta: '👤',
+  institucional: '📄',
+  whatsapp: '☎',
+  recebimento: '💸',
+};
 
 export function TelaHubPerfilOng({
   nome,
@@ -17,13 +24,6 @@ export function TelaHubPerfilOng({
   const completas = dados
     ? SECOES_PERFIL_ONG.filter(s => secaoOngCompleta(s.chave, dados)).length
     : 0;
-  const pendencias = dados
-    ? [
-        !secaoOngCompleta('whatsapp', dados) && 'o WhatsApp',
-        !secaoOngCompleta('recebimento', dados) && 'a chave PIX',
-      ].filter(Boolean)
-    : [];
-
   return (
     <HubPerfil
       nome={nome}
@@ -39,13 +39,13 @@ export function TelaHubPerfilOng({
             ok={completas === SECOES_PERFIL_ONG.length}
             titulo={
               completas === SECOES_PERFIL_ONG.length
-                ? 'Perfil completo'
-                : 'Complete o perfil da gestão'
+                ? 'Pronto para receber apoio'
+                : 'Complete os dados da horta'
             }
             texto={
-              pendencias.length
-                ? `Cadastre ${pendencias.join(' e ')} para que os voluntários consigam entrar em contato e doar.`
-                : 'Os voluntários conseguem falar com a gestão e doar pelas metas em dinheiro.'
+              completas === SECOES_PERFIL_ONG.length
+                ? 'WhatsApp e PIX estão prontos para os voluntários.'
+                : 'Complete os itens marcados como “Falta” abaixo.'
             }
             feitas={completas}
             total={SECOES_PERFIL_ONG.length}
@@ -55,14 +55,11 @@ export function TelaHubPerfilOng({
               key={secao.chave}
               titulo={secao.titulo}
               resumo={secao.resumo}
+              simbolo={simbolos[secao.chave]}
               completa={secaoOngCompleta(secao.chave, dados)}
               onPress={() => abrir(secao.chave)}
             />
           ))}
-          <Text style={estilosPerfil.explicacao}>
-            O nome oficial, as cores e o endereço da horta vêm da configuração institucional,
-            administrada separadamente.
-          </Text>
         </>
       ) : null}
     </HubPerfil>

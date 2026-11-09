@@ -14,3 +14,11 @@ export type Publicacao = {
   autor_id: string;
   atualizado_em: string;
 };
+
+/** Identidade mínima exibida na assinatura de uma publicação pública. */
+export type AutorPublicacao = {
+  id: string;
+  nome: string;
+  foto_perfil: string | null;
+  foto_url: string | null;
+};

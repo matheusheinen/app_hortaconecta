@@ -722,6 +722,8 @@ export type Database = {
       certificados_listar: { Args: never; Returns: Json }
       diario_caminho: { Args: { p_ext: string }; Returns: string }
       diario_detalhe: { Args: { p_id: number }; Returns: Json }
+      diario_autor_foto_visivel: { Args: { p_caminho: string }; Returns: boolean }
+      diario_autores: { Args: { p_autores: string[] }; Returns: Json }
       diario_gestao: { Args: never; Returns: boolean }
       diario_imagem_livre: { Args: { p_caminho: string }; Returns: boolean }
       diario_imagem_visivel: { Args: { p_caminho: string }; Returns: boolean }

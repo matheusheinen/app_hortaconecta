@@ -136,3 +136,9 @@ que devolve uma página do Diário a partir do cursor da última publicação ca
 regras de leitura (RLS) de `diario_listar`, mantida para o resumo do Início. Depende da reconciliação 02.
 Verificação local: `node --test tests/diario-paginacao.test.cjs`. Sem ela, o app carregaria o Diário
 inteiro, como antes, sem erro.
+
+**Autoria no Diário (aplicada em 09/11/2026):** `20261109131130_diario_autores_publicacao.sql`
+expõe, somente para publicações visíveis, o nome e o caminho da foto do autor. A política do
+bucket privado `perfil-fotos` permite assinar apenas fotos de usuários que publicaram no Diário;
+as regras de leitura do restante do perfil permanecem restritas. Depende das reconciliações 02
+e da migration `20261021120000_foto_perfil.sql`.

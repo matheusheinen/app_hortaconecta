@@ -1,5 +1,5 @@
 import { esquemaDe, z } from '@/compartilhado/esquemas';
-import type { Publicacao } from './tipos';
+import type { AutorPublicacao, Publicacao } from './tipos';
 
 // Formato das respostas jsonb de diario_listar e diario_detalhe (to_jsonb da linha).
 
@@ -22,3 +22,13 @@ export const esquemaPublicacao = esquemaDe<Publicacao>()(
 );
 
 export const esquemaListaPublicacoes = esquemaDe<Publicacao[]>()(z.array(esquemaPublicacao));
+
+export const esquemaAutoresPublicacao = esquemaDe<Omit<AutorPublicacao, 'foto_url'>[]>()(
+  z.array(
+    z.object({
+      id: z.string().uuid(),
+      nome: z.string(),
+      foto_perfil: z.string().nullable(),
+    }),
+  ),
+);

@@ -65,7 +65,7 @@ const estilos = StyleSheet.create({
     marginBottom: 8,
     minHeight: 44,
   },
-  titulo: { color: cores.tinta, fontSize: 13, fontWeight: '700', letterSpacing: 0.4 },
+  titulo: { color: cores.tinta, fontSize: 16, fontWeight: '700' },
   verMais: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 3, paddingLeft: 8 },
   verMaisTexto: { color: cores.folha, fontSize: 12 },
   vazio: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 18 },
