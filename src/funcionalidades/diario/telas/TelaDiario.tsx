@@ -4,9 +4,8 @@ import { memoTela } from '@/compartilhado/componentes/memoTela';
 import { Text } from 'react-native';
 import { Botao } from '@/compartilhado/componentes/Ui';
 import { CartaoFluxo, TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
-import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { tipo } from '@/compartilhado/tema';
-import { listarDiario } from '../api';
+import { usePaginasDiario } from '../usePaginasDiario';
 import { DataPublicacao } from '../componentes/DataPublicacao';
 import { ImagemDiario } from '../componentes/ImagemDiario';
 
@@ -20,7 +19,15 @@ export const TelaDiario = memoTela(function TelaDiario({
   criar: () => void;
 }) {
   const { ehGestao: gestao } = useSessaoAtual();
-  const { dados, erro, carregando, carregar } = useConsulta(listarDiario);
+  const {
+    itens: dados,
+    temMais,
+    erro,
+    carregando,
+    carregandoMais,
+    carregar,
+    carregarMais,
+  } = usePaginasDiario();
   return (
     <TelaFluxo
       titulo="Diário de Transparência"
@@ -44,6 +51,16 @@ export const TelaDiario = memoTela(function TelaDiario({
           <Botao titulo="Ler publicação" variante="contorno" onPress={() => abrir(p.id)} />
         </CartaoFluxo>
       ))}
+      {temMais ? (
+        <Botao
+          titulo="Carregar mais publicações"
+          variante="contorno"
+          carregando={carregandoMais}
+          onPress={() => {
+            void carregarMais();
+          }}
+        />
+      ) : null}
     </TelaFluxo>
   );
 });

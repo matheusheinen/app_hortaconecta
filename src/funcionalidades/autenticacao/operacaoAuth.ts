@@ -36,6 +36,6 @@ export function erroAuth(erro: unknown): string {
     return 'Código inválido ou expirado. Peça um novo código.';
   if (/different from the old password/i.test(msg))
     return 'A nova senha precisa ser diferente da anterior.';
-  if (msg.includes('Password should be')) return 'A senha precisa ter ao menos 6 caracteres.';
+  if (msg.includes('Password should be')) return 'A senha precisa ter ao menos 8 caracteres.';
   return msg;
 }

@@ -6,8 +6,10 @@ import { TelaFluxo } from '@/compartilhado/componentes/TelaFluxo';
 import { useAcao } from '@/compartilhado/hooks/useAcao';
 import { useConsulta } from '@/compartilhado/hooks/useConsulta';
 import { confirmarAcao, confirmarExclusao } from '@/compartilhado/utils/confirmar';
+import { compartilharTexto } from '@/compartilhado/utils/compartilhar';
 import { tipo } from '@/compartilhado/tema';
 import { detalheDiario, excluirDiario, statusDiario } from '../api';
+import { textoCompartilharPublicacao } from '../compartilhar';
 import { DataPublicacao } from '../componentes/DataPublicacao';
 import { ImagemDiario } from '../componentes/ImagemDiario';
 
@@ -58,8 +60,23 @@ export function TelaDetalheDiario({
           <Text style={tipo.corpo}>
             {dados.texto ?? dados.descricao_curta ?? 'Relato não informado.'}
           </Text>
+          {dados.status === 'PUBLICADA' ? (
+            <Botao
+              titulo="Compartilhar publicação"
+              variante="contorno"
+              desabilitado={acao.ocupado}
+              onPress={() => {
+                void compartilharTexto(dados.titulo, textoCompartilharPublicacao(dados));
+              }}
+            />
+          ) : null}
           {gestao ? (
             <>
+              {dados.imagem_com_menores ? (
+                <Text style={tipo.apoio}>
+                  Imagem com crianças ou adolescentes · autorização dos responsáveis declarada.
+                </Text>
+              ) : null}
               <Botao titulo="Editar publicação" onPress={editar} desabilitado={acao.ocupado} />
               <Botao
                 titulo={dados.status === 'PUBLICADA' ? 'Ocultar publicação' : 'Publicar novamente'}

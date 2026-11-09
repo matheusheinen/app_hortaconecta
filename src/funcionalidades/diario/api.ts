@@ -2,7 +2,7 @@ import { supabase } from '@/servicos/supabase';
 import { validarResposta } from '@/compartilhado/esquemas';
 import type { Publicacao } from './tipos';
 import { esquemaListaPublicacoes, esquemaPublicacao } from './esquemas';
-import { salvarDiarioComImagem, validarPublicacao } from './regras';
+import { salvarDiarioComImagem, validarMenores, validarPublicacao } from './regras';
 export const BUCKET_DIARIO = 'diario-imagens';
 export async function listarDiario(): Promise<Publicacao[]> {
   const { data, error } = await supabase.rpc('diario_listar');
@@ -12,6 +12,36 @@ export async function listarDiario(): Promise<Publicacao[]> {
     data,
     'Não foi possível carregar as publicações.',
   );
+}
+/** Publicações por página no feed do Diário (RF0013). */
+export const TAMANHO_PAGINA_DIARIO = 20;
+
+/**
+ * Uma página do feed, da mais nova para a mais antiga (RF0013). Pede uma
+ * publicação a mais para saber se há outra página. Sem a RPC no banco
+ * (PGRST202, migration 20261108130000 ainda não aplicada), cai para a lista inteira.
+ */
+export async function listarDiarioPagina(
+  antes: { data: string; id: number } | null,
+): Promise<{ itens: Publicacao[]; temMais: boolean }> {
+  const { data, error } = await supabase.rpc('diario_listar_pagina', {
+    p_antes_data: antes?.data ?? null,
+    p_antes_id: antes?.id ?? null,
+    p_limite: TAMANHO_PAGINA_DIARIO + 1,
+  });
+  if (error?.code === 'PGRST202') {
+    return antes ? { itens: [], temMais: false } : { itens: await listarDiario(), temMais: false };
+  }
+  if (error) throw error;
+  const lista = validarResposta(
+    esquemaListaPublicacoes,
+    data,
+    'Não foi possível carregar as publicações.',
+  );
+  return {
+    itens: lista.slice(0, TAMANHO_PAGINA_DIARIO),
+    temMais: lista.length > TAMANHO_PAGINA_DIARIO,
+  };
 }
 export async function detalheDiario(id: number): Promise<Publicacao> {
   const { data, error } = await supabase.rpc('diario_detalhe', { p_id: id });
@@ -26,8 +56,12 @@ export async function salvarDiario(dados: {
   status: 'PUBLICADA' | 'OCULTA';
   imagem: string | null;
   base64: string | null;
+  comMenores: boolean;
+  autorizacao: boolean;
 }): Promise<number> {
   validarPublicacao(dados.titulo, dados.texto);
+  const temImagem = dados.base64 !== null || dados.imagem !== null;
+  validarMenores(temImagem, dados.comMenores, dados.autorizacao);
   return salvarDiarioComImagem(
     dados.base64,
     dados.imagem,
@@ -53,6 +87,8 @@ export async function salvarDiario(dados: {
         p_texto: dados.texto.trim(),
         p_status: dados.status,
         p_imagem: caminho,
+        p_imagem_com_menores: caminho !== null && dados.comMenores,
+        p_autorizacao_responsaveis: caminho !== null && dados.comMenores && dados.autorizacao,
       });
       if (error) throw error;
       if (data === null)

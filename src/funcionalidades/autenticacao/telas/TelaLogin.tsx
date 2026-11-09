@@ -128,9 +128,9 @@ export function TelaLogin({ erroSessao }: { erroSessao?: string | null }) {
               onChangeText={alterar.senha}
               placeholder={
                 cadastrando
-                  ? 'Crie sua senha'
+                  ? 'Crie uma senha (mínimo 8 caracteres)'
                   : recuperando
-                    ? 'Crie a nova senha'
+                    ? 'Nova senha (mínimo 8 caracteres)'
                     : 'Digite sua senha'
               }
               secureTextEntry

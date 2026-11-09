@@ -109,6 +109,14 @@ continuam independentes do calendário.
    comprovante e data de envio na conferência e exige motivo ao recusar. Depende do item 7. O app funciona
    sem ela, mas a trava passa a valer só depois. Verificação local:
    `node --test tests/contribuicoes-conferencia.test.cjs`.
+9. `20261108120000_diario_menores.sql` (**aplicada; conferida em 07/11/2026**, B26): colunas
+   `diario_transparencia.imagem_com_menores` e `autorizacao_responsaveis`, com a restrição
+   `diario_menores_com_autorizacao`, e a RPC `diario_salvar_revisao` de 8 parâmetros, que só
+   aceita imagem com crianças ou adolescentes quando a gestão declara a autorização dos
+   responsáveis. A versão de 6 parâmetros deixa de ser chamável pelo app. Depende da
+   reconciliação 02. Verificação local: `node --test tests/diario-menores.test.cjs`. Como já foi
+   aplicada, a versão do app sem este PR não consegue salvar publicação no Diário (a RPC antiga
+   foi fechada ao cliente); integrar o PR #20 o quanto antes.
 
 As novas tabelas recebem RLS e grants explícitos; funções privadas não ficam
 acessíveis ao cliente. Contas autenticadas leem o próprio perfil, e a gestão
@@ -121,3 +129,10 @@ mocks: a aprovação local não confirma o serviço Storage, JWT/Data API nem An
 O ensaio em `docs/reconciliacao/VALIDACAO_COMPATIBILIDADE_REMOTA.sql` exercita
 as funções e a RLS reais com dados fictícios e reverte os registros no final;
 sequências de identidade podem avançar.
+
+**Feed do Diário paginado (RF0013, aplicada; conferida em 07/11/2026):**
+`20261108130000_diario_paginacao.sql` cria a RPC `diario_listar_pagina(p_antes_data, p_antes_id, p_limite)`,
+que devolve uma página do Diário a partir do cursor da última publicação carregada, com as mesmas
+regras de leitura (RLS) de `diario_listar`, mantida para o resumo do Início. Depende da reconciliação 02.
+Verificação local: `node --test tests/diario-paginacao.test.cjs`. Sem ela, o app carregaria o Diário
+inteiro, como antes, sem erro.

@@ -10,7 +10,8 @@ import { formatarDataCurta, hojeIso } from '@/compartilhado/utils/datas';
 import { tipo } from '@/compartilhado/tema';
 import type { Meta } from '../tipos';
 import { alterarStatusMeta, carregarMeta } from '../api';
-import { prazoVencido, recebendoContribuicoes } from '../regras';
+import { compartilharTexto } from '@/compartilhado/utils/compartilhar';
+import { prazoVencido, recebendoContribuicoes, textoCompartilharMeta } from '../regras';
 import { useConferencia } from '../useConferencia';
 import { EtiquetaMeta, ProgressoMeta } from '../componentes/IndicadoresMeta';
 import { PainelGestaoMeta } from '../componentes/PainelGestaoMeta';
@@ -67,6 +68,15 @@ export function TelaDetalheMeta({
                 : 'Sem prazo definido'}{' '}
               · só contam doações confirmadas pela gestão.
             </Text>
+            {meta.status === 'ABERTA' ? (
+              <Botao
+                titulo="Compartilhar meta"
+                variante="contorno"
+                onPress={() => {
+                  void compartilharTexto(meta.titulo, textoCompartilharMeta(meta));
+                }}
+              />
+            ) : null}
           </CartaoFluxo>
           {ehGestao ? (
             <PainelGestaoMeta

@@ -227,3 +227,46 @@ export function validarRecebimento(campos: { chave: string; beneficiario: string
     throw new Error('O nome do beneficiário precisa ter entre 2 e 120 caracteres.');
   return { chave_pix: chave || null, nome_beneficiario_pix: beneficiario || null };
 }
+
+/** B28: nome curto (cabeçalhos) e nome completo (documentos) da instituição. */
+export function validarIdentidade(campos: { nomeCurto: string; nomeCompleto: string }): {
+  nome_curto: string;
+  nome_completo: string;
+} {
+  const nomeCurto = campos.nomeCurto.trim().replace(/\s+/g, ' ');
+  const nomeCompleto = campos.nomeCompleto.trim().replace(/\s+/g, ' ');
+  if (nomeCurto.length < 2 || nomeCurto.length > 40)
+    throw new Error('O nome curto precisa ter entre 2 e 40 caracteres.');
+  if (nomeCompleto.length < 3 || nomeCompleto.length > 120)
+    throw new Error('O nome completo precisa ter entre 3 e 120 caracteres.');
+  return { nome_curto: nomeCurto, nome_completo: nomeCompleto };
+}
+
+/** Limite do logotipo já reduzido, guardado como data URI em `url_logo`. */
+export const LIMITE_LOGO = 200 * 1024;
+/** Maior lado do logotipo, em pixels. */
+export const TAMANHO_LOGO = 256;
+
+/**
+ * Confere o PNG gerado no aparelho e devolve o data URI gravado em
+ * `configuracao_instituicao.url_logo`, que já tem leitura pública por RLS.
+ */
+export function logoDataUri(base64: string): string {
+  if (!base64 || base64.length > Math.ceil(LIMITE_LOGO / 3) * 4) {
+    throw new Error('O logotipo ficou muito grande. Escolha uma imagem mais simples.');
+  }
+  let binario: string;
+  try {
+    binario = atob(base64);
+  } catch {
+    throw new Error('Não foi possível ler o logotipo. Escolha outra imagem.');
+  }
+  if (binario.length > LIMITE_LOGO) {
+    throw new Error('O logotipo ficou muito grande. Escolha uma imagem mais simples.');
+  }
+  const png = [0x89, 0x50, 0x4e, 0x47];
+  if (png.some((byte, i) => binario.charCodeAt(i) !== byte)) {
+    throw new Error('Não foi possível preparar o logotipo. Escolha outra imagem.');
+  }
+  return `data:image/png;base64,${base64}`;
+}

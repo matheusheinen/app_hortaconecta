@@ -9,15 +9,18 @@ import {
   type PerfilOngCarregado,
 } from './apiOng';
 import { mensagemErro } from '@/compartilhado/utils/erros';
+import { avisarConfiguracaoAlterada } from '@/compartilhado/hooks/useConfiguracaoInstituicao';
 import { ProvedorPerfilOng } from './ContextoPerfilOng';
 import { TelaHubPerfilOng } from './telas/TelaHubPerfilOng';
 import { TelaSecaoContaOng } from './telas/TelaSecaoContaOng';
+import { TelaSecaoIdentidadeOng } from './telas/TelaSecaoIdentidadeOng';
 import { TelaSecaoInstitucionalOng } from './telas/TelaSecaoInstitucionalOng';
 import { TelaSecaoRecebimentoOng } from './telas/TelaSecaoRecebimentoOng';
 import { TelaSecaoWhatsappOng } from './telas/TelaSecaoWhatsappOng';
 
 export type ParametrosPerfilOng = {
   hub: undefined;
+  identidade: undefined;
   conta: undefined;
   institucional: undefined;
   whatsapp: undefined;
@@ -62,6 +65,7 @@ export function PilhaPerfilOng() {
       await salvarPerfilOng(parcial);
       setDados({ ...dados, ...parcial });
       if ('nome' in parcial) await recarregarPerfil().catch(() => {});
+      if ('nome_curto' in parcial || 'url_logo' in parcial) avisarConfiguracaoAlterada();
     },
     [dados, recarregarPerfil],
   );
@@ -75,6 +79,9 @@ export function PilhaPerfilOng() {
           {({ navigation }) => (
             <TelaHubPerfilOng nome={nome} sair={sair} abrir={secao => navigation.navigate(secao)} />
           )}
+        </Pilha.Screen>
+        <Pilha.Screen name="identidade">
+          {({ navigation }) => <TelaSecaoIdentidadeOng voltar={() => navigation.goBack()} />}
         </Pilha.Screen>
         <Pilha.Screen name="conta">
           {({ navigation }) => <TelaSecaoContaOng voltar={() => navigation.goBack()} />}

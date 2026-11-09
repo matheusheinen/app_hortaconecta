@@ -1,5 +1,6 @@
 import React from 'react';
 import { CartaoSecao, HubPerfil, StatusPerfil } from '../componentes/PerfilSecoes';
+import { SolicitarExclusao } from '../componentes/SolicitarExclusao';
 import { useContextoPerfilVoluntario } from '../ContextoPerfilVoluntario';
 import {
   SECOES_PERFIL,
@@ -54,6 +55,7 @@ export function TelaHubPerfilVoluntario({
               onPress={() => abrir(secao.chave)}
             />
           ))}
+          <SolicitarExclusao />
         </>
       ) : null}
     </HubPerfil>

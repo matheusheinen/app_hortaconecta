@@ -9,6 +9,18 @@ export function validarPublicacao(titulo: string, texto: string) {
     throw new Error('Informe título de 3 a 120 caracteres e texto de 1 a 20.000 caracteres.');
   }
 }
+/**
+ * B26: imagem com crianças ou adolescentes só é publicada com a autorização dos
+ * responsáveis. O banco repete a regra (diario_menores_com_autorizacao).
+ */
+export function validarMenores(temImagem: boolean, comMenores: boolean, autorizacao: boolean) {
+  if (temImagem && comMenores && !autorizacao) {
+    throw new Error(
+      'Imagem com crianças ou adolescentes só pode ser publicada com a autorização dos responsáveis. Confirme a autorização ou remova a imagem.',
+    );
+  }
+}
+
 export function imagemJpeg(base64: string): ArrayBuffer {
   if (!base64 || base64.length > Math.ceil(LIMITE_IMAGEM_DIARIO / 3) * 4) {
     throw new Error('Escolha uma imagem de até 5 MiB.');
@@ -35,4 +47,24 @@ export async function salvarDiarioComImagem(
 ): Promise<number> {
   const caminho = base64 === null ? caminhoAtual : await enviar(imagemJpeg(base64));
   return salvar(caminho);
+}
+
+/** Maior lado da imagem enviada ao Diário, em pixels. */
+export const LADO_MAXIMO_DIARIO = 1600;
+/** Qualidade do JPEG gerado no aparelho (0 a 1). */
+export const QUALIDADE_IMAGEM_DIARIO = 0.75;
+
+/**
+ * Tamanho final da imagem do Diário: mantém a proporção e reduz o maior lado a
+ * LADO_MAXIMO_DIARIO. Imagens menores não são ampliadas.
+ */
+export function dimensoesDiario(largura: number, altura: number) {
+  if (!(largura > 0) || !(altura > 0)) {
+    throw new Error('Não foi possível ler a imagem selecionada. Escolha outra foto.');
+  }
+  const escala = Math.min(1, LADO_MAXIMO_DIARIO / Math.max(largura, altura));
+  return {
+    width: Math.max(1, Math.round(largura * escala)),
+    height: Math.max(1, Math.round(altura * escala)),
+  };
 }

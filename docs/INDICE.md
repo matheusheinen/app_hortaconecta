@@ -1,23 +1,21 @@
 # Documentação — HortaConecta
 
-Visão do projeto, requisitos (RF0001–RF0016, RNF0001–RNF0011), backlog (B01–B34),
+Visão do projeto, requisitos (RF0001–RF0015, RNF0001–RNF0011), backlog (B01–B34),
 cronograma e convenções ficam no [DOCUMENTACAO.md](../DOCUMENTACAO.md), que é a referência
 principal. Esta pasta reúne o guia de execução, o escopo do MVP e os relatórios
 de cada etapa. Os relatórios são **registros datados**: cada um abre com um bloco
 "Situação em 05/10/2026" que diz o que mudou depois de escrito. Quando um
 relatório divergir do DOCUMENTACAO.md, vale o DOCUMENTACAO.md.
 
-## Estado atual (05/10/2026)
+## Estado atual (07/11/2026)
 
 - **MVP:** voluntariado, contribuições por metas (dinheiro e materiais) e Diário.
   Oficinas e certificados estão implementados, mas ocultos no app ([escopo](mvp/ESCOPO_MVP.md)).
-- **Código:** branch `integracao/mvp`; `npx tsc --noEmit` sem erros e 117 testes aprovados.
-- **Supabase:** reconciliações 01 e 02 aplicadas em 30/09
-  ([resultado e limites](reconciliacao/COMPATIBILIDADE_SUPABASE_20260930.md)). A reconciliação
-  `20261005150000` (PIX na configuração da instituição e exclusão das tabelas de materiais)
-  **está pendente** ([README da reconciliação](../supabase/reconciliacao/README.md)).
-- **Pendências:** [lista no escopo do MVP](mvp/ESCOPO_MVP.md#pendências-do-mvp-05102026),
-  incluindo homologação em Android, login/JWT e Storage reais e concorrência entre conexões.
+- **Código:** branch `main`, com os PRs #16 a #21 aguardando revisão; 269 testes na `main`
+  e 314 com os PRs. Situação de cada item no [backlog](../DOCUMENTACAO.md#backlog-e-situação-atual).
+- **Supabase:** ordem e situação de cada reconciliação no
+  [README da reconciliação](../supabase/reconciliacao/README.md). Pendentes: as duas do B23 e a do B26
+  (esta junto com o merge do PR #20).
 
 ## Executar o app
 
@@ -28,8 +26,8 @@ relatório divergir do DOCUMENTACAO.md, vale o DOCUMENTACAO.md.
 | Documento | Requisitos | Backlog |
 | --- | --- | --- |
 | [Escopo do MVP (decisão de 05/10/2026)](mvp/ESCOPO_MVP.md) | Todos | Todos |
-| [Voluntariado](mvp/VOLUNTARIADO.md) | RF0001–RF0005, RF0007–RF0009 | B01–B14, B16–B18, B31, B33 |
-| [Contribuições: metas em dinheiro e de materiais](mvp/CONTRIBUICOES.md) | RF0010–RF0012, RF0015, RNF0004 | B19–B24, B30, B34 |
+| [Voluntariado](mvp/VOLUNTARIADO.md) | RF0001–RF0005, RF0007–RF0009 | B01–B14, B16–B18, B31, B32, B34 |
+| [Contribuições: metas em dinheiro e de materiais](mvp/CONTRIBUICOES.md) | RF0010–RF0012, RF0015, RNF0004 | B19–B24, B28, B30, B33 |
 | [Diário de Transparência](mvp/DIARIO.md) | RF0013, RNF0003, RNF0005 | B25–B27 |
 | [Correções do MVP](mvp/CORRECOES_MVP.md) | RNF0007, RNF0010, RNF0011 | — |
 | [Foto do perfil (21/10/2026)](mvp/FOTO_PERFIL.md) | RF0002 | B31 |
