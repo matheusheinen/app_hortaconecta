@@ -4,18 +4,18 @@ Aplicativo mobile de voluntariado, apadrinhamento e transparência para a Horta 
 
 Projeto de extensão — UNIVATES, Engenharia de Software, Laboratório de Programação para Dispositivos Móveis, 2026/2. Professor orientador: Juliano Dertzbacher.
 
-**Equipe:** Lucas Mezzomo (analista/desenvolvedor), Matheus Augusto Heinen (desenvolvedor/testador), Roberto Estevão Henz Junior (desenvolvedor/documentador).
+**Equipe:** Lucas Mezzomo (analista/desenvolvedor), Matheus Augusto Heinen (desenvolvedor/documentador), Roberto Estevão Henz Junior (desenvolvedor/testador).
 
 O app resolve três problemas da instituição: captação de voluntários (banco de talentos), captação de recursos (mural de apadrinhamento com PIX) e transparência (diário com fotos e relatos).
 
-## Estado atual (05/10/2026)
+## Estado atual (07/11/2026)
 
-- **Branch de trabalho:** `integracao/mvp`, criada a partir de `origin/main` (PRs #1 e #2), com as funcionalidades do redesenho local (27–29/09) portadas por cima. Ainda não enviada ao GitHub. O `main` local com os commits do redesenho continua preservado.
+- **Branch principal:** `main` (último merge em 31/10/2026). Ninguém commita direto nela; tudo entra por PR (ver [CONTRIBUTING.md](CONTRIBUTING.md)).
+- **PRs abertos, aguardando revisão:** #16 (B29, push remoto), #17 (B27), #18 (B18), #19 (B34), #20 (B26), #21 (B28), #23 (senha mínima), #24 (Diário paginado), #25 (`npm audit fix`) e #22 (esta documentação, para integrar por último). Os de código se integram sem conflito em qualquer ordem.
 - **Escopo do MVP:** voluntariado, contribuições por metas (dinheiro e materiais) e Diário. Propostas de oficinas e certificados estão implementados, mas **fora do MVP por enquanto**: ocultos no app por `src/compartilhado/escopoMvp.ts`, com código, testes e banco preservados. Referência: [docs/mvp/ESCOPO_MVP.md](docs/mvp/ESCOPO_MVP.md).
-- **Estilo visual:** o atual de `origin/main`. O redesenho é fonte de funcionalidades, não de estilo; posicionamento pode mudar e elementos faltantes podem ser adicionados.
-- **Supabase (`hnawclapixopwjyrpxpq`):** reconciliações 01 e 02 aplicadas em 30/09. A reconciliação `supabase/reconciliacao/20261005150000_contribuicoes_metas_pix.sql` está **pendente**: move o PIX para `configuracao_instituicao`, exige meta aberta para o voluntário contribuir e exclui as tabelas de materiais criadas pela reconciliação 02. Depois de aplicá-la, regenerar `src/servicos/database.types.ts` e remover o bloco provisório `ColunasPix` de `src/servicos/database.api.types.ts`.
-- **Verificação local:** `npx tsc --noEmit` sem erros e `npm test` com 117 testes aprovados.
-- **Documentação:** índice em [docs/INDICE.md](docs/INDICE.md). Os relatórios de `docs/` são registros datados; cada um abre com um bloco "Situação em 05/10/2026". Quando um relatório divergir deste arquivo, este arquivo prevalece.
+- **Supabase (`hnawclapixopwjyrpxpq`):** todas as reconciliações de `supabase/reconciliacao/` estão aplicadas, inclusive as do B23, do B26 e da paginação do Diário (conferido em 07/11/2026 com [docs/reconciliacao/VERIFICAR_RECONCILIACOES.sql](docs/reconciliacao/VERIFICAR_RECONCILIACOES.sql), consulta só de leitura). Como a do B26 fecha a RPC antiga de salvar no Diário, a `main` só volta a salvar publicações depois do merge do PR #20.
+- **Verificação local:** `npm run typecheck`, `npm run lint` e `npm test` sem erros; 269 testes na `main` e 314 com os PRs #16 a #21.
+- **Documentação:** índice em [docs/INDICE.md](docs/INDICE.md). Os relatórios de `docs/` são registros datados; quando um relatório divergir deste arquivo, este arquivo prevalece. A documentação entregue à disciplina fica no Google Docs da equipe.
 
 ### Foto do perfil — implantação em 21/10/2026
 
@@ -31,11 +31,11 @@ Contrato, permissões e roteiro: [docs/mvp/FOTO_PERFIL.md](docs/mvp/FOTO_PERFIL.
 
 ## Stack
 
-- **App:** React Native + Expo SDK 57, TypeScript, React Navigation 7. Antes de escrever código, consultar a documentação versionada: https://docs.expo.dev/versions/v57.0.0/ (ver `AGENTS.md`).
+- **App:** React Native + Expo SDK 58, TypeScript, React Navigation 7. Antes de escrever código, consultar a documentação versionada: https://docs.expo.dev/versions/v58.0.0/ (ver `AGENTS.md`).
 - **Backend:** Supabase (BaaS) — Auth, PostgreSQL, Storage, Row Level Security
-- **Imagens:** `expo-image-manipulator` instalado para recortar e reduzir fotos de perfil antes do upload. O Diário ainda usa só `quality: 0.8` do `expo-image-picker`, sem redimensionar (B27 pendente).
-- **Notificações:** Expo Notifications (prioridade baixa) — tokens em `voluntariado_privado.dispositivos_push` (vários aparelhos por usuário), gravados pelas RPCs `push_registrar_token` e `push_remover_token`; o envio remoto não existe. As notificações do dia a dia vivem em `public.notificacoes` (gatilhos no banco, sino no app via Realtime)
-- **Integrações:** WhatsApp via deep link (`wa.me`), PIX estático (chave copia e cola, `expo-clipboard`), ViaCEP para endereço
+- **Imagens:** `expo-image-manipulator` reduz as imagens no aparelho antes do envio: foto de perfil (recorte quadrado, JPEG até 512 px), Diário (JPEG até 1600 px, B27) e logotipo da instituição (PNG até 256 px, B28).
+- **Notificações:** Expo Notifications (prioridade baixa) — tokens em `voluntariado_privado.dispositivos_push` (vários aparelhos por usuário), gravados pelas RPCs `push_registrar_token` e `push_remover_token`; o push com o app fechado (fila `notificacoes_entregues`, Edge Functions e FCM) está no PR #16, aguardando teste em Android real ([docs/mvp/NOTIFICACOES.md](docs/mvp/NOTIFICACOES.md), na branch do PR). As notificações do dia a dia vivem em `public.notificacoes` (gatilhos no banco, sino no app via Realtime)
+- **Integrações:** WhatsApp via deep link (`wa.me`), compartilhamento de metas e publicações pelo `Share` do React Native (B18), PIX estático (chave copia e cola, `expo-clipboard`), ViaCEP para endereço
 - **Check-in:** `expo-camera` (leitura de QR) e `react-native-qrcode-svg` (geração)
 - **Build/testes:** Expo Go, EAS Build; testes com `node --test` e PGlite (PostgreSQL em memória)
 - **Design:** Figma (protótipo navegável validado com a ONG)
@@ -77,11 +77,11 @@ Escrita em `inscricoes_atividades` só por RPC (`voluntariado_*`). Tokens de che
 | --- | --- |
 | `metas_demandas` | `id` (PK), `titulo`, `descricao`, `tipo` (`FINANCEIRA` / `MATERIAL`), `unidade_medida`, `quantidade_meta`, `quantidade_arrecadada`, `url_imagem_capa`, `data_limite`, `status`, `criado_em`, `atualizado_em` |
 | `contribuicoes` | `id` (PK), `meta_id` (FK), `usuario_id` (FK), `quantidade_oferecida`, `url_comprovante` (opcional), `data_envio`, `status_validacao`, `validado_por` (FK → `usuarios`), `validado_em`, `observacao_validacao` |
-| `diario_transparencia` | `id` (PK), `titulo`, `descricao_curta`, `texto`, `status` (`PUBLICADA` / `OCULTA`), `imagem_caminho`, `url_imagem` *(legado)*, `revisao`, `atividade_id` (FK, opcional), `data_publicacao`, `autor_id` (FK), `atualizado_em` |
+| `diario_transparencia` | `id` (PK), `titulo`, `descricao_curta`, `texto`, `status` (`PUBLICADA` / `OCULTA`), `imagem_caminho`, `imagem_com_menores`, `autorizacao_responsaveis` *(B26, PR #20)*, `url_imagem` *(legado)*, `revisao`, `atividade_id` (FK, opcional), `data_publicacao`, `autor_id` (FK), `atualizado_em` |
 
-Imagens do Diário ficam no bucket privado `diario-imagens` (até 5 MiB, JPEG/PNG/WebP), lidas por URL assinada de 60 segundos. Escrita no Diário só por RPC com controle de revisão (`diario_salvar_revisao`, `diario_status_revisao`).
+Imagens do Diário ficam no bucket privado `diario-imagens` (até 5 MiB, JPEG/PNG/WebP), lidas por URL assinada de 60 segundos; o app envia JPEG de até 1600 px. Escrita no Diário só por RPC com controle de revisão (`diario_salvar_revisao`, `diario_status_revisao`). Com o B26, `diario_salvar_revisao` passa a ter 8 parâmetros e só aceita imagem com crianças ou adolescentes quando `autorizacao_responsaveis` é verdadeiro (restrição `diario_menores_com_autorizacao`).
 
-`solicitacoes_materiais` e `contribuicoes_materiais` (reconciliação 02) **serão excluídas** pela reconciliação pendente: duplicavam metas e contribuições. Não usar.
+`solicitacoes_materiais` e `contribuicoes_materiais` (reconciliação 02) foram excluídas em 23/10/2026 pela reconciliação `20261005150000`: duplicavam metas e contribuições.
 
 ### Fora do MVP (presentes no banco)
 
@@ -94,9 +94,9 @@ Imagens do Diário ficam no bucket privado `diario-imagens` (até 5 MiB, JPEG/PN
 
 | Tabela | Atributos |
 | --- | --- |
-| `configuracao_instituicao` | `id` (registro único), `nome_curto`, `nome_completo`, `cidade`, `uf`, `endereco`, `chamada`, `sobre`, `cor_primaria`, `cor_acento`, `url_logo`, `site`, `telefone`, `whatsapp`, `email_contato`, `chave_pix` *(pendente)*, `nome_beneficiario_pix` *(pendente)*, `atualizado_em` |
+| `configuracao_instituicao` | `id` (registro único), `nome_curto`, `nome_completo`, `cidade`, `uf`, `endereco`, `chamada`, `sobre`, `cor_primaria`, `cor_acento`, `url_logo`, `site`, `telefone`, `whatsapp`, `email_contato`, `chave_pix`, `nome_beneficiario_pix`, `atualizado_em` |
 
-Registro único, referente à Horta Comunitária Guaporé. Nome da instituição, cores, logo, textos e canais de contato vêm daqui — **não fixar esses valores no código**. Leitura pública; só a gestão altera. A estrutura já prevê o uso por outras ONGs no futuro, mas isso não é escopo do MVP.
+Registro único, referente à Horta Comunitária Guaporé. Nome da instituição, cores, logo, textos e canais de contato vêm daqui — **não fixar esses valores no código**. Leitura pública; só a gestão altera. O logotipo (B28) é gravado em `url_logo` como data URI de um PNG de até 256 px, sem bucket próprio. A estrutura já prevê o uso por outras ONGs no futuro, mas isso não é escopo do MVP.
 
 ## Regras de negócio
 
@@ -104,17 +104,17 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 
 **Atividades.** `TAREFA_ONG` é publicada pela gestão; `OFICINA_AUTORAL` é tipo legado, e as propostas de oficina usam `propostas_oficinas` (fora do MVP). Voluntários se candidatam via RPC; a gestão faz a triagem. Só candidaturas APROVADA ocupam vaga; PENDENTE pode exceder a capacidade. Após a primeira candidatura, título, data, carga horária, tipo e autor da atividade ficam imutáveis. Presença é confirmada por check-in com QR exibido pela gestão (token de até 5 minutos; janela de 30 minutos antes do início até o fim previsto). A carga horária registrada é a **prevista**, não medida.
 
-**Doações (apadrinhamento).** Metas em dinheiro (PIX) ou de materiais. O pagamento acontece **fora do app**: o doador copia a chave PIX estática (vinda de `configuracao_instituicao.chave_pix`), transfere e informa o valor; a contribuição entra PENDENTE. O comprovante em imagem é opcional por enquanto (upload previsto no B22). A baixa é manual — a gestão confere e o sistema registra `validado_por`, `validado_em` e `observacao_validacao`. A gestão também registra doações recebidas em mãos, já como APROVADA, desde que o doador seja voluntário cadastrado. `quantidade_arrecadada` é calculada pelo trigger `atualizar_arrecadacao_meta`, somando só APROVADA; o app nunca grava esse total. O voluntário só contribui em meta ABERTA. Metas não são excluídas pelo app (encerrar, cancelar ou reabrir), para preservar o histórico. Não há integração bancária nem conciliação automática.
+**Doações (apadrinhamento).** Metas em dinheiro (PIX) ou de materiais. O pagamento acontece **fora do app**: o doador copia a chave PIX estática (vinda de `configuracao_instituicao.chave_pix`), transfere e informa o valor; a contribuição entra PENDENTE. O comprovante em imagem (JPEG, PNG ou WebP, bucket privado `comprovantes`) é opcional. A baixa é manual — a gestão confere e o sistema registra `validado_por`, `validado_em` e `observacao_validacao`. A gestão também registra doações recebidas em mãos, já como APROVADA, desde que o doador seja voluntário cadastrado. `quantidade_arrecadada` é calculada pelo trigger `atualizar_arrecadacao_meta`, somando só APROVADA; o app nunca grava esse total. O voluntário só contribui em meta ABERTA. Metas não são excluídas pelo app (encerrar, cancelar ou reabrir), para preservar o histórico. Não há integração bancária nem conciliação automática.
 
-**WhatsApp.** Deep link usando `configuracao_instituicao.whatsapp`, no detalhe da atividade e da meta. Sem número cadastrado, o botão não aparece.
+**WhatsApp e compartilhamento.** Deep link usando `configuracao_instituicao.whatsapp`, no detalhe da atividade e da meta. Sem número cadastrado, o botão não aparece. Metas abertas e publicações visíveis têm o botão "Compartilhar", que abre o menu do sistema com um texto pronto; a imagem do Diário não vai junto, porque é privada.
 
-**Dados da ONG.** O perfil da gestão (B30) tem seções de conta, dados institucionais (por `gestao_salvar_perfil`), WhatsApp e PIX (gravados em `configuracao_instituicao`). A seção de PIX fica indisponível até a reconciliação pendente ser aplicada.
+**Dados da ONG.** O perfil da gestão tem seções de nome e logotipo da instituição (B28), conta, dados institucionais (por `gestao_salvar_perfil`), WhatsApp e PIX (B30). Nome, logotipo, WhatsApp e PIX são gravados em `configuracao_instituicao`; ao salvar nome ou logotipo, `avisarConfiguracaoAlterada()` recarrega as telas abertas. Cores, chamada, texto "sobre", site e demais contatos ainda são mantidos direto no banco (evolução futura).
 
 **"Combinam com você".** O Início do voluntário mostra "Sugeridas para você": tarefas abertas, futuras e com vaga que cabem na disponibilidade dele e, quando a gestão marcou áreas (`atividade_habilidades`), cuja categoria coincide com a de alguma habilidade do voluntário. É só um filtro de recomendação — ninguém é inscrito automaticamente; não evoluir para pareamento automático (ver Fora de escopo).
 
-**Imagens.** Sempre comprimir no dispositivo com `expo-image-manipulator` antes do upload (pendente, B27). No banco guarda-se apenas o caminho no Supabase Storage.
+**Imagens.** Sempre comprimir no dispositivo com `expo-image-manipulator` antes do upload (ver `perfil/imagemFoto.ts` e `diario/imagemDiario.ts`). No banco guarda-se apenas o caminho no Supabase Storage.
 
-**LGPD.** A instituição atende crianças e adolescentes. Restringir a exibição de imagens de menores no diário. A solicitação de exclusão de dados pelo voluntário grava `exclusao_solicitada_em` para tratamento pela gestão (RNF0004; não há item de backlog próprio para a tela de solicitação).
+**LGPD.** A instituição atende crianças e adolescentes. No Diário, a gestão informa se a imagem mostra crianças ou adolescentes; nesse caso, só publica declarando ter a autorização dos responsáveis (B26, RNF0003), regra repetida no banco. O voluntário pede a exclusão dos seus dados no cartão "Meus dados" do perfil (B34), que chama a RPC `solicitar_exclusao_conta` e grava `exclusao_solicitada_em`; a remoção é feita pela gestão, que ainda não tem tela para listar os pedidos.
 
 **RLS.** Todo acesso passa por Row Level Security. Ao criar tabela ou coluna nova, criar também a política correspondente — nunca contornar RLS com service role no cliente.
 
@@ -139,7 +139,7 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 | RF0011 | Doação e Acompanhamento de Contribuições |
 | RF0012 | Validação de Contribuições |
 | RF0013 | Diário de Transparência |
-| RF0014 | Notificações Push |
+| RF0014 | Notificações |
 | RF0015 | Gestão dos Dados da Instituição |
 
 ### Não funcionais
@@ -160,7 +160,7 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 
 ## Backlog e situação atual
 
-34 itens, 168 horas estimadas. Situação ao final da Sprint 2 (05/10/2026): 16 concluídos (67h), 5 em desenvolvimento (32h), 13 em planejamento (69h).
+34 itens, 168 horas estimadas. Situação em 07/11/2026: 27 concluídos (126h), 6 em homologação (39h) e 1 em planejamento (3h). "Concluído" quer dizer integrado à `main` e coberto por testes; a homologação de todo o MVP em Android fica para a Sprint final.
 
 | ID | Funcionalidade | Requisito | Prioridade | Estimativa | Situação |
 | --- | --- | --- | --- | --- | --- |
@@ -178,46 +178,44 @@ Registro único, referente à Horta Comunitária Guaporé. Nome da instituição
 | B12 | Lista e detalhe de tarefas abertas | RF0005 | Alta | 6h | Concluído |
 | B13 | Candidatura com controle de vagas | RF0005 | Alta | 6h | Concluído |
 | B14 | Tela "Minhas candidaturas" com cancelamento | RF0005 | Média | 4h | Concluído |
-| B15 | Proposta de oficina autoral | RF0006 | Média | 3h | Em planejamento |
-| B16 | Triagem de candidatos e oficinas | RF0007 | Média | 9h | Em desenvolvimento |
-| B17 | Confirmação de presença | RF0007 | Média | 2h | Em planejamento |
-| B18 | Integração com WhatsApp e compartilhamento | RF0009 | Média | 6h | Em planejamento |
+| B15 | Proposta de oficina autoral | RF0006 | Média | 3h | Em planejamento (Sprint final) |
+| B16 | Triagem de candidatos e oficinas | RF0007 | Média | 9h | Concluído |
+| B17 | Confirmação de presença | RF0007 | Média | 2h | Concluído |
+| B18 | Integração com WhatsApp e compartilhamento | RF0009 | Média | 6h | Em homologação (PR #18) |
 | B19 | Gestão de metas pela ONG | RF0010 | Alta | 5h | Concluído |
 | B20 | Mural de metas com progresso | RF0010 | Alta | 4h | Concluído |
-| B21 | Chave PIX copia e cola e registro da contribuição | RF0011 | Alta | 6h | Em desenvolvimento |
-| B22 | Upload de comprovante e armazenamento privado | RF0011 | Alta | 6h | Em desenvolvimento |
-| B23 | Fila e validação manual de comprovantes | RF0012 | Média | 8h | Em desenvolvimento |
-| B24 | Atualização automática do total arrecadado | RF0012 | Alta | 3h | Em desenvolvimento |
-| B25 | Publicação no diário de transparência | RF0013 | Média | 6h | Em planejamento |
-| B26 | Feed do diário com restrição de imagens de menores | RF0013 | Média | 6h | Em planejamento |
-| B27 | Compressão local de imagens | RNF0005 | Média | 6h | Em planejamento |
-| B28 | Configuração e parametrização da instituição | RF0015 | Média | 8h | Em planejamento |
-| B29 | Notificações push (Expo) | RF0014 | Baixa | 10h | Em planejamento |
-| B30 | Tela de perfil da ONG (dados cadastrais, PIX e WhatsApp) | RF0015 | Alta | 4h | Em planejamento |
-| B31 | Edição de perfil e foto do usuário | RF0002 | Média | 5h | Em planejamento |
-| B32 | Histórico de participação e mensagem de impacto | RF0008 | Média | 6h | Em planejamento |
-| B33 | Tela "Minhas contribuições" com situação de validação | RF0011 | Média | 4h | Em planejamento |
+| B21 | Chave PIX copia e cola e registro da contribuição | RF0011 | Alta | 6h | Concluído |
+| B22 | Upload de comprovante e armazenamento privado | RF0011 | Alta | 6h | Concluído |
+| B23 | Fila e validação manual de comprovantes | RF0012 | Média | 8h | Concluído |
+| B24 | Atualização automática do total arrecadado | RF0012 | Alta | 3h | Concluído |
+| B25 | Publicação no diário de transparência | RF0013 | Média | 6h | Concluído |
+| B26 | Feed do diário com restrição de imagens de menores | RF0013 | Média | 6h | Em homologação (PR #20) |
+| B27 | Compressão local de imagens | RNF0005 | Média | 6h | Em homologação (PR #17) |
+| B28 | Configuração e parametrização da instituição | RF0015 | Média | 8h | Em homologação (PR #21) |
+| B29 | Notificações push (Expo) | RF0014 | Baixa | 10h | Em homologação (PR #16) |
+| B30 | Tela de perfil da ONG (dados cadastrais, PIX e WhatsApp) | RF0015 | Alta | 4h | Concluído |
+| B31 | Edição de perfil e foto do usuário | RF0002 | Média | 5h | Concluído |
+| B32 | Histórico de participação e mensagem de impacto | RF0008 | Média | 6h | Concluído |
+| B33 | Tela "Minhas contribuições" com situação de validação | RF0011 | Média | 4h | Concluído |
+| B34 | Solicitação de exclusão de dados pelo voluntário | RNF0004 | Alta | 3h | Em homologação (PR #19) |
 
-### Implementado na branch `integracao/mvp` (aguardando revisão da equipe)
+### O que falta nos itens em homologação
 
-A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integração já contém código para itens ainda marcados como em desenvolvimento ou planejamento; a equipe decide se atualiza a situação após revisar e homologar.
+| ID | Falta |
+| --- | --- |
+| B18 | Revisar e integrar o PR #18 |
+| B26 | Integrar o PR #20 o quanto antes: a migration já está no banco e a `main` não salva publicações até o merge |
+| B27 | Revisar e integrar o PR #17 |
+| B28 | Revisar e integrar o PR #21; cores e textos de apresentação ficam como evolução futura |
+| B29 | Testar o push com o app fechado num Android real (development build) e integrar o PR #16 |
+| B34 | Revisar e integrar o PR #19; a gestão ainda não tem tela para listar os pedidos de exclusão |
 
-| ID | O que existe na branch | Falta |
-| --- | --- | --- |
-| B15 | Propostas de oficina com decisão da gestão | Oculto no app: fora do MVP por decisão de 05/10 |
-| B16 | Triagem de candidatos com aprovação/recusa e motivo (RPC `voluntariado_decidir`) | Triagem de oficinas (fora do MVP); homologação |
-| B17 | Check-in por QR com token temporário | Homologação em aparelho |
-| B18 | WhatsApp no detalhe da atividade e da meta | Compartilhamento; número cadastrado pela gestão |
-| B21 | Cópia da chave PIX e registro da contribuição (PENDENTE) | Homologação (migration `20261005150000_contribuicoes_metas_pix.sql` aplicada em 23/10/2026) |
-| B22 | Anexo opcional do comprovante, bucket privado `comprovantes` e visualização pela gestão | Homologar com Storage real (migration `20261023170000_comprovantes_storage.sql` aplicada em 23/10/2026) |
-| B23 | Fila geral de conferência (todas as metas), confirmar/recusar com observação (motivo obrigatório ao recusar) e registro de doação recebida | Aplicar `20261023210000_contribuicoes_conferencia.sql` e homologar |
-| B24 | Total recalculado pelo trigger do banco | Homologação |
-| B25 | Publicação, edição e ocultação com revisão e imagem privada | Homologação com Storage real |
-| B26 | Feed só com publicações PUBLICADA | Regra específica para imagens de menores |
-| B30 | Perfil da gestão em seções (conta, institucional, WhatsApp, PIX) | Seção de PIX depende da reconciliação pendente |
-| B31 | Perfil em seções, busca de CEP e foto pessoal com troca/remoção; banco atualizado em 21/10 | Homologar seleção e envio de foto em aparelho |
-| B32 | Histórico de participação com carga prevista | Mensagem de impacto |
-| B33 | "Minhas contribuições" com etiqueta de situação da conferência e filtro por situação | Homologação em dispositivo |
+### Pendências fora do backlog
+
+- **Senha mínima:** o RNF0011 pede 8 caracteres. O PR #23 ajusta o app; falta mudar no painel do Supabase (Authentication → Providers → Email → Minimum password length = 8).
+- **Paginação:** o PR #24 pagina o feed do Diário (RF0013 e RNF0005), com a migration `20261108130000_diario_paginacao.sql`. As demais listas continuam inteiras: são filtradas por abas no app e ficam na casa das dezenas de registros.
+- **Dependências:** o PR #25 roda `npm audit fix` e reduz os alertas de 16 para 5 moderados, que estão no `@expo/cli` e só somem voltando ao Expo 52. Depois dele, gerar de novo o development build.
+- **Publicação na Google Play:** política de privacidade, página web para pedir a exclusão da conta (exigida pela Google Play além da opção no app), formulário de Segurança dos dados e, se a conta de desenvolvedor for pessoal e criada depois de 13/11/2023, teste fechado com pelo menos 12 testadores por 14 dias seguidos antes de pedir acesso à produção.
 
 ## Cronograma
 
@@ -225,7 +223,7 @@ A coluna "Situação" acima é o registro oficial da Sprint 2. A branch de integ
 | --- | --- | --- |
 | Sprint 1 | 27/07 a 14/09/2026 | Requisitos, protótipo, modelagem do banco, refinamento do backlog; início do cadastro/login (B01–B05) e do CRUD de atividades (B10, B12) |
 | Sprint 2 | 15/09 a 05/10/2026 | Concluídos: B01–B14 (autenticação, perfil e habilidades, tarefas e candidatura) e B19–B20 (mural de metas). Iniciados e não concluídos: B16 (triagem) e B21–B24 (contribuições, comprovantes e validação) |
-| Sprint 3 | 06/10 a 16/11/2026 | Primeiro concluir B16, B17 e B21–B24; depois B28 e B30 (perfil da ONG e parametrização), B25–B27 (diário e compressão), B31–B34 (perfil do usuário, apresentação e históricos), B18 e B29 (WhatsApp e notificações) e B15 (oficina autoral) |
+| Sprint 3 | 06/10 a 16/11/2026 | Primeiro concluir B16, B17 e B21–B24; depois B28 e B30 (perfil da ONG e parametrização), B25–B27 (diário e compressão), B31–B33 (perfil do usuário e históricos), B18 e B29 (WhatsApp e notificações), B34 (exclusão de dados, criado em 07/11) e B15 (oficina autoral, replanejado para a Sprint final) |
 | Sprint final | 17/11 a 14/12/2026 | Testes com ONG e voluntários, correções, publicação na Google Play, treinamento e handover |
 
 ## Estrutura do código
@@ -247,9 +245,9 @@ src/
     oficinas/          fora do MVP (ver escopoMvp.ts)
     certificados/      fora do MVP (ver escopoMvp.ts)
   compartilhado/
-    componentes/       Ui (Botao, Campo, Aviso, AbasFiltro), TelaFluxo, Icone, CampoData, LimiteErro, memoTela
+    componentes/       Ui (Botao, Campo, Aviso, AbasFiltro), TelaFluxo, Icone, CampoData, LimiteErro, LogoInstituicao, memoTela
     hooks/             useConsulta, useAcao, useConfiguracaoInstituicao
-    utils/             erros, datas, máscaras, validadores, confirmar, whatsapp
+    utils/             erros, datas, máscaras, validadores, confirmar, whatsapp, compartilhar
     api.ts             consultas usadas por várias funcionalidades (configuração da instituição)
     esquemas.ts        base do Zod: configuração, esquemaDe e validarResposta
     tema.ts, tipos.ts, escopoMvp.ts
